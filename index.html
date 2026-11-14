@@ -699,6 +699,17 @@ tr.sasar > td { background-color: var(--warn-soft); }
 .sheet-extra:not(.need8) .dep-8, .sheet-extra:not(.panggil) .dep-panggil { display: none; }
 /* Dokumen "jika berkenaan" */
 .docref .ds-tick.opt, .ds-tick.opt { border-style: dashed; color: var(--muted); border-color: var(--line); }
+/* Medan jumlah dituntut: jelas untuk diisi */
+.isi-kotak { border: 2px solid var(--accent); background: var(--accent-soft); border-radius: 10px; padding: 10px 12px; }
+.isi-kotak.diisi { border-color: var(--line); background: var(--surface); }
+.isi-kotak > label { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.86rem; font-weight: 700; color: var(--fg); text-transform: none; letter-spacing: 0; margin-bottom: 6px; }
+.isi-tag { font-size: 0.66rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: var(--accent); color: var(--surface); border-radius: 999px; padding: 2px 8px; }
+.isi-kotak.diisi .isi-tag { background: var(--ok); }
+.isi-baris { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.isi-baris .money { flex: 1 1 180px; max-width: 280px; }
+.isi-kotak #s-dit { background: var(--surface); border: 2px solid var(--accent); font-size: 1.1rem; font-weight: 600; min-height: 44px; }
+.isi-kotak #s-dit::placeholder { color: var(--muted); font-weight: 400; }
+.isi-kotak #s-dit:focus { outline: 3px solid var(--accent-soft); }
 </style>
 </head>
 <body>
@@ -1370,7 +1381,10 @@ function resultHtml(key) {
   const dd = (label, id, cls) => "<dt" + (cls ? ' class="' + cls + '"' : "") + ">" + label + '</dt><dd id="' + id + '"' + (cls ? ' class="' + cls + '"' : "") + "></dd>";
   // Jumlah dituntut dan beza: paparan Penuh sahaja, kecuali sudah diisi (supaya keputusan tidak merujuk medan yang tersorok).
   const ditAdv = ""; // Amaun tuntutan mesti kelihatan dalam mod Ringkas dan Penuh.
-  const dit = '<div class="field ' + ditAdv + '"><label for="s-dit">Jumlah yang dituntut pegawai</label><div class="money"><span>RM</span><input id="s-dit" data-mk="dituntut" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Ikut borang tuntutan" value="' + esc(M.dituntut) + '"></div></div>';
+  const dit = '<div class="field isi-kotak ' + ditAdv + (M.dituntut !== "" && M.dituntut != null ? " diisi" : "") + '"><label for="s-dit"><span class="isi-tag">Isi di sini</span> Jumlah yang anda tuntut dalam borang</label>' +
+    '<div class="isi-baris"><div class="money"><span>RM</span><input id="s-dit" data-mk="dituntut" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00" value="' + esc(M.dituntut) + '"></div>' +
+    '<button type="button" class="ghost small" data-act="guna-kira" id="s-guna" hidden>Guna jumlah dikira</button></div>' +
+    '<small class="hint">Taip jumlah RM seperti yang ditulis dalam borang tuntutan. Sistem akan bandingkan dengan jumlah dikira di bawah.</small></div>';
   let facts = "", checks = "";
   if (isOt(key)) {
     facts = (key === "elmeh" ? dd("Lokasi", "f-lok") : "") + dd("Kadar sejam asas", "f-asas", "adv") + dd("Jam dibayar", "f-jam") + dd("Jumlah dikira", "f-rm") + dd("Beza dengan tuntutan", "f-beza", ditAdv) + dd("Had 1/3 gaji pokok", "f-had") + dd("Cuti gantian", "f-cg");
@@ -1820,6 +1834,9 @@ function setDD(id, text, cls) {
 
 function updateSummary(key, ev) {
   const S = ev.sum;
+  const gb = $("s-guna"), kotak = gb && gb.closest(".isi-kotak");
+  if (gb) { const ok = ev.days.length > 0 && S.rm > 0 && !S.kadarKosong; gb.hidden = !ok; if (ok) gb.textContent = "Guna jumlah dikira (" + rmFmt(S.rm) + ")"; }
+  if (kotak) { const ad = String(md(key).dituntut || "") !== ""; kotak.classList.toggle("diisi", ad); const tg = kotak.querySelector(".isi-tag"); if (tg) tg.textContent = ad ? "✓ Diisi" : "Isi di sini"; }
   const bezaTxt = S.beza == null ? "–" : Math.abs(S.beza) <= 0.05 ? "Sepadan" : (S.beza > 0 ? "Lebih " : "Kurang ") + rmFmt(Math.abs(S.beza));
   const bezaCls = S.beza == null ? "" : Math.abs(S.beza) <= 0.05 ? "ok" : S.beza > 0 ? "bad" : "warn";
   if (isOt(key)) {
@@ -2280,6 +2297,13 @@ function showItem(d, block) {
 }
 const sideBySide = () => window.matchMedia && window.matchMedia("(min-width: 760px)").matches;
 
+document.addEventListener("click", e => {
+  if (!e.target.closest('[data-act="guna-kira"]')) return;
+  const key=activeTab(), S=evalModule(key).sum; if (!(S.rm > 0)) return;
+  md(key).dituntut = (Math.round(S.rm * 100) / 100).toFixed(2); save(); refresh();
+  const i=$("s-dit"); if (i) i.value = md(key).dituntut;
+  $("msg").textContent = "Jumlah dituntut diisi ikut kiraan sistem. Pastikan sama dengan borang.";
+});
 $("module").addEventListener("click", e => {
   const ta=e.target.closest('[data-act="tickall"]');
   if (ta) {
