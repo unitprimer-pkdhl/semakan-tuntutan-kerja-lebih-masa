@@ -2097,17 +2097,21 @@ function pdfVerdict(doc, y, label, v) {
   return y + hBar + 3;
 }
 
+// Saiz susun atur PDF. "Mampat" dicuba bila halaman terakhir hampir kosong, dan dipakai hanya jika ia menjimatkan halaman.
+const PK_BIASA = { band: 8.5, bandTxt: 5.8, info: 9, infoPad: 1.1, det: 7.6, detPad: 1, doc: 8, docPad: 0.9, ket: 7.2, sum: 9, sumPad: 1.4, gap: 6, sign: 12 };
+const PK_MAMPAT = { band: 7, bandTxt: 4.9, info: 8.4, infoPad: 0.6, det: 7.2, detPad: 0.6, doc: 7.6, docPad: 0.5, ket: 6.8, sum: 8.4, sumPad: 0.9, gap: 3.5, sign: 9 };
+let PK = PK_BIASA;
 // Tajuk bahagian PDF: jalur berwarna penuh lebar, nombor bahagian di kiri, ringkasan kecil di kanan.
 const PDF_TAJUK = { etap: "ON-CALL (ETAP)", lokum: "EXTENDED HOURS (ELAUN LOKUM)", elmeh: "OT EXTENDED HOURS (ELM)", elm: "KERJA LEBIH MASA BIASA (ELM)", bap: "BERSEDIA ATAS PANGGILAN" };
 const PDF_SUSUN = ["etap", "lokum", "elmeh", "elm", "bap"];
 function pdfSecHead(doc, y, tajuk, kanan, warna) {
   const W = doc.internal.pageSize.getWidth(), c = warna || [15, 92, 110];
-  doc.setFillColor(c[0], c[1], c[2]); doc.rect(14, y, W - 28, 8.5, "F");
+  doc.setFillColor(c[0], c[1], c[2]); doc.rect(14, y, W - 28, PK.band, "F");
   doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(255, 255, 255);
-  doc.text(P(tajuk), 17, y + 5.8);
-  if (kanan) { doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.text(P(kanan), W - 17, y + 5.8, { align: "right" }); }
+  doc.text(P(tajuk), 17, y + PK.bandTxt);
+  if (kanan) { doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.text(P(kanan), W - 17, y + PK.bandTxt, { align: "right" }); }
   doc.setTextColor(30, 30, 30);
-  return y + 8.5;
+  return y + PK.band;
 }
 function pdfJumlahTxt(key) {
   const ev = evalModule(key), S = ev.sum, n = ev.days.length;
@@ -2147,7 +2151,7 @@ function pdfModule(doc, key, y, no) {
     const k = numOrNull(set.bapKadar);
     info = [["Kadar sehari", k != null ? "RM " + rmP(k) : "Belum diisi", "Jumlah dikira", S.kadarKosong ? "-" : "RM " + rmP(S.rm)], ["Jumlah dituntut", ditT, "Beza", bz]];
   }
-  doc.autoTable({ startY: y + 3, body: info.map(r => r.map(P)), theme: "plain", styles: { fontSize: 9, cellPadding: 1.1 },
+  doc.autoTable({ startY: y + (PK === PK_MAMPAT ? 1 : 3), body: info.map(r => r.map(P)), theme: "plain", styles: { fontSize: PK.info, cellPadding: PK.infoPad },
     columnStyles: { 0: { fontStyle: "bold", cellWidth: 36 }, 1: { cellWidth: 96 }, 2: { fontStyle: "bold", cellWidth: 46 } }, margin: { left: 14, right: 14 } });
   y = doc.lastAutoTable.finalY + 2;
 
@@ -2182,7 +2186,7 @@ function pdfModule(doc, key, y, no) {
   const stCol = head.indexOf("Status"), lastCol = head.length - 1;
   doc.autoTable({
     startY: y, head: [head.map(P)], body: body.map(r => r.map(P)), theme: "grid",
-    styles: { fontSize: 7.6, cellPadding: 1, valign: "middle", lineColor: [200, 208, 214], lineWidth: 0.15 },
+    styles: { fontSize: PK.det, cellPadding: PK.detPad, valign: "middle", lineColor: [200, 208, 214], lineWidth: 0.15 },
     headStyles: { fillColor: [15, 92, 110], textColor: 255, fontStyle: "bold", fontSize: 7.4 },
     columnStyles: cs, margin: { left: 14, right: 14 },
     didParseCell: h => {
@@ -2204,9 +2208,9 @@ function pdfDocGroup(doc, y, g) {
   doc.text(P("Senarai semak dokumen: " + g.nm), 14, y); doc.setTextColor(30, 30, 30);
   doc.autoTable({ startY: y + 1.5, theme: "grid", head: [["Bil", "Dokumen", "Keterangan", "Semakan sistem", "Disemak"]],
     body: L.map((i, n) => [String(n + 1), P(i.t), P(i.d), P(i.s[1]), ""]),
-    styles: { fontSize: 8, cellPadding: 0.9, lineColor: [200, 208, 214], lineWidth: 0.15, valign: "middle" },
+    styles: { fontSize: PK.doc, cellPadding: PK.docPad, lineColor: [200, 208, 214], lineWidth: 0.15, valign: "middle" },
     headStyles: { fillColor: [226, 236, 239], textColor: [15, 92, 110], fontStyle: "bold", fontSize: 7.8 },
-    columnStyles: { 0: { cellWidth: 10, halign: "center" }, 1: { cellWidth: 92, fontStyle: "bold" }, 2: { fontSize: 7.2, fontStyle: "italic", textColor: [90, 90, 90] }, 3: { cellWidth: 30 }, 4: { cellWidth: 18 } },
+    columnStyles: { 0: { cellWidth: 10, halign: "center" }, 1: { cellWidth: 92, fontStyle: "bold" }, 2: { fontSize: PK.ket, fontStyle: "italic", textColor: [90, 90, 90] }, 3: { cellWidth: 30 }, 4: { cellWidth: 18 } },
     margin: { left: 14, right: 14 },
     didParseCell: h => { if (h.section === "body" && h.column.index === 3) { const k = L[h.row.index].s[0]; h.cell.styles.textColor = k === "ok" ? [27, 127, 75] : k === "bad" ? [180, 35, 24] : [90, 90, 90]; h.cell.styles.fontStyle = "bold"; } },
     didDrawCell: h => { if (h.section === "body" && h.column.index === 4) { const sz = 3.6, cx = h.cell.x + h.cell.width / 2 - sz / 2, cy = h.cell.y + h.cell.height / 2 - sz / 2; h.doc.setDrawColor(90, 90, 90); h.doc.setLineWidth(0.25); h.doc.rect(cx, cy, sz, sz); } } });
@@ -2230,7 +2234,7 @@ function pdfRingkasan(doc, y, keys) {
   y = pdfSecHead(doc, y, "RINGKASAN DAN JUMLAH TUNTUTAN", keys.length + " jenis tuntutan  |  " + hari + " tarikh", [55, 65, 70]) + 1;
   const last = body.length - 1;
   doc.autoTable({ startY: y, head: [["Jenis tuntutan", "Hari", "Jumlah dikira", "Jumlah dituntut", "Keputusan"]], body: body.map(r => r.map(P)), theme: "grid",
-    styles: { fontSize: 9, cellPadding: 1.4, lineColor: [200, 208, 214], lineWidth: 0.15 },
+    styles: { fontSize: PK.sum, cellPadding: PK.sumPad, lineColor: [200, 208, 214], lineWidth: 0.15 },
     headStyles: { fillColor: [226, 230, 232], textColor: [40, 50, 55], fontStyle: "bold" },
     columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 18, halign: "right" }, 2: { cellWidth: 45, halign: "right" }, 3: { cellWidth: 45, halign: "right" }, 4: { fontStyle: "bold" } },
     margin: { left: 14, right: 14 },
@@ -2248,7 +2252,7 @@ function pdfRingkasan(doc, y, keys) {
 }
 function pdfSign(doc, y) {
   const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
-  let fy = y + 12;
+  let fy = y + PK.sign;
   if (fy > H - 12) { doc.addPage(); fy = pdfMiniHeader(doc) + 14; }
   doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(30, 30, 30); doc.setDrawColor(120, 120, 120); doc.setLineWidth(0.2);
   doc.line(14, fy, 84, fy); doc.text("Disemak oleh (nama & cop)", 14, fy + 4);
@@ -2266,9 +2270,14 @@ function pdfMiniHeader(doc) {
 }
 
 function buildPdf() {
-  // Cubaan 1: ringkasan di hujung. Jika ringkasan terpaksa ke halaman baharu seorang diri, bina semula dengan ringkasan di halaman pertama.
-  const d1 = buildPdfX(false);
-  return d1.__ringkasanBaru ? buildPdfX(true) : d1;
+  // Ringkasan di hujung; jika ringkasan terpaksa ke halaman baharu seorang diri, letak di halaman pertama.
+  // Jika halaman terakhir hampir kosong (< 1/3 terisi), cuba susun atur mampat dan pakai jika jumlah halaman berkurang.
+  const bina = pk => { PK = pk; const d = buildPdfX(false); const r = d.__ringkasanBaru ? buildPdfX(true) : d; r.__pages = r.internal.getNumberOfPages ? r.internal.getNumberOfPages() : 1; return r; };
+  const biasa = bina(PK_BIASA);
+  let pilih = biasa;
+  if (biasa.__pages > 1 && biasa.__akhirY < 70) { const mampat = bina(PK_MAMPAT); if (mampat.__pages < biasa.__pages) pilih = mampat; }
+  PK = PK_BIASA;
+  return pilih;
 }
 function buildPdfX(ringkasanAtas) {
   const jsPDF = window.jspdf.jsPDF;
@@ -2287,9 +2296,9 @@ function buildPdfX(ringkasanAtas) {
   doc.setFont("helvetica","normal"); doc.setTextColor(30,30,30); y += 5;
   const keys = PDF_SUSUN.filter(k => mods().indexOf(k) >= 0 && evalModule(k).days.length);
   const G = docGroups().filter(g => g.has), grpKey = k => isOt(k) ? "ot" : k;
-  if (ringkasanAtas) { y = pdfRingkasan(doc, y, keys); y = pdfSign(doc, y) + 4; }
+  if (ringkasanAtas) { y = pdfRingkasan(doc, y, keys); y = pdfSign(doc, y) + (PK === PK_MAMPAT ? 1 : 4); }
   keys.forEach((k, i) => {
-    y += 6;
+    y += PK.gap;
     // Tajuk, maklumat, keputusan dan beberapa baris jadual mesti muat sehalaman; jika tidak, mula halaman baharu.
     const infoRows = { elm: 6, elmeh: 6, etap: 4, lokum: 4, bap: 2 }[k] || 4;
     const need = 11 + infoRows * 5.5 + 16 + 9 + Math.min(evalModule(k).days.length, 3) * 8 + 10;
@@ -2300,12 +2309,13 @@ function buildPdfX(ringkasanAtas) {
     if (g && !keys.slice(i + 1).some(n => grpKey(n) === g.k)) y = pdfDocGroup(doc, y, g);
   });
   if (!ringkasanAtas) {
-    y += 9;
+    y += PK.gap + 3;
     const need = pdfRingkasanTinggi(keys) + 20;
     if (y + need > H - 6) { doc.__ringkasanBaru = true; doc.addPage(); y = pdfMiniHeader(doc); }
     y = pdfRingkasan(doc, y, keys);
-    pdfSign(doc, y);
+    y = pdfSign(doc, y);
   }
+  doc.__akhirY = doc.lastAutoTable && doc.lastAutoTable.finalY > y ? doc.lastAutoTable.finalY : y;
   return doc;
 }
 
