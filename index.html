@@ -527,13 +527,13 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 @media (min-width: 761px) {
   /* Jadual lebih padat supaya muat pada skrin laptop dengan zoom 125-150% */
   .ot-sheet td { padding-left: 5px; padding-right: 5px; }
-  .ot-sheet th.col-jadual { min-width: 100px; }
+  .ot-sheet th.col-jadual { min-width: 112px; font-size: 0.7rem; }
   .ot-sheet .issue-cell { min-width: 120px; }
   .ot-sheet .status-cell { white-space: normal; }
   .ot-sheet .sh-status { white-space: normal; max-width: 88px; line-height: 1.15; }
   .ot-sheet select { min-width: 88px; }
   .ot-sheet th { min-width: 52px; }
-  .ot-sheet .issue-cell { min-width: 110px; }
+  .ot-sheet .issue-cell { min-width: 100px; }
   .ot-sheet .sh-status { max-width: 80px; }
   /* Masa: cukup lebar untuk "05:00 PM" penuh */
   .ot-sheet .time-cell { min-width: 0; }
@@ -1353,11 +1353,11 @@ function itemHtml(key, d) {
 /* Paparan jadual berasaskan satu baris bagi setiap hari. Data kekal dalam struktur asal untuk PDF dan kiraan. */
 let rowFilter = "all", extraDay = null;
 const SHEET_COLS = {
-  elm:   [["masa","Masa mula–tamat"],["jam","Jam OT"],["sebab","Sebab OT"],["surat","Surat arahan"],["jadual","Nama ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["thumb","Thumbprint lengkap"]],
-  elmeh: [["lokasi","Lokasi EH"],["masa","Masa mula–tamat"],["jam","Jam OT"],["surat","Surat arahan"],["jadual","Nama ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["thumb","Thumbprint lengkap"]],
-  etap:  [["dipanggil","Dipanggil?"],["calltime","Masa masuk–keluar"],["nilai","Anggaran (RM)"],["surat","Surat arahan"],["jadual","Nama ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["tiadacuti","Tiada cuti / MC"],["thumb","Thumbprint lengkap"]],
-  lokum: [["lokasi","Lokasi EH"],["masa","Masa mula–tamat"],["jam","Jumlah jam"],["nilai","Anggaran (RM)"],["surat","Surat arahan"],["jadual","Nama ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["thumb","Thumbprint lengkap"]],
-  bap:   [["dipanggil","Dipanggil?"],["calltime","Masa masuk–keluar"],["nilai","Anggaran (RM)"],["surat","Surat arahan"],["jadual","Nama ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["ketik","Ketik masuk/keluar"]]
+  elm:   [["masa","Masa mula–tamat"],["jam","Jam OT"],["sebab","Sebab OT"],["surat","Surat arahan"],["jadual","Nama sendiri / anggota yang diganti ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["thumb","Thumbprint lengkap"]],
+  elmeh: [["lokasi","Lokasi EH"],["masa","Masa mula–tamat"],["jam","Jam OT"],["surat","Surat arahan"],["jadual","Nama sendiri / anggota yang diganti ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["thumb","Thumbprint lengkap"]],
+  etap:  [["dipanggil","Dipanggil?"],["calltime","Masa masuk–keluar"],["nilai","Anggaran (RM)"],["surat","Surat arahan"],["jadual","Nama sendiri / anggota yang diganti ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["tiadacuti","Tiada cuti / MC"],["thumb","Thumbprint lengkap"]],
+  lokum: [["lokasi","Lokasi EH"],["masa","Masa mula–tamat"],["jam","Jumlah jam"],["nilai","Anggaran (RM)"],["surat","Surat arahan"],["jadual","Nama sendiri / anggota yang diganti ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["thumb","Thumbprint lengkap"]],
+  bap:   [["dipanggil","Dipanggil?"],["calltime","Masa masuk–keluar"],["nilai","Anggaran (RM)"],["surat","Surat arahan"],["jadual","Nama sendiri / anggota yang diganti ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["ketik","Ketik masuk/keluar"]]
 };
 function sheetStatus(x) {
   if (!x) return ["idle","–"];
