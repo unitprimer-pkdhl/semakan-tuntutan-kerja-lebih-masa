@@ -142,15 +142,46 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 #lihatBtn { border-color: var(--accent); color: var(--accent); }
 #pdfBtn.locked { opacity: 0.5; }
 @media (max-width: 480px) { .bar .btns { display: grid; grid-template-columns: 1fr 1fr; width: 100%; } .bar .btns #resetBtn { grid-column: 1 / -1; } }
+/* Pengenalan laman (sama pada kedua-dua halaman) */
+.intro { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.intro p { margin: 0; }
+.intro-k { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.intro-t { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
+.intro-p { font-size: 0.9rem; max-width: 92ch; }
+.intro-g { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.intro-g li { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; font-size: 0.84rem; }
+.intro-g b { font-size: 0.86rem; }
+.intro-g span { color: var(--muted); }
+.intro-n { font-size: 0.76rem; font-style: italic; color: var(--muted); }
+.intro-k .sm { display: none; }
+@media (max-width: 760px) {
+  .intro { padding: 11px 12px; gap: 5px; }
+  .intro-k .lg { display: none; } .intro-k .sm { display: inline; }
+  .intro-t { font-size: 1.05rem; } .intro-p { font-size: 0.84rem; }
+  .intro-g { grid-template-columns: minmax(0, 1fr); gap: 3px; margin-top: 2px; }
+  .intro-g li { display: block; border: 0; padding: 0; font-size: 0.8rem; }
+  .intro-g b { font-size: 0.8rem; } .intro-g b::after { content: " – "; font-weight: 400; color: var(--muted); }
+}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <section class="intro" aria-labelledby="introT">
+    <p class="intro-k">Unit Primer · <span class="lg">Pejabat Kesihatan Daerah</span><span class="sm">PKD</span> Hulu Langat</p>
+    <p class="intro-t" id="introT">Semakan Tuntutan Anggota Klinik Kesihatan</p>
+    <p class="intro-p">Alat semakan kendiri sebelum tuntutan dikemukakan kepada penyelia dan Unit Kewangan. Isi maklumat, semak kiraan dan kelengkapan dokumen, kemudian cetak ringkasan PDF untuk dilampirkan bersama borang tuntutan.</p>
+    <ul class="intro-g">
+      <li><b>Tuntutan OT &amp; Elaun</b><span>Kerja lebih masa, extended hours, ETAP, Elaun Lokum dan Elaun Bersedia Atas Panggilan.</span></li>
+      <li><b>Tuntutan Perjalanan</b><span>Tugas rasmi dan kursus dalam negeri mengikut Pekeliling Perbendaharaan WP1.4.</span></li>
+      <li><b>Privasi</b><span>Data kekal dalam pelayar peranti ini sahaja, tidak dihantar ke mana-mana pelayan, dan dipadam sendiri selepas 30 hari.</span></li>
+    </ul>
+    <p class="intro-n">Hasil semakan ialah panduan awal, bukan kelulusan. Kelayakan muktamad tertakluk kepada pengesahan Ketua Jabatan dan Unit Kewangan.</p>
+  </section>
   <nav class="apps" aria-label="Jenis semakan"><a href="../">Tuntutan OT &amp; Elaun</a><a href="./" aria-current="page">Tuntutan Perjalanan</a></nav>
   <header>
     <div>
       <h1>Semakan Tuntutan Perjalanan</h1>
-      <p class="sub">Tugas rasmi dan kursus dalam negeri · ikut Pekeliling Perbendaharaan WP1.4 (berkuat kuasa 1 Mei 2026). Isian disimpan dalam pelayar peranti ini sahaja dan dipadam sendiri selepas 30 hari tanpa kemas kini.</p>
+      <p class="sub">Tugas rasmi dan kursus dalam negeri · ikut Pekeliling Perbendaharaan WP1.4 (berkuat kuasa 1 Mei 2026).</p>
     </div>
   </header>
 
