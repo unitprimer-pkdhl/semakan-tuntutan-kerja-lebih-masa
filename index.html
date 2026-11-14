@@ -385,7 +385,7 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 .sheet-wrap { position: relative; }
 .sheet-wrap.more::after { content: ""; position: absolute; top: 0; right: 0; bottom: 0; width: 26px; pointer-events: none; background: linear-gradient(to left, rgba(20, 50, 50, 0.18), transparent); }
 .ot-sheet { border-collapse: separate; border-spacing: 0; min-width: 1030px; width: 100%; table-layout: auto; font-size: 0.82rem; line-height: 1.25; }
-.ot-sheet th { position: sticky; top: 0; z-index: 3; padding: 8px 7px; background: #275f54; color: #fff; text-align: left; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: bottom; line-height: 1.2; }
+.ot-sheet th { position: sticky; top: 0; z-index: 3; padding: 8px 7px; background: var(--th-tarikh); color: #fff; text-align: left; font-size: 0.75rem; font-weight: 600; white-space: nowrap; vertical-align: bottom; line-height: 1.2; }
 @media (min-width: 761px) { .ot-sheet th { white-space: normal; min-width: 58px; } .ot-sheet th.sticky-date { min-width: 100px; } .ot-sheet th.col-jadual { min-width: 118px; } }
 .ot-sheet td { padding: 5px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; min-width: 0; }
 .ot-sheet tbody tr.sheet-row:nth-child(4n+1), .ot-sheet tbody tr.sheet-row:nth-child(4n+2) { background: var(--bg); }
@@ -395,10 +395,10 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 .ot-sheet tbody tr.sheet-row:hover { background: var(--accent-soft); }
 .ot-sheet .sticky-date { position: sticky; left: 0; z-index: 2; background: var(--surface); min-width: 100px; width: 112px; }
 .ot-sheet tbody tr.sheet-row:not(.on) .sticky-date { background: var(--bg); }
-.ot-sheet thead .sticky-date { z-index: 5; background: #275f54; }
+.ot-sheet thead .sticky-date { z-index: 5; background: var(--th-tarikh); }
 .ot-sheet .sticky-on { position: sticky; left: 112px; z-index: 2; background: var(--surface); min-width: 65px; text-align: center; }
 .ot-sheet tbody tr.sheet-row:not(.on) .sticky-on { background: var(--bg); }
-.ot-sheet thead .sticky-on { z-index: 5; background: #275f54; }
+.ot-sheet thead .sticky-on { z-index: 5; background: var(--th-tarikh); }
 .ot-sheet .datecell { display: flex; flex-direction: column; gap: 2px; white-space: nowrap; }
 .ot-sheet .datecell small { color: var(--muted); font-size: 0.72rem; }
 .ot-sheet .datecell .cuti { font-size: 0.68rem; color: var(--cu); max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
@@ -442,9 +442,9 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
   .ot-sheet th, .ot-sheet td { padding-left: 5px; padding-right: 5px; }
 }
 @media (prefers-color-scheme:dark) {
-  :root:not([data-theme="light"]) .ot-sheet th, :root:not([data-theme="light"]) .ot-sheet thead .sticky-date, :root:not([data-theme="light"]) .ot-sheet thead .sticky-on { background: #214a44; }
+  :root:not([data-theme="light"]) .ot-sheet th, :root:not([data-theme="light"]) .ot-sheet thead .sticky-date, :root:not([data-theme="light"]) .ot-sheet thead .sticky-on { background: var(--th-tarikh); }
 }
-:root[data-theme="dark"] .ot-sheet th, :root[data-theme="dark"] .ot-sheet thead .sticky-date, :root[data-theme="dark"] .ot-sheet thead .sticky-on { background: #214a44; }
+:root[data-theme="dark"] .ot-sheet th, :root[data-theme="dark"] .ot-sheet thead .sticky-date, :root[data-theme="dark"] .ot-sheet thead .sticky-on { background: var(--th-tarikh); }
 
 
 .officer-more { grid-column:1/-1; border-top:1px solid var(--line);padding-top:9px; }
@@ -612,6 +612,33 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 .lapor:hover { background: var(--accent-soft); }
 .kaki { text-align: center; font-size: 0.76rem; color: var(--muted); margin: 8px 0 0; }
 .kaki a { color: var(--accent); font-weight: 600; }
+/* Warna ikut komponen: biru = maklumat & masa, kelabu = dokumen, teal = keputusan */
+:root { --c-butir: #2f6fb5; --s-butir: #eef4fb; --c-dok: #56636f; --s-dok: #f1f3f5; --c-hasil: #0f5c6e; --s-hasil: #e2eff2;
+  --th-tarikh: #26323c; --th-masa: #2f6fb5; --th-dok: #6b7785; --th-hasil: #0f5c6e; --t-masa: rgba(47,111,181,0.07); --t-dok: rgba(86,99,111,0.08); --t-hasil: rgba(15,92,110,0.07); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --c-butir: #7fb2ea; --s-butir: #172636; --c-dok: #a9b6c2; --s-dok: #1e262d; --c-hasil: #5cb8cc; --s-hasil: #19323a;
+  --th-tarikh: #161e24; --th-masa: #2a5585; --th-dok: #3d4853; --th-hasil: #1d4d58; --t-masa: rgba(127,178,234,0.08); --t-dok: rgba(169,182,194,0.07); --t-hasil: rgba(92,184,204,0.08); } }
+:root[data-theme="dark"] { --c-butir: #7fb2ea; --s-butir: #172636; --c-dok: #a9b6c2; --s-dok: #1e262d; --c-hasil: #5cb8cc; --s-hasil: #19323a;
+  --th-tarikh: #161e24; --th-masa: #2a5585; --th-dok: #3d4853; --th-hasil: #1d4d58; --t-masa: rgba(127,178,234,0.08); --t-dok: rgba(169,182,194,0.07); --t-hasil: rgba(92,184,204,0.08); }
+.comp.c-butir { --cc: var(--c-butir); --cs: var(--s-butir); }
+.comp.c-dok { --cc: var(--c-dok); --cs: var(--s-dok); }
+.comp.c-hasil { --cc: var(--c-hasil); --cs: var(--s-hasil); }
+.comp { border-left: 4px solid var(--cc) !important; }
+.comp.tint { background: var(--cs); }
+.comp .step-h .num { background: var(--cc); }
+.comp .step-h h2, .docref.comp > summary { color: var(--cc); }
+.comp.tint input, .comp.tint select { background: var(--surface); }
+.comp .pilih2 button[aria-checked="true"] { background: var(--cc); }
+:root .ot-sheet thead th.g-masa { background: var(--th-masa); }
+:root .ot-sheet thead th.g-dok { background: var(--th-dok); }
+:root .ot-sheet thead th.g-hasil { background: var(--th-hasil); }
+.ot-sheet td.g-masa { background-image: linear-gradient(var(--t-masa), var(--t-masa)); }
+.ot-sheet td.g-dok { background-image: linear-gradient(var(--t-dok), var(--t-dok)); }
+.ot-sheet td.g-hasil { background-image: linear-gradient(var(--t-hasil), var(--t-hasil)); }
+.sheet-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 0.74rem; color: var(--muted); }
+.sheet-legend span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.sheet-legend span::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--lg); }
+.sheet-legend .lg-masa { --lg: var(--th-masa); } .sheet-legend .lg-dok { --lg: var(--th-dok); } .sheet-legend .lg-hasil { --lg: var(--th-hasil); }
+.sheet-bulk { border-left: 4px solid var(--c-dok); background: var(--s-dok); }
 </style>
 </head>
 <body>
@@ -647,7 +674,7 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 
   <div class="layout">
   <div class="maincol">
-  <section class="panel" id="step1">
+  <section class="panel comp c-butir tint" id="step1">
     <div class="step-h"><span class="num">1</span><div><h2>Maklumat pegawai</h2></div><button type="button" class="ghost refresh-sec" id="refStaff" title="Kosongkan maklumat pegawai sahaja. Tarikh tuntutan kekal."><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Refresh pegawai</button></div>
     <div class="fields">
       <div class="field span2"><label for="nama">Nama pegawai</label><input id="nama" type="text" autocomplete="off" placeholder="Contoh: Nur Aisyah binti Ahmad"><small class="name-note" id="identityHint">Untuk pegawai lain, klik <b>Refresh semua</b> supaya rekod tidak bercampur.</small></div>
@@ -662,9 +689,9 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
     </div>
   </section>
 
-  <div class="quick-summary" id="quickSummary" role="status"><b>Ringkasan bulan ini</b><span id="quickClaim">0 tarikh</span><span id="quickDone">0 lengkap</span><span id="quickIssue">0 perlu tindakan</span></div>
+  <div class="quick-summary comp c-hasil" id="quickSummary" role="status"><b>Ringkasan bulan ini</b><span id="quickClaim">0 tarikh</span><span id="quickDone">0 lengkap</span><span id="quickIssue">0 perlu tindakan</span></div>
   <section id="step2"><div class="step-h out"><span class="num">2</span><div><h2>Isi tarikh tuntutan</h2><p class="sub">Tandakan tarikh, isi masa dan tekan <b>Semak</b> untuk dokumen serta pilihan tambahan.</p></div><button type="button" class="ghost refresh-sec" id="refClaim" title="Kosongkan semua isian tuntutan bulan ini. Maklumat pegawai kekal."><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Refresh tuntutan</button></div><nav class="tabs" id="tabs" role="tablist" aria-label="Jenis tuntutan"></nav><div id="module"></div></section>
-  <section class="panel" id="step3"><div class="step-h"><span class="num">3</span><div><h2>Keputusan akhir</h2></div></div><div id="result"></div><p class="top-note">Semakan automatik bukan kelulusan rasmi. Dokumen dan kelayakan perlu disahkan oleh penyelia / Unit Kewangan.</p></section>
+  <section class="panel comp c-hasil" id="step3"><div class="step-h"><span class="num">3</span><div><h2>Keputusan akhir</h2></div></div><div id="result"></div><p class="top-note">Semakan automatik bukan kelulusan rasmi. Dokumen dan kelayakan perlu disahkan oleh penyelia / Unit Kewangan.</p></section>
 
   <details class="panel tetapan adv" id="tetapan">
     <summary>Tetapan kadar &amp; cuti <span class="muted">· untuk penyelia, isi bila dapat pengesahan Unit Kewangan</span></summary>
@@ -689,7 +716,7 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
     <p class="hint">Tetapan disimpan dalam pelayar ini dan tidak terpadam bila borang dikosongkan.</p>
   </details>
   </div>
-  <details class="docref" id="docRef" open hidden aria-label="Dokumen wajib dilampirkan"></details>
+  <details class="docref comp c-dok tint" id="docRef" open hidden aria-label="Dokumen wajib dilampirkan"></details>
   </div>
   <p class="kaki">Jumpa kesilapan atau ada cadangan? <a href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20OT%20%26%20Elaun" target="_blank" rel="noopener">Lapor melalui borang maklum balas</a>.</p>
 </div>
@@ -1507,16 +1534,17 @@ function sheetTableHtml(key) {
     out.push('<tr class="sheet-row' + (active ? " on" : "") + '" data-d="' + d + '" data-status="' + status[0] + '">' +
       '<td class="sticky-date"><div class="datecell"><b>' + d + " " + BULAN[mo.m - 1].slice(0,3) + '</b><small>' + dow + (cu ? ' · Cuti umum' : "") + '</small>' + (cu ? '<span class="cuti" title="' + esc(cu) + '">' + esc(cu) + '</span>' : "") + '</div></td>' +
       '<td class="sticky-on"><label class="sh-check"><input type="checkbox" data-on="1" aria-label="' + label + " " + esc(dateName) + '"' + (active ? " checked" : "") + '></label></td>' +
-      cols.map(([c]) => '<td class="col-' + c + ' ' + (c === "masa" || c === "calltime" ? "time-cell" : c === "sebab" ? "reason-cell" : ["surat","jadual","ganti","borang","thumb","dipanggil","tiadacuti","ketik"].includes(c) ? "doc-cell" : "") + '">' + (active ? sheetCell(key,c,r,d,x) : '<span class="sheet-dash">–</span>') + "</td>").join("") +
-      '<td class="status-cell"><span class="sh-status ' + status[0] + '">' + status[1] + '</span></td>' +
-      '<td class="issue-cell col-issue"><span class="sh-issue ' + status[0] + '">' + esc(sheetIssue(x)) + '</span></td>' +
-      '<td>' + (active ? '<button type="button" class="ghost sh-more" data-act="detail" data-d="' + d + '" aria-expanded="' + (extraDay === d) + '">' + (extraDay === d ? "Tutup" : "Semak") + '</button>' : '<span class="sheet-dash">–</span>') + '</td></tr>');
+      cols.map(([c]) => '<td class="col-' + c + " " + kumpCol(c) + ' ' + (c === "masa" || c === "calltime" ? "time-cell" : c === "sebab" ? "reason-cell" : ["surat","jadual","ganti","borang","thumb","dipanggil","tiadacuti","ketik"].includes(c) ? "doc-cell" : "") + '">' + (active ? sheetCell(key,c,r,d,x) : '<span class="sheet-dash">–</span>') + "</td>").join("") +
+      '<td class="status-cell g-hasil"><span class="sh-status ' + status[0] + '">' + status[1] + '</span></td>' +
+      '<td class="issue-cell col-issue g-hasil"><span class="sh-issue ' + status[0] + '">' + esc(sheetIssue(x)) + '</span></td>' +
+      '<td class="g-hasil">' + (active ? '<button type="button" class="ghost sh-more" data-act="detail" data-d="' + d + '" aria-expanded="' + (extraDay === d) + '">' + (extraDay === d ? "Tutup" : "Semak") + '</button>' : '<span class="sheet-dash">–</span>') + '</td></tr>');
     if (active && extraDay === d) out.push(sheetExtraHtml(key,d,r,x,cols.length+5));
   }
-  const head = '<th class="sticky-date">Tarikh</th><th class="sticky-on">' + (isOt(key) ? "Buat OT" : "Bertugas") + '</th>' + cols.map(([c,label]) => '<th class="col-' + c + '">' + label + "</th>").join("") + "<th>Status</th><th class=\"col-issue\">Kekurangan</th><th>Semak</th>";
+  const head = '<th class="sticky-date">Tarikh</th><th class="sticky-on">' + (isOt(key) ? "Buat OT" : "Bertugas") + '</th>' + cols.map(([c,label]) => '<th class="col-' + c + " " + kumpCol(c) + '">' + label + "</th>").join("") + '<th class="g-hasil">Status</th><th class="col-issue g-hasil">Kekurangan</th><th class="g-hasil">Semak</th>';
   const filters = [["all","Semua tarikh"],["claimed","Tarikh dituntut"]].map(f => '<button type="button" data-filter="' + f[0] + '" aria-pressed="' + (rowFilter === f[0]) + '">' + f[1] + "</button>").join("");
   const warn = mo.y > 2027 || mo.y < 2026 ? "Senarai cuti umum untuk tahun ini belum dimasukkan. Sahkan jenis hari secara manual." : mo.y === 2027 ? "Cuti ganti / cuti peristiwa 2027 mungkin berubah mengikut warta rasmi." : "";
-  return '<div class="sheet-shell"><div class="sheet-toolbar"><div><strong>Jadual ' + BULAN[mo.m - 1] + " " + mo.y + '</strong><div class="sheet-stats" id="sheetStats"></div></div><div class="sheet-filters">' + filters + '</div></div>' +
+  return '<div class="sheet-shell"><div class="sheet-toolbar"><div><strong>Jadual ' + BULAN[mo.m - 1] + " " + mo.y + '</strong><div class="sheet-stats" id="sheetStats"></div></div>' +
+    '<div class="sheet-legend" aria-label="Petunjuk warna lajur"><span class="lg-masa">Masa &amp; kerja</span><span class="lg-dok">Bukti dokumen</span><span class="lg-hasil">Keputusan</span></div><div class="sheet-filters">' + filters + '</div></div>' +
     '<div class="sheet-bulk" id="sheetBulk"></div>' +
     '<div class="sheet-wrap"><div class="sheet-scroll" id="sheetScroll" role="region" tabindex="0" aria-label="Jadual semakan tuntutan"><table class="ot-sheet"><thead><tr>' + head + '</tr></thead><tbody>' +
     (out.length ? out.join("") : '<tr><td colspan="' + (cols.length + 5) + '" class="sheet-empty">' + (rowFilter === "issues" ? "Tiada tarikh yang perlu tindakan. Semua tarikh dituntut sudah lengkap." : rowFilter === "claimed" ? "Belum ada tarikh dituntut. Pilih <b>Semua tarikh</b> dan tandakan hari bertugas." : "Tiada tarikh untuk paparan ini.") + '</td></tr>') +
@@ -1524,6 +1552,9 @@ function sheetTableHtml(key) {
     (warn ? '<div style="margin-top:4px;color:var(--warn)">' + esc(warn) + '</div>' : "") +
     ' <span class="muted">Jadual boleh ditatal ke kanan jika skrin kecil.</span></div></div>';
 }
+// Kumpulan lajur jadual untuk warna: masa & kerja, bukti dokumen, keputusan.
+const KUMP_DOK = ["surat", "jadual", "ganti", "borang", "thumb", "tiadacuti", "ketik"];
+function kumpCol(c) { return KUMP_DOK.includes(c) ? "g-dok" : "g-masa"; }
 // Tandakan dokumen yang sama untuk semua tarikh dituntut sekali gus (cth satu jadual tugas untuk sebulan).
 const BULK = { surat: "Surat arahan", jadual: "Nama dalam jadual kerja", tiadacuti: "Tiada cuti / MC", thumb: "Thumbprint lengkap", ketik: "Ketik masuk/keluar" };
 const bulkField = (k, r) => k === "jadual" ? (r.ganti ? "jadualGanti" : "jadual") : k;
