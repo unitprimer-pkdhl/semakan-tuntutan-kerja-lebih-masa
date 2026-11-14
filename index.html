@@ -600,6 +600,12 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
   .intro-g li { display: block; border: 0; padding: 0; font-size: 0.8rem; }
   .intro-g b { font-size: 0.8rem; } .intro-g b::after { content: " – "; font-weight: 400; color: var(--muted); }
 }
+/* Asas kadar dan tarikh semakan terakhir */
+.asas { margin: 6px 0 0; display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 0.76rem; line-height: 1.4; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 4px 9px; }
+.asas b { color: var(--fg); font-weight: 600; }
+.asas .semak { color: var(--ok); font-weight: 600; white-space: nowrap; }
+.asas.lapuk { border-color: var(--warn); background: var(--warn-soft); }
+.asas.lapuk .semak, .asas .lapuk-t { color: var(--warn); }
 </style>
 </head>
 <body>
@@ -620,6 +626,9 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
     <div class="ht">
       <h1>Semakan Tuntutan OT &amp; Elaun</h1>
       <p class="sub">Senarai satu baris bagi setiap tarikh · kiraan automatik · semakan dokumen · PDF.</p>
+      <p class="asas" id="asas" data-semak="2026-11-14"><b>Asas kadar:</b><span>pekali ELM JPA (SSPA) · ETAP mulai 1 Okt 2025 · waktu Elaun Lokum ikut Surat Edaran KKM 10 Dis 2025 · cuti umum Selangor 2026–2027</span><span class="semak">✓ Disemak 14 Nov 2026</span></p>
+      <script>(function () { var e = document.getElementById("asas"); if (!e) return; var d = Date.parse(e.getAttribute("data-semak") + "T00:00:00+08:00");
+  if (Date.now() - d > 183 * 864e5) { e.classList.add("lapuk"); e.insertAdjacentHTML("beforeend", '<b class="lapuk-t">Lebih 6 bulan sejak semakan terakhir. Sahkan kadar dengan Unit Kewangan sebelum hantar tuntutan.</b>'); } })();</script>
     </div>
     <div class="modesw">
       <div class="seg" role="group" aria-label="Paparan">

@@ -162,6 +162,12 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
   .intro-g li { display: block; border: 0; padding: 0; font-size: 0.8rem; }
   .intro-g b { font-size: 0.8rem; } .intro-g b::after { content: " – "; font-weight: 400; color: var(--muted); }
 }
+/* Asas kadar dan tarikh semakan terakhir */
+.asas { margin: 6px 0 0; display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 0.76rem; line-height: 1.4; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 7px; padding: 4px 9px; }
+.asas b { color: var(--fg); font-weight: 600; }
+.asas .semak { color: var(--ok); font-weight: 600; white-space: nowrap; }
+.asas.lapuk { border-color: var(--warn); background: var(--warn-soft); }
+.asas.lapuk .semak, .asas .lapuk-t { color: var(--warn); }
 </style>
 </head>
 <body>
@@ -181,7 +187,10 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
   <header>
     <div>
       <h1>Semakan Tuntutan Perjalanan</h1>
-      <p class="sub">Tugas rasmi dan kursus dalam negeri · ikut Pekeliling Perbendaharaan WP1.4 (berkuat kuasa 1 Mei 2026).</p>
+      <p class="sub">Tugas rasmi dan kursus dalam negeri: perbatuan, elaun makan / harian, hotel / lojing, tambang, tol dan parkir.</p>
+      <p class="asas" id="asas" data-semak="2026-11-14"><b>Asas kadar:</b><span>PP WP1.4 berkuat kuasa 1 Mei 2026 · perbatuan kadar interim mulai 1 Mei 2026</span><span class="semak">✓ Disemak 14 Nov 2026</span></p>
+      <script>(function () { var e = document.getElementById("asas"); if (!e) return; var d = Date.parse(e.getAttribute("data-semak") + "T00:00:00+08:00");
+  if (Date.now() - d > 183 * 864e5) { e.classList.add("lapuk"); e.insertAdjacentHTML("beforeend", '<b class="lapuk-t">Lebih 6 bulan sejak semakan terakhir. Sahkan kadar dengan Unit Kewangan sebelum hantar tuntutan.</b>'); } })();</script>
     </div>
   </header>
 
@@ -343,7 +352,7 @@ const uid = () => Math.random().toString(36).slice(2, 9);
 function newTrip() {
   const mo = state.bulan || thisMonth();
   return { id: uid(), jenis: "tugas", tujuan: "", destinasi: "", wilayah: "sem", luarHQ: null, mula: mo + "-01T08:00", tamat: mo + "-01T17:00",
-    mod: state.kend && state.kend !== "tiada" ? "sendiri" : "awam", km: "", tambangRM: "", terbangRM: "", tolRM: "", parkirRM: "", dobiRM: "",
+    mod: state.kend && state.kend !== "tiada" ? "sendiri" : "awam", km: "", tambangRM: "", ehailRM: "", terbangRM: "", tolRM: "", parkirRM: "", dobiRM: "",
     semuaMakan: false, mSarapan: "", mTengah: "", mMalam: "", inap: "tiada", malam: "", hotelRM: "", cukaiRM: "", alamat: "",
     d: {} };
 }
@@ -354,7 +363,8 @@ function fmtJ(h) { if (h == null) return "–"; const hh = Math.floor(h + 1e-9),
 function evalTrip(t, perb) {
   const g = state.gred, h = jamTrip(t), M = kiraMakan(t, g), I = kiraInap(t, g), P = perb.per[t.id] || { km: 0, rm: 0 };
   const k = [], a = [], D = t.d || {};
-  const tambang = t.mod === "awam" ? numv(t.tambangRM) : 0, terbang = t.mod === "terbang" ? numv(t.terbangRM) : 0;
+  // e-hailing / teksi tambahan (cth lapangan terbang ke hotel) boleh diisi bagi cara perjalanan selain "awam"
+  const tambang = t.mod === "awam" ? numv(t.tambangRM) : numv(t.ehailRM), terbang = t.mod === "terbang" ? numv(t.terbangRM) : 0;
   const tol = numv(t.tolRM), parkir = numv(t.parkirRM), dobi = t.luarHQ && numv(t.malam) >= 3 ? numv(t.dobiRM) : 0;
   if (!t.tujuan.trim()) k.push("Isi tujuan perjalanan");
   if (!t.destinasi.trim()) k.push("Isi destinasi");
@@ -369,7 +379,7 @@ function evalTrip(t, perb) {
     if (!numv(t.km)) k.push("Isi jarak perjalanan (km, pergi balik)");
   }
   if (t.mod === "awam" && !tambang) a.push("Tiada jumlah tambang pengangkutan awam");
-  if (t.mod === "awam" && tambang && !D.resitTambang) k.push("Tiada resit tambang / e-hailing");
+  if (tambang && !D.resitTambang) k.push("Tiada resit tambang / e-hailing");
   if (t.mod === "terbang") {
     if (!terbang) a.push("Tiada jumlah tambang kapal terbang");
     if (terbang && !D.eTiket) k.push("Tiada e-tiket, pas masuk (boarding pass) dan resit kapal terbang");
@@ -429,7 +439,7 @@ function tripHtml(e, i) {
   const t = e.t, D = t.d || {}, luar = t.luarHQ;
   const docs = [ck("arahan", "Surat / memo / e-mel arahan", D.arahan)];
   if (t.jenis === "kursus" || (luar && (e.M.hari || e.M.harian))) docs.push(ck("aturcara", t.jenis === "kursus" ? "Surat panggilan / aturcara kursus" : "Aturcara / jadual program", D.aturcara));
-  if (t.mod === "awam") docs.push(ck("resitTambang", "Resit tambang / e-hailing", D.resitTambang));
+  if (t.mod === "awam" || numv(t.ehailRM)) docs.push(ck("resitTambang", "Resit tambang / e-hailing", D.resitTambang));
   if (t.mod === "terbang") docs.push(ck("eTiket", "E-tiket, pas masuk & resit penerbangan", D.eTiket));
   if (numv(t.tolRM)) docs.push(ck("resitTol", "Resit / penyata Touch 'n Go (tol)", D.resitTol));
   if (numv(t.parkirRM)) docs.push(ck("resitParkir", "Resit parkir", D.resitParkir));
@@ -443,7 +453,7 @@ function tripHtml(e, i) {
   if (e.I.cukaiRM) kira.push(ln("Cukai / caj hotel", e.I.cukaiRM));
   if (e.I.lojingRM) kira.push(ln("Elaun lojing " + e.I.malam + " malam", e.I.lojingRM));
   if (e.P.km) kira.push(ln("Perbatuan " + e.P.km + " km", e.P.rm, state.kend && state.kend !== "tiada" ? "kadar berperingkat sebulan" : ""));
-  if (e.tambang) kira.push(ln("Tambang pengangkutan awam", e.tambang));
+  if (e.tambang) kira.push(ln(t.mod === "awam" ? "Tambang pengangkutan awam / e-hailing" : "E-hailing / teksi", e.tambang));
   if (e.terbang) kira.push(ln("Tambang kapal terbang", e.terbang));
   if (e.tol) kira.push(ln("Tol", e.tol));
   if (e.parkir) kira.push(ln("Parkir", e.parkir));
@@ -465,10 +475,11 @@ function tripHtml(e, i) {
       '<div><p class="sec-l">Pengangkutan</p><div class="grid4">' +
         '<div class="span4"><label class="lb">Cara perjalanan</label>' + pilih("mod", [["sendiri", "Kenderaan sendiri"], ["awam", "Awam / e-hailing"], ["terbang", "Kapal terbang"], ["jabatan", "Kenderaan jabatan / penganjur"]], t.mod, "wide") + "</div>" +
         (t.mod === "sendiri" ? '<div><label class="lb">Jarak pergi balik</label><div class="km">' + inp("km", t.km, "0", "number") + "<span>km</span></div></div>" : "") +
-        (t.mod === "awam" ? wangF("tambangRM", t.tambangRM, "Tambang / e-hailing") : "") +
+        (t.mod === "awam" ? wangF("tambangRM", t.tambangRM, "Tambang / e-hailing") : wangF("ehailRM", t.ehailRM, "E-hailing / teksi tambahan")) +
         (t.mod === "terbang" ? wangF("terbangRM", t.terbangRM, "Tambang kapal terbang") : "") +
         wangF("tolRM", t.tolRM, "Tol") + wangF("parkirRM", t.parkirRM, "Parkir") +
-      '</div>' + (t.mod === "sendiri" ? '<p class="panduan">Jarak laluan terdekat ikut Google Maps. Waktu pejabat: dari pejabat atau rumah (mana lebih dekat). Luar waktu pejabat / hari cuti: dari rumah. Dari tempat menginap ke tempat tugas maksimum 25 km sehala.</p>' : "") + "</div>" +
+      '</div>' + (t.mod === "sendiri" ? '<p class="panduan">Jarak laluan terdekat ikut Google Maps. Waktu pejabat: dari pejabat atau rumah (mana lebih dekat). Luar waktu pejabat / hari cuti: dari rumah. Dari tempat menginap ke tempat tugas maksimum 25 km sehala.</p>' : "") +
+      (t.mod !== "awam" ? '<p class="panduan">E-hailing / teksi tambahan: contohnya dari lapangan terbang ke hotel atau ke tempat tugas. Jumlahkan semua resit bagi perjalanan ini.</p>' : '<p class="panduan">Masukkan jumlah semua tambang bas, kereta api, teksi atau e-hailing bagi perjalanan ini (pergi balik). Lampirkan e-resit.</p>') + "</div>" +
       (luar ? '<div><p class="sec-l">Makan disediakan oleh kerajaan / penganjur</p><div class="grid4">' +
         '<div class="span4">' + '<label class="ck"><input type="checkbox" data-k="semuaMakan"' + (t.semuaMakan ? " checked" : "") + "> Semua makan disediakan sepanjang perjalanan</label></div>" +
         (t.semuaMakan ? "" : '<div><label class="lb">Sarapan (kali)</label>' + inp("mSarapan", t.mSarapan, "0", "number") + '</div><div><label class="lb">Tengah hari (kali)</label>' + inp("mTengah", t.mTengah, "0", "number") + '</div><div><label class="lb">Malam (kali)</label>' + inp("mMalam", t.mMalam, "0", "number") + "</div>") +
@@ -517,7 +528,7 @@ function docItems(A) {
   const lo = need(e => e.t.luarHQ && e.t.inap === "lojing", e => !!e.t.alamat.trim()); L.push({ t: "Alamat lojing dicatat dalam borang", c: "jika tuntut elaun lojing", s: lo.s, n: lo.n });
   const to = need(e => e.tol > 0, e => D(e).resitTol); L.push({ t: "Resit / penyata Touch 'n Go (tol)", c: "jika tuntut tol", s: to.s, n: to.n });
   const pa = need(e => e.parkir > 0, e => D(e).resitParkir); L.push({ t: "Resit parkir", c: "jika tuntut parkir", s: pa.s, n: pa.n });
-  const ta = need(e => e.t.mod === "awam" && e.tambang > 0, e => D(e).resitTambang); L.push({ t: "Resit tambang pengangkutan awam / e-hailing", c: "jika guna pengangkutan awam", s: ta.s, n: ta.n });
+  const ta = need(e => e.tambang > 0, e => D(e).resitTambang); L.push({ t: "Resit tambang pengangkutan awam / e-hailing / teksi", c: "e-resit dengan tarikh, laluan dan jumlah", s: ta.s, n: ta.n });
   const fl = need(e => e.t.mod === "terbang" && e.terbang > 0, e => D(e).eTiket); L.push({ t: "E-tiket, pas masuk (boarding pass) dan resit penerbangan", c: "jika naik kapal terbang", s: fl.s, n: fl.n });
   const db = need(e => e.dobi > 0, e => D(e).resitDobi); L.push({ t: "Resit dobi", c: "jika menginap 3 malam atau lebih", s: db.s, n: db.n });
   L.push({ id: "hadir", t: "Laporan kehadiran (kad perakam waktu / sistem kehadiran)", c: "jika diminta Unit Kewangan · tanda jika tidak perlu", tk: true });
@@ -634,7 +645,8 @@ function buildPdf() {
     const t = e.t;
     const mk = [e.M.hari ? e.M.hari + " x makan " + rmP(e.M.makanRM) : "", e.M.harian ? "harian " + rmP(e.M.harianRM) : ""].filter(Boolean).join("; ") || "-";
     const inap = e.I.hotelRM ? "Hotel " + e.I.malam + " mlm " + rmP(e.I.hotelRM + e.I.cukaiRM) : e.I.lojingRM ? "Lojing " + e.I.malam + " mlm " + rmP(e.I.lojingRM) : "-";
-    const peng = t.mod === "sendiri" ? e.P.km + " km = " + rmP(e.P.rm) : t.mod === "awam" ? "Awam " + rmP(e.tambang) : t.mod === "terbang" ? "Terbang " + rmP(e.terbang) : "Jabatan / penganjur";
+    const peng = (t.mod === "sendiri" ? e.P.km + " km = " + rmP(e.P.rm) : t.mod === "awam" ? "Awam / e-hailing " + rmP(e.tambang) : t.mod === "terbang" ? "Terbang " + rmP(e.terbang) : "Jabatan / penganjur") +
+      (t.mod !== "awam" && e.tambang ? "\n+ e-hailing / teksi " + rmP(e.tambang) : "");
     const lain = [e.tol ? "Tol " + rmP(e.tol) : "", e.parkir ? "Parkir " + rmP(e.parkir) : "", e.dobi ? "Dobi " + rmP(e.dobi) : ""].filter(Boolean).join("; ") || "-";
     return [String(i + 1), fmtDT(t.mula) + "\n" + fmtDT(t.tamat) + (e.h > 0 ? "\n(" + fmtJ(e.h) + ")" : ""), (t.destinasi || "-") + "\n" + (t.tujuan || "") + (t.jenis === "kursus" ? " [kursus]" : ""),
       WIL_L[t.wilayah] + (t.luarHQ ? ", >25 km" : t.luarHQ === false ? ", <=25 km" : ""), mk, inap, peng, lain, rmP(e.jumlah), stTxt(e) + (e.k.length ? "\n" + e.k.join("; ") : "") + (e.a.length ? "\n" + e.a.join("; ") : "")].map(P);
@@ -652,7 +664,7 @@ function buildPdf() {
   const k = KADAR.km[state.kend];
   const rows = [["Elaun makan", rmP(A.sum.makan)], ["Elaun harian", rmP(A.sum.harian)], ["Sewa hotel / elaun lojing", rmP(A.sum.inap)],
     ["Elaun perjalanan kenderaan (" + A.sum.km + " km" + (k ? "; " + rmP(k[0]) + "/km 500 km pertama, " + rmP(k[1]) + "/km seterusnya" : "") + ")", rmP(A.sum.kmRM)],
-    ["Tambang pengangkutan awam / kapal terbang", rmP(A.sum.tambang)], ["Tol dan parkir", rmP(A.sum.tolParkir)]];
+    ["Tambang pengangkutan awam, e-hailing / teksi dan kapal terbang", rmP(A.sum.tambang)], ["Tol dan parkir", rmP(A.sum.tolParkir)]];
   if (A.sum.dobi) rows.push(["Dobi", rmP(A.sum.dobi)]);
   rows.push(["JUMLAH KESELURUHAN", rmP(A.sum.jumlah)]);
   doc.autoTable({ startY: y, theme: "grid", head: [["Komponen", "Jumlah (RM)"]], body: rows.map(r => r.map(P)), styles: { fontSize: 9, cellPadding: 1.3, lineColor: [200, 208, 214], lineWidth: 0.15 },
