@@ -1726,6 +1726,7 @@ function kaliDoc(it) {
   const k = state.kaliPertama;
   if (k === "tidak") return Object.assign(it, { c: "", app: false, naTxt: "tidak perlu (bukan kali pertama)", s: null });
   if (k === "ya") return Object.assign(it, { c: "tuntutan kali pertama", s: tandaS(it.tk) });
+  delete it.tk; // belum dijawab: tiada butang Tanda, papar "?" sahaja
   return Object.assign(it, { c: "jawab soalan kali pertama dalam Langkah 1", s: ["bad", "Belum dijawab", "?"] });
 }
 function tandaS(tk) { return tandaOn(tk) ? ["ok", "Sedia (ditanda)", "✓ Sedia"] : ["man", "Belum ditanda", "Tanda"]; }
