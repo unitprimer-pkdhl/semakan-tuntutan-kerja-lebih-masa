@@ -575,10 +575,16 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 .pilih2 button { border: 0; border-radius: 0; padding: 8px 22px; background: transparent; color: var(--fg); font-size: 0.9rem; }
 .pilih2 button + button { border-left: 1px solid var(--line); }
 .pilih2 button[aria-checked="true"] { background: var(--accent); color: var(--surface); }
+/* Tab aplikasi: OT & Elaun | Perjalanan */
+.apps { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); width: max-content; max-width: 100%; }
+.apps a { padding: 7px 14px; border-radius: 7px; text-decoration: none; color: var(--muted); font-weight: 600; font-size: 0.86rem; white-space: nowrap; }
+.apps a[aria-current="page"] { background: var(--accent); color: var(--surface); }
+.apps a:not([aria-current]):hover { background: var(--accent-soft); color: var(--accent); }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <nav class="apps" aria-label="Jenis semakan"><a href="./" aria-current="page">Tuntutan OT &amp; Elaun</a><a href="perjalanan/">Tuntutan Perjalanan</a></nav>
   <header>
     <div class="ht">
       <h1>Semakan Tuntutan OT &amp; Elaun</h1>

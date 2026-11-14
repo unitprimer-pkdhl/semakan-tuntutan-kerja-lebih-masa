@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Semakan Tuntutan Perjalanan</title>
+<meta name="description" content="Semak tuntutan perjalanan dalam negeri (WP1.4) staf Unit Primer PKD Hulu Langat sebelum dihantar: perbatuan, elaun makan / harian, hotel / lojing, tambang, tol dan parkir.">
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root {
+  --bg: #f4f6f8; --surface: #ffffff; --fg: #16202a; --muted: #5c6b78; --line: #d9e0e6;
+  --accent: #0f5c6e; --accent-soft: #e2eff2;
+  --ok: #1d7a46; --ok-soft: #e3f3ea; --bad: #b3261e; --bad-soft: #fbe6e4; --warn: #8a5a00; --warn-soft: #fbf0d9;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #11171c; --surface: #182129; --fg: #e5ebf0; --muted: #96a5b2; --line: #2b3843;
+    --accent: #5cb8cc; --accent-soft: #19323a; --ok: #5fcf8d; --ok-soft: #153325;
+    --bad: #f28b82; --bad-soft: #3a1d1b; --warn: #e3b55a; --warn-soft: #3a2e14; color-scheme: dark; }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14.5px; line-height: 1.4;
+  padding: max(14px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(110px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+.wrap { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+h1 { font-size: 1.25rem; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 1rem; margin: 0; line-height: 1.5; }
+h3 { font-size: 0.92rem; margin: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; min-width: 0; }
+/* Komponen vs panduan: panduan kecil, italic, kelabu */
+.sub, .hint, .panduan { font-size: 0.76rem; font-style: italic; font-weight: 400; color: var(--muted); line-height: 1.4; margin: 2px 0 0; }
+.hint { display: block; margin-top: 3px; }
+/* Tab aplikasi */
+.apps { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); width: max-content; max-width: 100%; }
+.apps a { padding: 7px 14px; border-radius: 7px; text-decoration: none; color: var(--muted); font-weight: 600; font-size: 0.86rem; white-space: nowrap; }
+.apps a[aria-current="page"] { background: var(--accent); color: var(--surface); }
+.apps a:not([aria-current]):hover { background: var(--accent-soft); color: var(--accent); }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 16px; }
+/* Langkah */
+.step-h { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.step-h .num { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--surface); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.82rem; margin-top: 2px; }
+.step-h .act { margin-left: auto; flex: none; }
+/* Medan */
+.fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px 12px; }
+.span2 { grid-column: span 2; }
+.span4 { grid-column: 1 / -1; }
+@media (max-width: 760px) { .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } .span2, .span4 { grid-column: 1 / -1; } }
+label.lb { display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+input[type="text"], input[type="number"], input[type="month"], input[type="datetime-local"], select, textarea {
+  width: 100%; font: inherit; font-size: 0.92rem; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; min-height: 38px; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+input[type="number"] { font-family: var(--font-num); }
+.money { position: relative; }
+.money span { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.8rem; pointer-events: none; }
+.money input { padding-left: 34px; }
+.km input { padding-right: 34px; }
+.km { position: relative; }
+.km span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.8rem; pointer-events: none; }
+.pilih { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.pilih button { border: 0; border-radius: 0; padding: 7px 14px; background: transparent; color: var(--fg); font-size: 0.86rem; font-weight: 600; cursor: pointer; }
+.pilih button + button { border-left: 1px solid var(--line); }
+.pilih button[aria-checked="true"] { background: var(--accent); color: var(--surface); }
+.ck { display: inline-flex; align-items: center; gap: 7px; font-size: 0.88rem; cursor: pointer; }
+.ck input { width: 17px; height: 17px; accent-color: var(--accent); margin: 0; }
+button { font: inherit; font-weight: 600; font-size: 0.9rem; border-radius: 8px; padding: 9px 15px; cursor: pointer; border: 1px solid transparent; }
+.primary { background: var(--accent); color: var(--surface); }
+.ghost { background: transparent; color: var(--fg); border-color: var(--line); }
+.ghost:hover { background: var(--accent-soft); }
+.risky { color: var(--bad); }
+.small { font-size: 0.8rem; padding: 6px 11px; }
+.danger { background: var(--bad); color: var(--surface); }
+/* Perjalanan */
+.trip { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.trip + .trip { margin-top: 10px; }
+.trip-h { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--accent-soft); border-radius: 10px 10px 0 0; }
+.trip-h .no { font-weight: 700; color: var(--accent); }
+.trip-h .ttl { font-weight: 600; min-width: 0; flex: 1 1 260px; }
+.trip-h .rm { font-family: var(--font-num); font-weight: 600; }
+.trip-b { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+.sec-l { font-size: 0.8rem; font-weight: 700; color: var(--accent); margin: 0 0 6px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px 12px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px 12px; }
+.grid4 { align-items: end; }
+@media (max-width: 760px) {
+  .grid3, .grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dtf { grid-column: 1 / -1; }
+  .pilih.wide { display: grid; grid-template-columns: 1fr 1fr; }
+  .pilih.wide button { border-left: 0; }
+  .pilih.wide button:nth-child(even) { border-left: 1px solid var(--line); }
+  .pilih.wide button:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+.docs { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.kira { border-top: 1px dashed var(--line); padding-top: 10px; display: flex; flex-direction: column; gap: 4px; font-size: 0.88rem; }
+.kira .ln { display: flex; justify-content: space-between; gap: 12px; }
+.kira .ln b { font-family: var(--font-num); font-weight: 600; white-space: nowrap; }
+.kira .ln.tot { border-top: 1px solid var(--line); padding-top: 5px; margin-top: 2px; font-weight: 700; }
+.isu { display: flex; flex-direction: column; gap: 2px; font-size: 0.82rem; }
+.isu .k { color: var(--bad); }
+.isu .a { color: var(--warn); }
+.pill { font-size: 0.72rem; font-weight: 700; border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
+.pill.ok { color: var(--ok); background: var(--ok-soft); }
+.pill.bad { color: var(--bad); background: var(--bad-soft); }
+.pill.warn { color: var(--warn); background: var(--warn-soft); }
+.empty { text-align: center; padding: 18px; color: var(--muted); }
+/* Ringkasan */
+.ring { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.ring .c { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.ring .c span { display: block; font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; }
+.ring .c b { font-family: var(--font-num); font-size: 1.02rem; }
+.ring .c.tot { background: var(--accent-soft); border-color: var(--accent); }
+/* Dokumen */
+.doclist { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 24px; counter-reset: d; }
+@media (max-width: 760px) { .doclist { grid-template-columns: minmax(0, 1fr); } }
+.doclist li { counter-increment: d; display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; }
+.doclist li::before { content: counter(d) "."; color: var(--muted); font-size: 0.76rem; }
+.doclist li em { display: block; font-size: 0.72rem; font-style: italic; color: var(--muted); }
+.doclist li.na { opacity: 0.45; }
+.ds { font-size: 0.72rem; font-weight: 700; border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+.ds.ok { color: var(--ok); background: var(--ok-soft); }
+.ds.bad { color: var(--bad); background: var(--bad-soft); }
+.ds-tick { font-size: 0.72rem; font-weight: 700; border: 1px solid var(--accent); border-radius: 6px; padding: 2px 9px; background: var(--surface); color: var(--accent); }
+.ds-tick.on { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.kadar { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.kadar th, .kadar td { border-bottom: 1px solid var(--line); padding: 5px 6px; text-align: center; }
+.kadar th { font-size: 0.74rem; color: var(--muted); }
+.kadar td:first-child, .kadar th:first-child { text-align: left; }
+details.rujuk > summary { cursor: pointer; font-weight: 600; }
+/* Bar bawah */
+.bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); z-index: 5;
+  padding: 8px max(12px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+.bar .in { max-width: 1280px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; justify-content: space-between; }
+.bar .st { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.86rem; flex: 1 1 auto; min-width: 0; }
+.bar .st .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
+.bar .st.ok .dot { background: var(--ok); } .bar .st.bad .dot { background: var(--bad); } .bar .st.warn .dot { background: var(--warn); }
+.bar .msg { flex: 1 1 100%; font-size: 0.82rem; color: var(--muted); }
+.bar .msg:empty { display: none; }
+.btns, .confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+#lihatBtn { border-color: var(--accent); color: var(--accent); }
+#pdfBtn.locked { opacity: 0.5; }
+@media (max-width: 480px) { .bar .btns { display: grid; grid-template-columns: 1fr 1fr; width: 100%; } .bar .btns #resetBtn { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="apps" aria-label="Jenis semakan"><a href="../">Tuntutan OT &amp; Elaun</a><a href="./" aria-current="page">Tuntutan Perjalanan</a></nav>
+  <header>
+    <div>
+      <h1>Semakan Tuntutan Perjalanan</h1>
+      <p class="sub">Tugas rasmi dan kursus dalam negeri · ikut Pekeliling Perbendaharaan WP1.4 (berkuat kuasa 1 Mei 2026). Isian disimpan dalam pelayar peranti ini sahaja dan dipadam sendiri selepas 30 hari tanpa kemas kini.</p>
+    </div>
+  </header>
+
+  <section class="panel" id="step1">
+    <div class="step-h"><span class="num">1</span><div><h2>Maklumat pegawai</h2></div><button type="button" class="ghost small act" id="refStaff">Refresh pegawai</button></div>
+    <div class="fields">
+      <div class="span2"><label class="lb" for="nama">Nama pegawai</label><input id="nama" type="text" autocomplete="off" placeholder="Contoh: Nur Aisyah binti Ahmad"><small class="hint">Untuk pegawai lain, klik Refresh semua supaya tuntutan tidak bercampur.</small></div>
+      <div class="span2"><label class="lb" for="gred">Gred (SSPA)</label><select id="gred">
+        <option value="">Pilih gred</option>
+        <option value="g18">Gred 1 – 8</option>
+        <option value="g910">Gred 9 – 10</option>
+        <option value="g1113">Gred 11 – 13</option>
+        <option value="g1415">Gred 14 – 15</option>
+      </select><small class="hint">Ikut nombor gred SSPA dalam slip gaji (contoh UD10 → Gred 9 – 10). Gred menentukan kadar elaun makan dan had sewa hotel.</small></div>
+      <div class="span2"><label class="lb" for="hq">Ibu pejabat (tempat melapor diri setiap hari)</label><select id="hq"></select></div>
+      <div><label class="lb" for="bulan">Bulan tuntutan</label><input id="bulan" type="month"></div>
+      <div><label class="lb" id="kendL">Kenderaan sendiri</label><div class="pilih" role="radiogroup" aria-labelledby="kendL"><button type="button" role="radio" data-kend="kereta">Kereta</button><button type="button" role="radio" data-kend="motosikal">Motosikal</button><button type="button" role="radio" data-kend="tiada">Tiada</button></div></div>
+    </div>
+  </section>
+
+  <section class="panel" id="step2">
+    <div class="step-h"><span class="num">2</span><div><h2>Senarai perjalanan bulan ini</h2><p class="sub">Satu kad bagi setiap perjalanan (pergi dan balik). Isi masa bertolak dan masa tiba semula, jarak ikut Google Maps (laluan terdekat), dan tandakan dokumen yang ada.</p></div><button type="button" class="ghost small act" id="refTrips">Refresh tuntutan</button></div>
+    <div id="trips"></div>
+    <div style="margin-top:10px"><button type="button" class="primary" id="addTrip">+ Tambah perjalanan</button></div>
+  </section>
+
+  <section class="panel" id="step3">
+    <div class="step-h"><span class="num">3</span><div><h2>Ringkasan dan jumlah tuntutan</h2><p class="sub">Semakan automatik bukan kelulusan rasmi. Kelayakan dan dokumen perlu disahkan oleh Ketua Jabatan / Unit Kewangan.</p></div></div>
+    <div class="ring" id="ring"></div>
+    <p class="panduan" id="kmNote" style="margin-top:8px"></p>
+  </section>
+
+  <section class="panel" id="step4">
+    <div class="step-h"><span class="num">4</span><div><h2>Dokumen wajib dilampirkan</h2><p class="sub">Tekan Tanda bila dokumen dah ada. Status lain ikut tanda dalam setiap kad perjalanan.</p></div></div>
+    <p id="docDone" class="pill" style="display:inline-block;margin:0 0 10px"></p>
+    <ol class="doclist" id="docs"></ol>
+  </section>
+
+  <details class="panel rujuk">
+    <summary>Kadar dan syarat utama <span class="panduan">· rujukan WP1.4 (1 Mei 2026)</span></summary>
+    <div style="margin-top:10px;display:grid;gap:12px">
+      <table class="kadar"><thead><tr><th>Gred</th><th>Elaun makan (Semenanjung)</th><th>Elaun makan (Sabah / Sarawak / Labuan)</th><th>Had hotel semalam (Semenanjung)</th><th>Had hotel semalam (Sabah / Sarawak / Labuan)</th></tr></thead>
+        <tbody><tr><td>1 – 8</td><td>RM40</td><td>RM55</td><td>RM200</td><td>RM230</td></tr>
+        <tr><td>9 – 10</td><td>RM45</td><td>RM65</td><td>RM220</td><td>RM250</td></tr>
+        <tr><td>11 – 13</td><td>RM60</td><td>RM80</td><td>RM240</td><td>RM270</td></tr>
+        <tr><td>14 – 15</td><td>RM85</td><td>RM115</td><td>Sebenar (bilik biasa)</td><td>Sebenar (bilik biasa)</td></tr></tbody></table>
+      <ul class="panduan" style="margin:0;padding-left:18px">
+        <li>Elaun makan: satu bagi setiap 24 jam berterusan di luar kawasan ibu pejabat (lebih 25 km ikut jalan raya), dikira dari masa bertolak hingga tiba semula. Jika sebahagian makan disediakan: sarapan 20%, tengah hari 40%, malam 40% ditolak.</li>
+        <li>Elaun harian: separuh elaun makan, bagi tempoh melebihi 8 jam tetapi kurang 24 jam, atau baki 8 jam atau lebih selepas tempoh 24 jam.</li>
+        <li>Elaun lojing: RM100 semalam (Sabah / Sarawak / Labuan RM120) jika menginap di luar kawasan ibu pejabat, tiada penginapan disediakan, dan bukan di rumah sendiri. Alamat lojing wajib.</li>
+        <li>Sewa hotel: ikut resit sehingga had gred; cukai dan caj wajib boleh dituntut di atas had.</li>
+        <li>Perbatuan (kadar interim mulai 1 Mei 2026): kereta RM1.00/km bagi 500 km pertama sebulan, RM0.90/km seterusnya; motosikal RM0.65 / RM0.55. Jarak laluan terdekat (Google Maps). Waktu pejabat: dari pejabat atau rumah (mana lebih dekat); luar waktu / cuti: dari rumah. Pergi balik rumah–pejabat biasa tidak boleh dituntut.</li>
+        <li>Tidak boleh tuntut perbatuan jika guna kenderaan jabatan / penganjur. Tol, parkir, tambang awam dan dobi (menginap sekurang-kurangnya 3 malam) perlu resit.</li>
+      </ul>
+    </div>
+  </details>
+</div>
+
+<div class="bar" id="bar"><div class="in">
+  <div class="st" id="bst"><span class="dot"></span><span id="btxt">Isi maklumat pegawai untuk mula</span></div>
+  <span class="msg" id="msg" role="status"></span>
+  <div class="btns" id="btns">
+    <button class="ghost" id="lihatBtn" type="button">Lihat PDF</button>
+    <button class="primary" id="pdfBtn" type="button">Muat turun PDF</button>
+    <button class="ghost risky" id="resetBtn" type="button">Refresh semua</button>
+  </div>
+  <div class="confirm" id="afterPdf" hidden><span><b>PDF dah dimuat turun.</b> Jika komputer ini dikongsi, padam isian supaya staf lain tak nampak maklumat anda.</span><button class="danger" id="padamBtn" type="button">Padam isian</button><button class="ghost" id="simpanBtn" type="button">Simpan dulu</button></div>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+(function () {
+"use strict";
+/*KIRA-START*/
+// Kadar WP1.4 (Pekeliling Perbendaharaan, berkuat kuasa 1 Mei 2026). Perbatuan ialah kadar interim (kenyataan MOF 20 April 2026).
+const KADAR = {
+  makan: { sem: { g18: 40, g910: 45, g1113: 60, g1415: 85 }, sw: { g18: 55, g910: 65, g1113: 80, g1415: 115 } },
+  hotel: { sem: { g18: 200, g910: 220, g1113: 240, g1415: null }, sw: { g18: 230, g910: 250, g1113: 270, g1415: null } }, // null = sebenar (bilik biasa)
+  lojing: { sem: 100, sw: 120 },
+  km: { kereta: [1.00, 0.90], motosikal: [0.65, 0.55] }, // [500 km pertama sebulan, 501 km dan seterusnya]
+  kmTier: 500
+};
+const WIL_L = { sem: "Semenanjung", sabah: "Sabah", sarawak: "Sarawak", labuan: "WP Labuan" };
+const zon = w => (w && w !== "sem") ? "sw" : "sem";
+const r2 = n => Math.round(n * 100) / 100;
+const numv = v => { const n = parseFloat(v); return isFinite(n) && n > 0 ? n : 0; };
+function jamTrip(t) {
+  if (!t.mula || !t.tamat) return null;
+  const a = new Date(t.mula), b = new Date(t.tamat);
+  if (isNaN(a) || isNaN(b)) return null;
+  return (b - a) / 3600000;
+}
+// Elaun makan / harian satu perjalanan. Kembalikan { hari, harian, makanRM, harianRM, potongRM }.
+function kiraMakan(t, gred) {
+  const h = jamTrip(t), out = { hari: 0, harian: 0, makanRM: 0, harianRM: 0, potongRM: 0, kadar: 0 };
+  if (h == null || h <= 0 || !t.luarHQ || !gred) return out;
+  const R = KADAR.makan[zon(t.wilayah)][gred]; out.kadar = R;
+  const hari = Math.floor(h / 24 + 1e-9), baki = h - hari * 24;
+  out.hari = hari;
+  out.harian = (hari === 0 && h > 8) || (hari > 0 && baki >= 8) ? 1 : 0;
+  if (t.semuaMakan) { out.potongRM = hari * R; return out; }
+  const pot = R * (0.2 * numv(t.mSarapan) + 0.4 * numv(t.mTengah) + 0.4 * numv(t.mMalam));
+  out.potongRM = r2(Math.min(pot, hari * R));
+  out.makanRM = r2(hari * R - out.potongRM);
+  out.harianRM = out.harian ? r2(R / 2) : 0;
+  return out;
+}
+// Penginapan: hotel (resit, had gred) atau lojing (kadar tetap).
+function kiraInap(t, gred) {
+  const out = { malam: numv(t.malam), hotelRM: 0, lebihRM: 0, cukaiRM: 0, lojingRM: 0, had: null };
+  if (!t.luarHQ || !gred) return out;
+  const z = zon(t.wilayah);
+  if (t.inap === "hotel") {
+    const had = KADAR.hotel[z][gred]; out.had = had;
+    const kadar = numv(t.hotelRM);
+    const boleh = had == null ? kadar : Math.min(kadar, had);
+    out.hotelRM = r2(boleh * out.malam);
+    out.lebihRM = had != null && kadar > had ? r2((kadar - had) * out.malam) : 0;
+    out.cukaiRM = r2(numv(t.cukaiRM));
+  } else if (t.inap === "lojing") out.lojingRM = r2(KADAR.lojing[z] * out.malam);
+  return out;
+}
+// Perbatuan sebulan, berperingkat: perjalanan disusun ikut masa bertolak, 500 km pertama kadar tinggi.
+function kiraPerbatuan(trips, kend) {
+  const k = KADAR.km[kend], res = {};
+  let jalan = 0;
+  trips.slice().sort((a, b) => String(a.mula).localeCompare(String(b.mula))).forEach(t => {
+    const km = t.mod === "sendiri" ? numv(t.km) : 0;
+    if (!k || !km) { res[t.id] = { km, rm: 0 }; return; }
+    const atas = Math.max(0, Math.min(km, KADAR.kmTier - jalan)), bawah = km - atas;
+    res[t.id] = { km, rm: r2(atas * k[0] + bawah * k[1]) };
+    jalan += km;
+  });
+  return { per: res, jumlahKm: jalan };
+}
+/*KIRA-END*/
+
+const FASILITI = [["", "Pilih ibu pejabat"], ["pkdhl", "Pejabat Kesihatan Daerah Hulu Langat"],
+  ["ampang", "KK Ampang"], ["balakong", "KK Balakong"], ["bsp", "KK Bandar Seri Putra"], ["btho", "KK Bandar Tun Hussein Onn"],
+  ["bangi", "KK Bangi"], ["bt9", "KK Batu 9"], ["bt14", "KK Batu 14"], ["beranang", "KK Beranang"],
+  ["kajang", "KK Kajang"], ["rinching", "KK Rinching Tengah"], ["semenyih", "KK Semenyih"],
+  ["sgchua", "KK Sungai Chua"], ["sgsekamat", "KK Sungai Sekamat"], ["nirwana", "KK Taman Nirwana"], ["kkiacb", "KKIA Cheras Baru"]];
+const GRED_L = { g18: "Gred 1 – 8", g910: "Gred 9 – 10", g1113: "Gred 11 – 13", g1415: "Gred 14 – 15" };
+const BULAN = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+const HARI = ["Ahd", "Isn", "Sel", "Rab", "Kha", "Jum", "Sab"];
+const KEY = "semakan-perjalanan-v1", SIMPAN_HARI = 30;
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const rm = n => "RM" + (Math.round(n * 100) / 100).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function thisMonth() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
+function blank(bulan) { return { nama: "", gred: "", hq: "", bulan: bulan || thisMonth(), kend: "", trips: [], sedia: {} }; }
+function load() { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+let state = load(), expired = false;
+if (!state || typeof state !== "object" || !Array.isArray(state.trips)) state = blank();
+if (state.savedAt && Date.now() - state.savedAt > SIMPAN_HARI * 864e5) { state = blank(); expired = true; }
+function save() { state.savedAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+const uid = () => Math.random().toString(36).slice(2, 9);
+function newTrip() {
+  const mo = state.bulan || thisMonth();
+  return { id: uid(), jenis: "tugas", tujuan: "", destinasi: "", wilayah: "sem", luarHQ: null, mula: mo + "-01T08:00", tamat: mo + "-01T17:00",
+    mod: state.kend && state.kend !== "tiada" ? "sendiri" : "awam", km: "", tambangRM: "", terbangRM: "", tolRM: "", parkirRM: "", dobiRM: "",
+    semuaMakan: false, mSarapan: "", mTengah: "", mMalam: "", inap: "tiada", malam: "", hotelRM: "", cukaiRM: "", alamat: "",
+    d: {} };
+}
+function fmtDT(s) { if (!s) return "–"; const d = new Date(s); if (isNaN(d)) return "–"; return d.getDate() + " " + BULAN[d.getMonth()].slice(0, 3) + " " + HARI[d.getDay()] + ", " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
+function fmtJ(h) { if (h == null) return "–"; const hh = Math.floor(h + 1e-9), mm = Math.round((h - hh) * 60); return hh + "j" + (mm ? " " + mm + "m" : ""); }
+
+// ---------- Semakan satu perjalanan ----------
+function evalTrip(t, perb) {
+  const g = state.gred, h = jamTrip(t), M = kiraMakan(t, g), I = kiraInap(t, g), P = perb.per[t.id] || { km: 0, rm: 0 };
+  const k = [], a = [], D = t.d || {};
+  const tambang = t.mod === "awam" ? numv(t.tambangRM) : 0, terbang = t.mod === "terbang" ? numv(t.terbangRM) : 0;
+  const tol = numv(t.tolRM), parkir = numv(t.parkirRM), dobi = t.luarHQ && numv(t.malam) >= 3 ? numv(t.dobiRM) : 0;
+  if (!t.tujuan.trim()) k.push("Isi tujuan perjalanan");
+  if (!t.destinasi.trim()) k.push("Isi destinasi");
+  if (h == null) k.push("Isi masa bertolak dan masa tiba semula");
+  else if (h <= 0) k.push("Masa tiba semula mesti selepas masa bertolak");
+  if (t.luarHQ == null) k.push("Jawab: destinasi lebih 25 km dari ibu pejabat?");
+  if (state.bulan && t.mula && t.mula.slice(0, 7) !== state.bulan) a.push("Tarikh bertolak bukan dalam bulan tuntutan (" + state.bulan + ")");
+  if (!D.arahan) k.push("Tiada surat / memo / e-mel arahan bertugas rasmi");
+  // Pengangkutan
+  if (t.mod === "sendiri") {
+    if (!state.kend || state.kend === "tiada") k.push("Pilih jenis kenderaan sendiri dalam Langkah 1");
+    if (!numv(t.km)) k.push("Isi jarak perjalanan (km, pergi balik)");
+  }
+  if (t.mod === "awam" && !tambang) a.push("Tiada jumlah tambang pengangkutan awam");
+  if (t.mod === "awam" && tambang && !D.resitTambang) k.push("Tiada resit tambang / e-hailing");
+  if (t.mod === "terbang") {
+    if (!terbang) a.push("Tiada jumlah tambang kapal terbang");
+    if (terbang && !D.eTiket) k.push("Tiada e-tiket, pas masuk (boarding pass) dan resit kapal terbang");
+    a.push("Kelas penerbangan ikut PP WP2.5; tempahan kelas lebih tinggi ditanggung sendiri");
+  }
+  if (t.mod === "jabatan" && numv(t.km)) a.push("Kenderaan jabatan / penganjur: perbatuan tidak boleh dituntut");
+  if (tol && !D.resitTol) k.push("Tiada resit / penyata Touch 'n Go bagi tol");
+  if (parkir && !D.resitParkir) k.push("Tiada resit parkir");
+  // Makan / harian
+  if (t.luarHQ && (M.hari || M.harian)) {
+    if (!D.aturcara) a.push("Lampirkan aturcara / jadual program untuk tunjuk makan yang disediakan");
+    if (M.harian && !t.semuaMakan && (numv(t.mSarapan) + numv(t.mTengah) + numv(t.mMalam)) > 0) a.push("Elaun harian: jika makan disediakan pada hari tersebut, elaun harian mungkin tidak layak");
+  }
+  // Penginapan
+  if (t.luarHQ && (t.inap === "hotel" || t.inap === "lojing")) {
+    if (!numv(t.malam)) k.push("Isi bilangan malam menginap");
+    if (h != null && numv(t.malam) > Math.ceil(h / 24)) a.push("Bilangan malam melebihi tempoh perjalanan");
+  }
+  if (t.luarHQ && t.inap === "hotel") {
+    if (!numv(t.hotelRM)) k.push("Isi kadar bilik hotel semalam");
+    if (!D.resitHotel) k.push("Tiada resit hotel atas nama pegawai");
+    if (I.lebihRM) a.push("Kadar bilik melebihi had " + rm(I.had) + " semalam; lebihan " + rm(I.lebihRM) + " tidak dikira (boleh hingga 50% lebih dengan kelulusan bagi program yang diluluskan)");
+  }
+  if (t.luarHQ && t.inap === "lojing") {
+    if (!t.alamat.trim()) k.push("Isi alamat lojing (tempat menginap)");
+    a.push("Lojing tidak boleh dituntut jika menginap di rumah sendiri atau penginapan dibayar pegawai lain");
+  }
+  if (numv(t.dobiRM) && !(t.luarHQ && numv(t.malam) >= 3)) a.push("Dobi hanya boleh dituntut jika menginap sekurang-kurangnya 3 malam di luar kawasan ibu pejabat");
+  if (dobi && !D.resitDobi) k.push("Tiada resit dobi");
+  if (t.jenis === "kursus" && !D.aturcara) a.push("Kursus: lampirkan surat panggilan / aturcara kursus");
+  const jumlah = r2(M.makanRM + M.harianRM + I.hotelRM + I.cukaiRM + I.lojingRM + P.rm + tambang + terbang + tol + parkir + dobi);
+  return { t, h, M, I, P, tambang, terbang, tol, parkir, dobi, jumlah, k, a, st: k.length ? "bad" : a.length ? "warn" : "ok" };
+}
+function evalAll() {
+  const perb = kiraPerbatuan(state.trips, state.kend);
+  const ev = state.trips.map(t => evalTrip(t, perb));
+  const sum = { makan: 0, harian: 0, inap: 0, km: perb.jumlahKm, kmRM: 0, tambang: 0, tolParkir: 0, dobi: 0, jumlah: 0 };
+  ev.forEach(e => { sum.makan += e.M.makanRM; sum.harian += e.M.harianRM; sum.inap += e.I.hotelRM + e.I.cukaiRM + e.I.lojingRM; sum.kmRM += e.P.rm;
+    sum.tambang += e.tambang + e.terbang; sum.tolParkir += e.tol + e.parkir; sum.dobi += e.dobi; sum.jumlah += e.jumlah; });
+  Object.keys(sum).forEach(k => { sum[k] = r2(sum[k]); });
+  const bad = ev.filter(e => e.st === "bad").length, warn = ev.filter(e => e.st === "warn").length;
+  const v = !ev.length ? { cls: "", kp: "Belum ada perjalanan" } : bad ? { cls: "bad", kp: "BELUM LENGKAP" } : warn ? { cls: "warn", kp: "PERLU SEMAKAN" } : { cls: "ok", kp: "SEMAKAN LENGKAP" };
+  return { ev, sum, perb, v, bad, warn };
+}
+
+// ---------- Paparan ----------
+function fillTop() {
+  $("hq").innerHTML = FASILITI.map(f => '<option value="' + f[0] + '">' + esc(f[1]) + "</option>").join("");
+  $("nama").value = state.nama || ""; $("gred").value = state.gred || ""; $("hq").value = state.hq || ""; $("bulan").value = state.bulan || thisMonth();
+  document.querySelectorAll("[data-kend]").forEach(b => b.setAttribute("aria-checked", String(state.kend === b.dataset.kend)));
+}
+const pilih = (k, opts, val, cls) => '<div class="pilih' + (cls ? " " + cls : "") + '" role="radiogroup">' + opts.map(o => '<button type="button" role="radio" data-k="' + k + '" data-v="' + o[0] + '" aria-checked="' + (String(val) === String(o[0])) + '">' + esc(o[1]) + "</button>").join("") + "</div>";
+const inp = (k, v, ph, type) => '<input type="' + (type || "text") + '" data-k="' + k + '" value="' + esc(v) + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : "") + (type === "number" ? ' min="0" step="0.01" inputmode="decimal"' : "") + ">";
+const wangF = (k, v, lab) => '<div><label class="lb">' + lab + '</label><div class="money"><span>RM</span>' + inp(k, v, "0.00", "number") + "</div></div>";
+const ck = (k, lab, on) => '<label class="ck"><input type="checkbox" data-d="' + k + '"' + (on ? " checked" : "") + "> " + lab + "</label>";
+function tripHtml(e, i) {
+  const t = e.t, D = t.d || {}, luar = t.luarHQ;
+  const docs = [ck("arahan", "Surat / memo / e-mel arahan", D.arahan)];
+  if (t.jenis === "kursus" || (luar && (e.M.hari || e.M.harian))) docs.push(ck("aturcara", t.jenis === "kursus" ? "Surat panggilan / aturcara kursus" : "Aturcara / jadual program", D.aturcara));
+  if (t.mod === "awam") docs.push(ck("resitTambang", "Resit tambang / e-hailing", D.resitTambang));
+  if (t.mod === "terbang") docs.push(ck("eTiket", "E-tiket, pas masuk & resit penerbangan", D.eTiket));
+  if (numv(t.tolRM)) docs.push(ck("resitTol", "Resit / penyata Touch 'n Go (tol)", D.resitTol));
+  if (numv(t.parkirRM)) docs.push(ck("resitParkir", "Resit parkir", D.resitParkir));
+  if (luar && t.inap === "hotel") docs.push(ck("resitHotel", "Resit hotel atas nama pegawai", D.resitHotel));
+  if (e.dobi) docs.push(ck("resitDobi", "Resit dobi", D.resitDobi));
+  const ln = (l, v, sub) => '<div class="ln"><span>' + l + (sub ? ' <span class="panduan">' + sub + "</span>" : "") + "</span><b>" + rm(v) + "</b></div>";
+  const kira = [];
+  if (e.M.hari) kira.push(ln("Elaun makan " + e.M.hari + " × " + rm(e.M.kadar), e.M.makanRM, e.M.potongRM ? "tolak makan disediakan " + rm(e.M.potongRM) : ""));
+  if (e.M.harian) kira.push(ln("Elaun harian (½ × " + rm(e.M.kadar) + ")", e.M.harianRM));
+  if (e.I.hotelRM) kira.push(ln("Sewa hotel " + e.I.malam + " malam", e.I.hotelRM, e.I.had == null ? "ikut resit (bilik biasa)" : "had " + rm(e.I.had) + " semalam"));
+  if (e.I.cukaiRM) kira.push(ln("Cukai / caj hotel", e.I.cukaiRM));
+  if (e.I.lojingRM) kira.push(ln("Elaun lojing " + e.I.malam + " malam", e.I.lojingRM));
+  if (e.P.km) kira.push(ln("Perbatuan " + e.P.km + " km", e.P.rm, state.kend && state.kend !== "tiada" ? "kadar berperingkat sebulan" : ""));
+  if (e.tambang) kira.push(ln("Tambang pengangkutan awam", e.tambang));
+  if (e.terbang) kira.push(ln("Tambang kapal terbang", e.terbang));
+  if (e.tol) kira.push(ln("Tol", e.tol));
+  if (e.parkir) kira.push(ln("Parkir", e.parkir));
+  if (e.dobi) kira.push(ln("Dobi", e.dobi));
+  kira.push('<div class="ln tot"><span>Jumlah perjalanan ini</span><b>' + rm(e.jumlah) + "</b></div>");
+  const pillTxt = e.st === "ok" ? "LENGKAP" : e.st === "warn" ? "PERLU SEMAK" : "BELUM LENGKAP";
+  return '<div class="trip" data-id="' + t.id + '">' +
+    '<div class="trip-h"><span class="no">#' + (i + 1) + '</span><span class="ttl">' + esc(t.destinasi || "Perjalanan baharu") + ' <span class="panduan">' + esc(fmtDT(t.mula)) + " → " + esc(fmtDT(t.tamat)) + (e.h != null && e.h > 0 ? " · " + fmtJ(e.h) : "") + '</span></span><span class="pill ' + e.st + '">' + pillTxt + '</span><span class="rm">' + rm(e.jumlah) + '</span><button type="button" class="ghost small risky" data-act="padam">Padam</button></div>' +
+    '<div class="trip-b">' +
+      '<div><p class="sec-l">Butiran perjalanan</p><div class="grid4">' +
+        '<div><label class="lb">Jenis</label>' + pilih("jenis", [["tugas", "Tugas rasmi"], ["kursus", "Kursus"]], t.jenis) + "</div>" +
+        '<div class="span2"><label class="lb">Tujuan</label>' + inp("tujuan", t.tujuan, "Contoh: Mesyuarat Program HIV JKN") + "</div>" +
+        '<div><label class="lb">Destinasi</label>' + inp("destinasi", t.destinasi, "Contoh: JKN Selangor, Shah Alam") + "</div>" +
+        '<div class="dtf"><label class="lb">Bertolak</label>' + inp("mula", t.mula, "", "datetime-local") + "</div>" +
+        '<div class="dtf"><label class="lb">Tiba semula</label>' + inp("tamat", t.tamat, "", "datetime-local") + "</div>" +
+        '<div><label class="lb">Lokasi tugas</label><select data-k="wilayah">' + Object.keys(WIL_L).map(w => '<option value="' + w + '"' + (t.wilayah === w ? " selected" : "") + ">" + WIL_L[w] + "</option>").join("") + "</select></div>" +
+        '<div><label class="lb">Lebih 25 km dari ibu pejabat?</label>' + pilih("luarHQ", [["true", "Ya"], ["false", "Tidak"]], t.luarHQ) + "</div>" +
+      '</div><p class="panduan">Masa dikira dari bertolak (pejabat / rumah) hingga tiba semula. Elaun makan, harian, hotel dan lojing hanya jika destinasi di luar kawasan ibu pejabat (lebih 25 km ikut jalan raya).</p></div>' +
+      '<div><p class="sec-l">Pengangkutan</p><div class="grid4">' +
+        '<div class="span4"><label class="lb">Cara perjalanan</label>' + pilih("mod", [["sendiri", "Kenderaan sendiri"], ["awam", "Awam / e-hailing"], ["terbang", "Kapal terbang"], ["jabatan", "Kenderaan jabatan / penganjur"]], t.mod, "wide") + "</div>" +
+        (t.mod === "sendiri" ? '<div><label class="lb">Jarak pergi balik</label><div class="km">' + inp("km", t.km, "0", "number") + "<span>km</span></div></div>" : "") +
+        (t.mod === "awam" ? wangF("tambangRM", t.tambangRM, "Tambang / e-hailing") : "") +
+        (t.mod === "terbang" ? wangF("terbangRM", t.terbangRM, "Tambang kapal terbang") : "") +
+        wangF("tolRM", t.tolRM, "Tol") + wangF("parkirRM", t.parkirRM, "Parkir") +
+      '</div>' + (t.mod === "sendiri" ? '<p class="panduan">Jarak laluan terdekat ikut Google Maps. Waktu pejabat: dari pejabat atau rumah (mana lebih dekat). Luar waktu pejabat / hari cuti: dari rumah. Dari tempat menginap ke tempat tugas maksimum 25 km sehala.</p>' : "") + "</div>" +
+      (luar ? '<div><p class="sec-l">Makan disediakan oleh kerajaan / penganjur</p><div class="grid4">' +
+        '<div class="span4">' + '<label class="ck"><input type="checkbox" data-k="semuaMakan"' + (t.semuaMakan ? " checked" : "") + "> Semua makan disediakan sepanjang perjalanan</label></div>" +
+        (t.semuaMakan ? "" : '<div><label class="lb">Sarapan (kali)</label>' + inp("mSarapan", t.mSarapan, "0", "number") + '</div><div><label class="lb">Tengah hari (kali)</label>' + inp("mTengah", t.mTengah, "0", "number") + '</div><div><label class="lb">Malam (kali)</label>' + inp("mMalam", t.mMalam, "0", "number") + "</div>") +
+      '</div><p class="panduan">Elaun makan ditolak 20% bagi setiap sarapan, 40% bagi makan tengah hari dan 40% bagi makan malam yang disediakan.</p></div>' : "") +
+      (luar ? '<div><p class="sec-l">Penginapan</p><div class="grid4">' +
+        '<div class="span2"><label class="lb">Jenis</label>' + pilih("inap", [["tiada", "Tiada"], ["hotel", "Hotel"], ["lojing", "Lojing"], ["disediakan", "Disediakan"]], t.inap, "wide") + "</div>" +
+        (t.inap === "hotel" || t.inap === "lojing" ? '<div><label class="lb">Bilangan malam</label>' + inp("malam", t.malam, "0", "number") + "</div>" : "") +
+        (t.inap === "hotel" ? wangF("hotelRM", t.hotelRM, "Kadar bilik semalam") + wangF("cukaiRM", t.cukaiRM, "Cukai / caj (jumlah)") : "") +
+        (t.inap === "lojing" ? '<div class="span2"><label class="lb">Alamat lojing</label>' + inp("alamat", t.alamat, "Alamat penuh tempat menginap") + "</div>" : "") +
+        (t.inap === "hotel" || t.inap === "lojing" ? wangF("dobiRM", t.dobiRM, "Dobi (3 malam atau lebih)") : "") +
+      "</div></div>" : "") +
+      '<div><p class="sec-l">Dokumen sokongan yang ada</p><div class="docs">' + docs.join("") + "</div></div>" +
+      '<div class="kira">' + kira.join("") + "</div>" +
+      (e.k.length || e.a.length ? '<div class="isu">' + e.k.map(x => '<span class="k">• ' + esc(x) + "</span>").join("") + e.a.map(x => '<span class="a">• ' + esc(x) + "</span>").join("") + "</div>" : "") +
+    "</div></div>";
+}
+function renderTrips() {
+  const A = evalAll();
+  $("trips").innerHTML = A.ev.length ? A.ev.map(tripHtml).join("") : '<div class="empty">Belum ada perjalanan. Tekan <b>+ Tambah perjalanan</b>.</div>';
+  renderSummary(A);
+}
+function renderSummary(A) {
+  A = A || evalAll();
+  const c = (l, v, cls) => '<div class="c' + (cls ? " " + cls : "") + '"><span>' + l + "</span><b>" + v + "</b></div>";
+  $("ring").innerHTML = c("Perjalanan", A.ev.length) + c("Elaun makan", rm(A.sum.makan)) + c("Elaun harian", rm(A.sum.harian)) + c("Hotel / lojing", rm(A.sum.inap)) +
+    c("Perbatuan (" + A.sum.km + " km)", rm(A.sum.kmRM)) + c("Tambang", rm(A.sum.tambang)) + c("Tol / parkir", rm(A.sum.tolParkir)) + (A.sum.dobi ? c("Dobi", rm(A.sum.dobi)) : "") + c("Jumlah tuntutan", rm(A.sum.jumlah), "tot");
+  const k = KADAR.km[state.kend];
+  const hariMoto = new Set(A.ev.filter(e => e.t.mod === "sendiri" && e.t.mula).map(e => e.t.mula.slice(0, 10))).size;
+  $("kmNote").textContent = k ? "Perbatuan " + (state.kend === "kereta" ? "kereta" : "motosikal") + ": " + rm(k[0]) + "/km bagi 500 km pertama sebulan, " + rm(k[1]) + "/km seterusnya (kadar interim mulai 1 Mei 2026). Jumlah bulan ini " + A.sum.km + " km." +
+    (state.kend === "motosikal" ? " Jika bertugas luar dengan motosikal 12 hari atau lebih sebulan (bulan ini " + hariMoto + " hari), boleh tuntut RM150 atau perbatuan, mana lebih tinggi; sahkan dengan Unit Kewangan." : "") : "Pilih jenis kenderaan dalam Langkah 1 untuk kira perbatuan.";
+  renderDocs(A);
+  const st = $("bst"); st.className = "st " + A.v.cls;
+  $("btxt").textContent = !state.gred ? "Pilih gred pegawai untuk mula" : "Keseluruhan: " + A.v.kp + (A.ev.length ? " · " + rm(A.sum.jumlah) : "");
+  updPdfBtns();
+}
+function docItems(A) {
+  const ev = A.ev, has = ev.length > 0, cnt = f => ev.filter(f).length;
+  const st = (y, n) => n === 0 ? null : y >= n ? ["ok", "✓"] : ["bad", y + "/" + n];
+  const need = (f, g) => { const n = cnt(f), y = cnt(e => f(e) && g(e)); return { n, s: st(y, n) }; };
+  const D = e => e.t.d || {};
+  const L = [];
+  L.push({ id: "borang", t: "Borang Tuntutan Perjalanan Dalam Negeri (Lampiran D, WP1.4)", c: "lengkap, ditandatangan dan disahkan Ketua Jabatan", tk: true });
+  const ar = need(() => true, e => D(e).arahan); L.push({ t: "Surat / memo / e-mel arahan bertugas rasmi", c: "bagi setiap perjalanan", s: ar.s, n: ar.n });
+  const at = need(e => e.t.jenis === "kursus" || (e.t.luarHQ && (e.M.hari || e.M.harian)), e => D(e).aturcara); L.push({ t: "Aturcara / jadual program / surat panggilan kursus", c: "jika tuntut elaun makan / harian atau kursus", s: at.s, n: at.n });
+  const ho = need(e => e.t.luarHQ && e.t.inap === "hotel", e => D(e).resitHotel); L.push({ t: "Resit hotel atas nama pegawai", c: "jika menginap di hotel", s: ho.s, n: ho.n });
+  const lo = need(e => e.t.luarHQ && e.t.inap === "lojing", e => !!e.t.alamat.trim()); L.push({ t: "Alamat lojing dicatat dalam borang", c: "jika tuntut elaun lojing", s: lo.s, n: lo.n });
+  const to = need(e => e.tol > 0, e => D(e).resitTol); L.push({ t: "Resit / penyata Touch 'n Go (tol)", c: "jika tuntut tol", s: to.s, n: to.n });
+  const pa = need(e => e.parkir > 0, e => D(e).resitParkir); L.push({ t: "Resit parkir", c: "jika tuntut parkir", s: pa.s, n: pa.n });
+  const ta = need(e => e.t.mod === "awam" && e.tambang > 0, e => D(e).resitTambang); L.push({ t: "Resit tambang pengangkutan awam / e-hailing", c: "jika guna pengangkutan awam", s: ta.s, n: ta.n });
+  const fl = need(e => e.t.mod === "terbang" && e.terbang > 0, e => D(e).eTiket); L.push({ t: "E-tiket, pas masuk (boarding pass) dan resit penerbangan", c: "jika naik kapal terbang", s: fl.s, n: fl.n });
+  const db = need(e => e.dobi > 0, e => D(e).resitDobi); L.push({ t: "Resit dobi", c: "jika menginap 3 malam atau lebih", s: db.s, n: db.n });
+  L.push({ id: "hadir", t: "Laporan kehadiran (kad perakam waktu / sistem kehadiran)", c: "jika diminta Unit Kewangan · tanda jika tidak perlu", tk: true });
+  return L.map(i => {
+    if (i.tk) { const on = !!(state.sedia || {})[i.id]; return Object.assign(i, { s: on ? ["ok", "✓ Sedia"] : ["man", "Tanda"], on }); }
+    if (!has) return Object.assign(i, { s: null });
+    if (!i.n) return Object.assign(i, { na: true });
+    return i;
+  });
+}
+function renderDocs(A) {
+  const L = docItems(A), has = A.ev.length > 0;
+  const belum = has ? L.filter(i => !i.na && i.s && (i.s[0] === "bad" || i.s[0] === "man")).length : 0;
+  $("docs").innerHTML = L.map(i => '<li class="' + (i.na ? "na" : "") + '"><span>' + esc(i.t) + "<em>" + esc(i.na ? "tidak perlu bulan ini" : i.c) + "</em></span>" +
+    (i.tk ? '<button type="button" class="ds-tick' + (i.on ? " on" : "") + '" data-sedia="' + i.id + '" aria-pressed="' + !!i.on + '">' + esc(i.s[1]) + "</button>" : i.s && !i.na ? '<span class="ds ' + i.s[0] + '">' + esc(i.s[1]) + "</span>" : "<span></span>") + "</li>").join("");
+  const p = $("docDone");
+  p.hidden = !has;
+  if (has) { p.className = "pill " + (belum ? "warn" : A.bad ? "warn" : "ok"); p.textContent = belum ? belum + " dokumen belum lengkap" : A.bad ? "✓ Dokumen ditanda. Masih ada perjalanan belum lengkap." : "✓ Semua dokumen lengkap. Sedia untuk dihantar."; }
+}
+function renderAll() { fillTop(); renderTrips(); }
+
+// ---------- Interaksi ----------
+const tripOf = el => { const c = el.closest(".trip"); return c ? state.trips.find(t => t.id === c.dataset.id) : null; };
+const REDRAW = ["jenis", "mod", "luarHQ", "inap", "semuaMakan", "wilayah"];
+function lukisSemula(fokus) {
+  const y = window.scrollY; renderTrips(); window.scrollTo(0, y);
+  if (fokus) { const el = document.querySelector('.trip[data-id="' + fokus[0] + '"] [data-k="' + fokus[1] + '"]'); if (el && el.focus) { el.focus(); if (el.setSelectionRange && el.type === "text") { const n = el.value.length; el.setSelectionRange(n, n); } } }
+}
+function kemaskiniKad(t) {
+  // kemas kini kiraan kad tanpa lukis semula input (supaya fokus menaip tidak hilang)
+  const A = evalAll(), i = state.trips.indexOf(t), e = A.ev[i], card = document.querySelector('.trip[data-id="' + t.id + '"]');
+  if (!card || !e) return renderTrips();
+  const tmp = document.createElement("div"); tmp.innerHTML = tripHtml(e, i);
+  const nu = tmp.firstChild;
+  card.querySelector(".trip-h").replaceWith(nu.querySelector(".trip-h"));
+  const kOld = card.querySelector(".kira"), kNew = nu.querySelector(".kira"); if (kOld && kNew) kOld.replaceWith(kNew);
+  const iOld = card.querySelector(".isu"), iNew = nu.querySelector(".isu");
+  if (iOld && iNew) iOld.replaceWith(iNew); else if (iOld) iOld.remove(); else if (iNew) card.querySelector(".trip-b").appendChild(iNew);
+  const dOld = card.querySelector(".docs"), dNew = nu.querySelector(".docs"); if (dOld && dNew && dOld.innerHTML !== dNew.innerHTML) dOld.replaceWith(dNew);
+  // kad lain mungkin berubah (perbatuan berperingkat)
+  A.ev.forEach((x, j) => { if (j === i) return; const c = document.querySelector('.trip[data-id="' + x.t.id + '"] .trip-h .rm'); if (c) c.textContent = rm(x.jumlah); });
+  renderSummary(A);
+}
+$("trips").addEventListener("input", ev => {
+  const el = ev.target, t = tripOf(el); if (!t || !el.dataset.k) return;
+  if (el.type === "checkbox" || el.tagName === "SELECT") return;
+  t[el.dataset.k] = el.value; save(); kemaskiniKad(t);
+});
+$("trips").addEventListener("change", ev => {
+  const el = ev.target, t = tripOf(el); if (!t) return;
+  if (el.dataset.d) { t.d = t.d || {}; t.d[el.dataset.d] = el.checked; save(); kemaskiniKad(t); return; }
+  if (!el.dataset.k) return;
+  t[el.dataset.k] = el.type === "checkbox" ? el.checked : el.value; save();
+  if (REDRAW.includes(el.dataset.k)) lukisSemula(); else kemaskiniKad(t);
+});
+$("trips").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-k][data-v]"), t = b && tripOf(b);
+  if (b && t) {
+    const k = b.dataset.k, v = b.dataset.v; t[k] = k === "luarHQ" ? v === "true" : v;
+    // dalam kawasan ibu pejabat: tiada makan / penginapan / dobi untuk dituntut
+    if (k === "luarHQ" && v === "false") Object.assign(t, { inap: "tiada", malam: "", hotelRM: "", cukaiRM: "", alamat: "", dobiRM: "" });
+    save(); lukisSemula(); return;
+  }
+  const p = ev.target.closest('[data-act="padam"]'), tp = p && tripOf(p);
+  if (p && tp) { if (!window.confirm("Padam perjalanan ini?")) return; state.trips = state.trips.filter(x => x !== tp); save(); renderTrips(); }
+});
+$("addTrip").addEventListener("click", () => {
+  if (!state.gred) { $("msg").textContent = "Pilih gred pegawai dalam Langkah 1 dahulu."; $("gred").focus(); return; }
+  const last = state.trips[state.trips.length - 1], t = newTrip();
+  if (last) { t.mula = last.mula; t.tamat = last.tamat; t.mod = last.mod; }
+  state.trips.push(t); save(); renderTrips();
+  const el = document.querySelector('.trip[data-id="' + t.id + '"]'); if (el) el.scrollIntoView({ block: "start", behavior: "smooth" });
+});
+$("nama").addEventListener("input", e => { state.nama = e.target.value; save(); });
+$("gred").addEventListener("change", e => { state.gred = e.target.value; save(); renderTrips(); });
+$("hq").addEventListener("change", e => { state.hq = e.target.value; save(); });
+$("bulan").addEventListener("change", e => { if (!e.target.value) return; state.bulan = e.target.value; save(); renderTrips(); });
+document.querySelectorAll("[data-kend]").forEach(b => b.addEventListener("click", () => { state.kend = b.dataset.kend; save(); fillTop(); renderTrips(); }));
+$("docs").addEventListener("click", e => { const b = e.target.closest("[data-sedia]"); if (!b) return; state.sedia = state.sedia || {}; state.sedia[b.dataset.sedia] = !state.sedia[b.dataset.sedia]; save(); renderSummary(); });
+$("refStaff").addEventListener("click", () => { if (!window.confirm("Kosongkan maklumat pegawai? Senarai perjalanan tidak dipadam.")) return; Object.assign(state, { nama: "", gred: "", hq: "", kend: "" }); save(); renderAll(); });
+$("refTrips").addEventListener("click", () => { if (!window.confirm("Padam semua perjalanan bulan ini? Maklumat pegawai kekal.")) return; state.trips = []; state.sedia = {}; save(); renderAll(); $("msg").textContent = "Senarai perjalanan dikosongkan."; });
+function resetAll(msg) { state = blank(state.bulan); save(); renderAll(); $("afterPdf").hidden = true; $("btns").hidden = false; $("msg").textContent = msg; }
+$("resetBtn").addEventListener("click", () => { if (!window.confirm("Padam semua isian (maklumat pegawai dan semua perjalanan) dan mula semula?")) return; resetAll("Semua isian dikosongkan."); });
+$("padamBtn").addEventListener("click", () => resetAll("Isian dipadam dari komputer ini. PDF yang dimuat turun tidak terjejas."));
+$("simpanBtn").addEventListener("click", () => { $("afterPdf").hidden = true; $("btns").hidden = false; });
+
+// ---------- PDF ----------
+function P(s) { return String(s == null ? "" : s).replace(/[–—]/g, "-").replace(/→/g, "->").replace(/[•·]/g, "-").replace(/✓/g, "").replace(/[^\x00-\xFF]/g, ""); }
+const rmP = n => (Math.round(n * 100) / 100).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function pdfName() { const p = (state.bulan || thisMonth()).split("-"), nm = (state.nama || "Pegawai").trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, " ").slice(0, 60) || "Pegawai"; return "Semakan Tuntutan Perjalanan - " + nm + " - " + BULAN[+p[1] - 1] + " " + p[0]; }
+function pdfCheck() {
+  if (!window.jspdf || !window.jspdf.jsPDF) return "PDF belum sedia. Cuba lagi sebentar.";
+  if (!state.trips.length) return "Tiada perjalanan untuk dimasukkan dalam PDF.";
+  if (!String(state.nama || "").trim() || !state.gred) return "Isi nama dan gred pegawai sebelum jana PDF.";
+  return "";
+}
+function buildPdf() {
+  const A = evalAll(), doc = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), p = (state.bulan || thisMonth()).split("-");
+  const band = (y, txt, kanan, c) => { c = c || [15, 92, 110]; doc.setFillColor(c[0], c[1], c[2]); doc.rect(14, y, W - 28, 8, "F"); doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(255, 255, 255); doc.text(P(txt), 17, y + 5.5); if (kanan) { doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.text(P(kanan), W - 17, y + 5.5, { align: "right" }); } doc.setTextColor(30, 30, 30); return y + 9.5; };
+  doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.text("SEMAKAN TUNTUTAN PERJALANAN DALAM NEGERI", 14, 15);
+  const hq = (FASILITI.find(f => f[0] === state.hq) || ["", "-"])[1];
+  doc.autoTable({ startY: 19, theme: "plain", styles: { fontSize: 9.5, cellPadding: 1.1 },
+    body: [["Nama pegawai", P(state.nama || "-"), "Bulan", BULAN[+p[1] - 1] + " " + p[0]], ["Gred", P(GRED_L[state.gred] || "-"), "Ibu pejabat", P(state.hq ? hq : "-")],
+      ["Kenderaan sendiri", state.kend === "kereta" ? "Kereta" : state.kend === "motosikal" ? "Motosikal" : "-", "Rujukan", "PP WP1.4 (berkuat kuasa 1 Mei 2026)"]],
+    columnStyles: { 0: { fontStyle: "bold", cellWidth: 36 }, 1: { cellWidth: 96 }, 2: { fontStyle: "bold", cellWidth: 30 } }, margin: { left: 14, right: 14 } });
+  let y = doc.lastAutoTable.finalY + 3;
+  doc.setFont("helvetica", "italic"); doc.setFontSize(8); doc.setTextColor(100, 100, 100);
+  doc.text("Semakan awal automatik, bukan kelulusan rasmi. Kelayakan dan dokumen perlu disahkan oleh Ketua Jabatan / Unit Kewangan.", 14, y);
+  doc.setFont("helvetica", "normal"); doc.setTextColor(30, 30, 30); y += 4;
+  y = band(y, "1.  SENARAI PERJALANAN", A.ev.length + " perjalanan  |  " + A.sum.km + " km");
+  const stTxt = e => e.st === "ok" ? "LENGKAP" : e.st === "warn" ? "PERLU SEMAK" : "BELUM LENGKAP";
+  const body = A.ev.map((e, i) => {
+    const t = e.t;
+    const mk = [e.M.hari ? e.M.hari + " x makan " + rmP(e.M.makanRM) : "", e.M.harian ? "harian " + rmP(e.M.harianRM) : ""].filter(Boolean).join("; ") || "-";
+    const inap = e.I.hotelRM ? "Hotel " + e.I.malam + " mlm " + rmP(e.I.hotelRM + e.I.cukaiRM) : e.I.lojingRM ? "Lojing " + e.I.malam + " mlm " + rmP(e.I.lojingRM) : "-";
+    const peng = t.mod === "sendiri" ? e.P.km + " km = " + rmP(e.P.rm) : t.mod === "awam" ? "Awam " + rmP(e.tambang) : t.mod === "terbang" ? "Terbang " + rmP(e.terbang) : "Jabatan / penganjur";
+    const lain = [e.tol ? "Tol " + rmP(e.tol) : "", e.parkir ? "Parkir " + rmP(e.parkir) : "", e.dobi ? "Dobi " + rmP(e.dobi) : ""].filter(Boolean).join("; ") || "-";
+    return [String(i + 1), fmtDT(t.mula) + "\n" + fmtDT(t.tamat) + (e.h > 0 ? "\n(" + fmtJ(e.h) + ")" : ""), (t.destinasi || "-") + "\n" + (t.tujuan || "") + (t.jenis === "kursus" ? " [kursus]" : ""),
+      WIL_L[t.wilayah] + (t.luarHQ ? ", >25 km" : t.luarHQ === false ? ", <=25 km" : ""), mk, inap, peng, lain, rmP(e.jumlah), stTxt(e) + (e.k.length ? "\n" + e.k.join("; ") : "") + (e.a.length ? "\n" + e.a.join("; ") : "")].map(P);
+  });
+  doc.autoTable({ startY: y, theme: "grid", head: [["Bil", "Bertolak / tiba", "Destinasi / tujuan", "Lokasi", "Makan / harian (RM)", "Penginapan (RM)", "Pengangkutan (RM)", "Tol / parkir / dobi", "Jumlah (RM)", "Status / kekurangan"]], body,
+    styles: { fontSize: 7.4, cellPadding: 1, valign: "middle", lineColor: [200, 208, 214], lineWidth: 0.15 },
+    headStyles: { fillColor: [226, 236, 239], textColor: [15, 92, 110], fontStyle: "bold", fontSize: 7.4 },
+    columnStyles: { 0: { cellWidth: 8, halign: "center" }, 1: { cellWidth: 30 }, 2: { cellWidth: 42 }, 3: { cellWidth: 22 }, 4: { cellWidth: 28 }, 5: { cellWidth: 26 }, 6: { cellWidth: 26 }, 7: { cellWidth: 24 }, 8: { cellWidth: 17, halign: "right", fontStyle: "bold" } },
+    margin: { left: 14, right: 14 },
+    didParseCell: h => { if (h.section === "body" && h.column.index === 9) { const s = A.ev[h.row.index].st; h.cell.styles.textColor = s === "ok" ? [29, 122, 70] : s === "warn" ? [138, 90, 0] : [179, 38, 30]; } } });
+  y = doc.lastAutoTable.finalY + 6;
+  const need = 9.5 + 9 * 6.5 + 12;
+  if (y + need > H - 10) { doc.addPage(); y = 16; }
+  y = band(y, "2.  RINGKASAN DAN JUMLAH TUNTUTAN", "Keputusan: " + A.v.kp, [55, 65, 70]);
+  const k = KADAR.km[state.kend];
+  const rows = [["Elaun makan", rmP(A.sum.makan)], ["Elaun harian", rmP(A.sum.harian)], ["Sewa hotel / elaun lojing", rmP(A.sum.inap)],
+    ["Elaun perjalanan kenderaan (" + A.sum.km + " km" + (k ? "; " + rmP(k[0]) + "/km 500 km pertama, " + rmP(k[1]) + "/km seterusnya" : "") + ")", rmP(A.sum.kmRM)],
+    ["Tambang pengangkutan awam / kapal terbang", rmP(A.sum.tambang)], ["Tol dan parkir", rmP(A.sum.tolParkir)]];
+  if (A.sum.dobi) rows.push(["Dobi", rmP(A.sum.dobi)]);
+  rows.push(["JUMLAH KESELURUHAN", rmP(A.sum.jumlah)]);
+  doc.autoTable({ startY: y, theme: "grid", head: [["Komponen", "Jumlah (RM)"]], body: rows.map(r => r.map(P)), styles: { fontSize: 9, cellPadding: 1.3, lineColor: [200, 208, 214], lineWidth: 0.15 },
+    headStyles: { fillColor: [226, 230, 232], textColor: [40, 50, 55], fontStyle: "bold" }, columnStyles: { 0: { cellWidth: 150 }, 1: { cellWidth: 40, halign: "right" } }, margin: { left: 14, right: 14 },
+    didParseCell: h => { if (h.section === "body" && h.row.index === rows.length - 1) { h.cell.styles.fontStyle = "bold"; h.cell.styles.fillColor = [238, 243, 245]; } } });
+  y = doc.lastAutoTable.finalY + 6;
+  const L = docItems(A).filter(i => !i.na && i.s);
+  if (y + 9.5 + 3 * 6 > H - 10) { doc.addPage(); y = 16; }
+  y = band(y, "3.  SENARAI SEMAK DOKUMEN");
+  doc.autoTable({ startY: y, theme: "grid", head: [["Bil", "Dokumen", "Keterangan", "Semakan sistem", "Disemak"]], body: L.map((i, n) => [String(n + 1), P(i.t), P(i.c), P(i.s[0] === "ok" ? "Ada" : i.s[0] === "man" ? "Belum ditanda" : i.s[1]), ""]),
+    styles: { fontSize: 8, cellPadding: 0.9, lineColor: [200, 208, 214], lineWidth: 0.15, valign: "middle" }, headStyles: { fillColor: [226, 236, 239], textColor: [15, 92, 110], fontStyle: "bold" },
+    columnStyles: { 0: { cellWidth: 10, halign: "center" }, 1: { cellWidth: 100, fontStyle: "bold" }, 2: { fontSize: 7.2, fontStyle: "italic", textColor: [90, 90, 90] }, 3: { cellWidth: 30 }, 4: { cellWidth: 18 } }, margin: { left: 14, right: 14 },
+    didParseCell: h => { if (h.section === "body" && h.column.index === 3) { const s = L[h.row.index].s[0]; h.cell.styles.textColor = s === "ok" ? [27, 127, 75] : s === "bad" ? [180, 35, 24] : [90, 90, 90]; h.cell.styles.fontStyle = "bold"; } },
+    didDrawCell: h => { if (h.section === "body" && h.column.index === 4) { const sz = 3.6; h.doc.setDrawColor(90, 90, 90); h.doc.setLineWidth(0.25); h.doc.rect(h.cell.x + h.cell.width / 2 - sz / 2, h.cell.y + h.cell.height / 2 - sz / 2, sz, sz); } } });
+  let fy = doc.lastAutoTable.finalY + 12;
+  if (fy > H - 12) { doc.addPage(); fy = 30; }
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setDrawColor(120, 120, 120); doc.setLineWidth(0.2);
+  doc.line(14, fy, 84, fy); doc.text("Disemak oleh (nama & cop)", 14, fy + 4); doc.line(W - 84, fy, W - 14, fy); doc.text("Tarikh", W - 84, fy + 4);
+  if (doc.setProperties) doc.setProperties({ title: pdfName() });
+  return doc;
+}
+function pdfSig() { return JSON.stringify([state.nama, state.gred, state.hq, state.bulan, state.kend, state.trips, state.sedia]); }
+var viewedSig = null;
+function perluLihat() { return viewedSig !== pdfSig(); }
+function updPdfBtns() { if (viewedSig === undefined) return; $("pdfBtn").classList.toggle("locked", perluLihat()); }
+$("lihatBtn").addEventListener("click", () => {
+  const err = pdfCheck(); if (err) { $("msg").textContent = err; return; }
+  let doc; try { doc = buildPdf(); } catch (e) { $("msg").textContent = "PDF gagal dijana. Cuba lagi."; return; }
+  const url = URL.createObjectURL(doc.output("blob")), w = window.open(url, "_blank");
+  setTimeout(() => URL.revokeObjectURL(url), 600000);
+  if (!w) { $("msg").textContent = "Pelayar menyekat tab baharu. Benarkan pop-up untuk laman ini, kemudian tekan Lihat PDF semula."; return; }
+  viewedSig = pdfSig(); updPdfBtns(); $("msg").textContent = "Ringkasan PDF dibuka dalam tab baharu. Semak dahulu, kemudian tekan Muat turun PDF.";
+});
+$("pdfBtn").addEventListener("click", () => {
+  const err = pdfCheck(); if (err) { $("msg").textContent = err; return; }
+  if (perluLihat()) { $("msg").textContent = viewedSig ? "Ada perubahan sejak ringkasan dilihat. Tekan Lihat PDF semula sebelum muat turun." : "Tekan Lihat PDF dahulu untuk semak ringkasan sebelum muat turun."; return; }
+  try { buildPdf().save(pdfName() + ".pdf"); $("msg").textContent = "PDF dimuat turun. Buka fail tu dan cetak."; $("btns").hidden = true; $("afterPdf").hidden = false; }
+  catch (e) { $("msg").textContent = "Muat turun gagal. Cuba lagi."; }
+});
+(() => { const m = $("msg"); let tm; new MutationObserver(() => { clearTimeout(tm); if (m.textContent) tm = setTimeout(() => { m.textContent = ""; }, 6000); }).observe(m, { childList: true, characterData: true, subtree: true }); })();
+
+renderAll();
+if (expired) $("msg").textContent = "Isian lama (tiada kemas kini lebih 30 hari) telah dipadam untuk privasi.";
+})();
+</script>
+</body>
+</html>
