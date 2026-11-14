@@ -675,6 +675,18 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
   .bar .btns button, .bar .btns .refresh-all, .bar .btns #resetBtn { grid-column: auto !important; padding: 9px 4px; font-size: 0.8rem; text-align: center; justify-content: center; white-space: nowrap; }
   .bar .btns svg { display: none; }
 }
+/* Telefon: petunjuk lajur tersembunyi dan pilihan tunjuk semua lajur */
+.sheet-tel { display: none; }
+@media (max-width: 760px) {
+  .sheet-tel { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 10px; border-bottom: 1px solid var(--line); background: var(--s-butir); font-size: 0.78rem; }
+  .sheet-tel span { flex: 1 1 200px; }
+  .sheet-shell.lajur-penuh .ot-sheet .col-surat, .sheet-shell.lajur-penuh .ot-sheet .col-jadual, .sheet-shell.lajur-penuh .ot-sheet .col-ganti, .sheet-shell.lajur-penuh .ot-sheet .col-borang,
+  .sheet-shell.lajur-penuh .ot-sheet .col-thumb, .sheet-shell.lajur-penuh .ot-sheet .col-tiadacuti, .sheet-shell.lajur-penuh .ot-sheet .col-ketik, .sheet-shell.lajur-penuh .ot-sheet .col-sebab,
+  .sheet-shell.lajur-penuh .ot-sheet .col-lokasi, .sheet-shell.lajur-penuh .ot-sheet .col-calltime, .sheet-shell.lajur-penuh .ot-sheet .col-dipanggil, .sheet-shell.lajur-penuh .ot-sheet .col-nilai,
+  .sheet-shell.lajur-penuh .ot-sheet .col-jam, .sheet-shell.lajur-penuh .ot-sheet .col-issue { display: table-cell; }
+  .sheet-shell.lajur-penuh .ot-sheet { min-width: 900px; }
+  .sheet-shell.lajur-penuh .ot-sheet .col-sebab { min-width: 130px; }
+}
 </style>
 </head>
 <body>
@@ -1469,7 +1481,8 @@ function itemHtml(key, d) {
 
 
 /* Paparan jadual berasaskan satu baris bagi setiap hari. Data kekal dalam struktur asal untuk PDF dan kiraan. */
-let rowFilter = "all", extraDay = null;
+let rowFilter = "all", extraDay = null, lajurPenuh = false;
+const telefon = () => !!(window.matchMedia && window.matchMedia("(max-width: 760px)").matches);
 const SHEET_COLS = {
   elm:   [["masa","Masa mula–tamat"],["jam","Jam OT"],["sebab","Sebab OT"],["surat","Surat arahan"],["jadual","Nama sendiri / anggota yang diganti ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["thumb","Thumbprint lengkap"]],
   elmeh: [["lokasi","Lokasi EH"],["masa","Masa mula–tamat"],["jam","Jam OT"],["surat","Surat arahan"],["jadual","Nama sendiri / anggota yang diganti ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["thumb","Thumbprint lengkap"]],
@@ -1574,15 +1587,17 @@ function sheetTableHtml(key) {
       cols.map(([c]) => '<td class="col-' + c + " " + kumpCol(c) + ' ' + (c === "masa" || c === "calltime" ? "time-cell" : c === "sebab" ? "reason-cell" : ["surat","jadual","ganti","borang","thumb","dipanggil","tiadacuti","ketik"].includes(c) ? "doc-cell" : "") + '">' + (active ? sheetCell(key,c,r,d,x) : '<span class="sheet-dash">–</span>') + "</td>").join("") +
       '<td class="status-cell g-hasil"><span class="sh-status ' + status[0] + '">' + status[1] + '</span></td>' +
       '<td class="issue-cell col-issue g-hasil"><span class="sh-issue ' + status[0] + '">' + esc(sheetIssue(x)) + '</span></td>' +
-      '<td class="g-hasil">' + (active ? '<button type="button" class="ghost sh-more" data-act="detail" data-d="' + d + '" aria-expanded="' + (extraDay === d) + '">' + (extraDay === d ? "Tutup" : "Semak") + '</button>' : '<span class="sheet-dash">–</span>') + '</td></tr>');
+      '<td class="g-hasil">' + (active ? '<button type="button" class="ghost sh-more" data-act="detail" data-d="' + d + '" aria-expanded="' + (extraDay === d) + '">' + (extraDay === d ? "Tutup ▴" : "Butiran ▾") + '</button>' : '<span class="sheet-dash">–</span>') + '</td></tr>');
     if (active && extraDay === d) out.push(sheetExtraHtml(key,d,r,x,cols.length+5));
   }
-  const head = '<th class="sticky-date">Tarikh</th><th class="sticky-on">' + (isOt(key) ? "Buat OT" : "Bertugas") + '</th>' + cols.map(([c,label]) => '<th class="col-' + c + " " + kumpCol(c) + '">' + label + "</th>").join("") + '<th class="g-hasil">Status</th><th class="col-issue g-hasil">Kekurangan</th><th class="g-hasil">Semak</th>';
+  const head = '<th class="sticky-date">Tarikh</th><th class="sticky-on">' + (isOt(key) ? "Buat OT" : "Bertugas") + '</th>' + cols.map(([c,label]) => '<th class="col-' + c + " " + kumpCol(c) + '">' + label + "</th>").join("") + '<th class="g-hasil">Status</th><th class="col-issue g-hasil">Kekurangan</th><th class="g-hasil">Butiran</th>';
   const filters = [["all","Semua tarikh"],["claimed","Tarikh dituntut"]].map(f => '<button type="button" data-filter="' + f[0] + '" aria-pressed="' + (rowFilter === f[0]) + '">' + f[1] + "</button>").join("");
   const warn = mo.y > 2027 || mo.y < 2026 ? "Senarai cuti umum untuk tahun ini belum dimasukkan. Sahkan jenis hari secara manual." : mo.y === 2027 ? "Cuti ganti / cuti peristiwa 2027 mungkin berubah mengikut warta rasmi." : "";
-  return '<div class="sheet-shell"><div class="sheet-toolbar"><div><strong>Jadual ' + BULAN[mo.m - 1] + " " + mo.y + '</strong><div class="sheet-stats" id="sheetStats"></div></div>' +
+  return '<div class="sheet-shell' + (lajurPenuh ? " lajur-penuh" : "") + '"><div class="sheet-toolbar"><div><strong>Jadual ' + BULAN[mo.m - 1] + " " + mo.y + '</strong><div class="sheet-stats" id="sheetStats"></div></div>' +
     '<div class="sheet-legend" aria-label="Petunjuk warna lajur"><span class="lg-masa">Masa &amp; kerja</span><span class="lg-dok">Bukti dokumen</span><span class="lg-hasil">Keputusan</span></div><div class="sheet-filters">' + filters + '</div></div>' +
     '<div class="sheet-bulk" id="sheetBulk"></div>' +
+    '<div class="sheet-tel"><span>' + (lajurPenuh ? "Semua lajur dipaparkan. Tatal jadual ke kanan untuk lihat dokumen dan sebab OT." : "Di telefon, sebab OT dan semakan dokumen (surat arahan, jadual, thumbprint) ada dalam butang <b>Butiran</b> pada setiap tarikh.") + '</span>' +
+    '<button type="button" class="ghost small" data-act="lajur" aria-pressed="' + lajurPenuh + '">' + (lajurPenuh ? "Paparan ringkas" : "Tunjuk semua lajur ⇆") + "</button></div>" +
     '<div class="sheet-wrap"><div class="sheet-scroll" id="sheetScroll" role="region" tabindex="0" aria-label="Jadual semakan tuntutan"><table class="ot-sheet"><thead><tr>' + head + '</tr></thead><tbody>' +
     (out.length ? out.join("") : '<tr><td colspan="' + (cols.length + 5) + '" class="sheet-empty">' + (rowFilter === "issues" ? "Tiada tarikh yang perlu tindakan. Semua tarikh dituntut sudah lengkap." : rowFilter === "claimed" ? "Belum ada tarikh dituntut. Pilih <b>Semua tarikh</b> dan tandakan hari bertugas." : "Tiada tarikh untuk paparan ini.") + '</td></tr>') +
     '</tbody></table></div></div><div class="sheet-help"><b>Tip:</b> Klik kotak di lajur kedua untuk aktifkan tarikh. Tandakan dokumen hanya selepas melihat bukti sebenar.' +
@@ -2110,6 +2125,8 @@ function onModuleInput(e) {
       autoFillEh(r,d,key);
     }
     if (!r.on && extraDay===d) extraDay=null;
+    // Di telefon, lajur dokumen tersembunyi: buka butiran terus supaya semua komponen kelihatan.
+    if (r.on && telefon() && !lajurPenuh) extraDay=d;
     save(); redrawSheet(); return;
   }
   if (t.dataset.k) {
@@ -2168,6 +2185,7 @@ $("module").addEventListener("click", e => {
   if (filter) { rowFilter = filter.dataset.filter === "issues" && rowFilter === "issues" ? "claimed" : filter.dataset.filter; extraDay=null; redrawSheet(); return; }
   const detail=e.target.closest('[data-act="detail"]');
   if (detail) { const d=+detail.dataset.d; extraDay=extraDay===d ? null : d; redrawSheet(); return; }
+  if (e.target.closest('[data-act="lajur"]')) { lajurPenuh = !lajurPenuh; extraDay = null; redrawSheet(); return; }
 });
 
 
