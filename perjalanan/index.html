@@ -32,7 +32,7 @@
 [hidden] { display: none !important; }
 body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 14.5px; line-height: 1.4;
   padding: max(14px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(110px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
-.wrap { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.wrap { max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
 h1 { font-size: 1.25rem; margin: 0; letter-spacing: -0.01em; }
 h2 { font-size: 1rem; margin: 0; line-height: 1.5; }
 h3 { font-size: 0.92rem; margin: 0; }
@@ -166,7 +166,7 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 /* Bar bawah */
 .bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); z-index: 5;
   padding: 8px max(12px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
-.bar .in { max-width: 1280px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; justify-content: space-between; }
+.bar .in { max-width: 1440px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; justify-content: space-between; }
 .bar .st { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.86rem; flex: 1 1 auto; min-width: 0; }
 .bar .st .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
 .bar .st.ok .dot { background: var(--ok); } .bar .st.bad .dot { background: var(--bad); } .bar .st.warn .dot { background: var(--warn); }
@@ -177,6 +177,9 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 #pdfBtn.locked { opacity: 0.5; }
 @media (max-width: 480px) { .bar .btns { display: grid; grid-template-columns: 1fr 1fr; width: 100%; } .bar .btns #resetBtn { grid-column: 1 / -1; } }
 /* Pengenalan laman (sama pada kedua-dua halaman) */
+.asas-w { text-align: center; margin-top: 4px; }
+.asas-w .asas { margin: 0; text-align: left; }
+.asas-top { margin: 0; padding: 6px 10px; border: 1px solid var(--warn); border-radius: 8px; background: var(--warn-soft); color: var(--warn); font-size: 0.8rem; font-weight: 600; }
 .intro { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
 .intro p { margin: 0; }
 .intro-k { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
@@ -274,7 +277,7 @@ button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; fon
 <div class="wrap">
   <section class="intro" aria-labelledby="introT">
     <p class="intro-k">Unit Primer · <span class="lg">Pejabat Kesihatan Daerah</span><span class="sm">PKD</span> Hulu Langat</p>
-    <p class="intro-t" id="introT">Semakan Tuntutan Anggota Klinik Kesihatan</p>
+    <h1 class="intro-t" id="introT">Semakan Tuntutan Anggota Klinik Kesihatan</h1>
     <p class="intro-p">Alat semakan kendiri sebelum tuntutan dikemukakan kepada penyelia dan Unit Kewangan.</p>
     <ul class="intro-g">
       <li><b>Tuntutan OT &amp; Elaun</b><span>Kerja lebih masa, extended hours, ETAP, Elaun Lokum dan Elaun Bersedia Atas Panggilan.</span></li>
@@ -285,15 +288,6 @@ button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; fon
       <p class="pasang-ios" id="pasangIos" hidden>Di iPhone / iPad: buka laman ini dalam Safari, tekan butang <b>Kongsi</b> (petak dengan anak panah ke atas), kemudian pilih <b>Add to Home Screen</b>.</p></div>
   </section>
   <nav class="apps" aria-label="Jenis semakan"><a href="../">Tuntutan OT &amp; Elaun</a><a href="./" aria-current="page">Tuntutan Perjalanan</a></nav>
-  <header>
-    <div>
-      <h1>Semakan Tuntutan Perjalanan</h1>
-      <p class="sub">Tugas rasmi dan kursus dalam negeri: perbatuan, elaun makan / harian, hotel / lojing, tambang, tol dan parkir.</p>
-      <p class="asas" id="asas" data-semak="2026-11-14"><b>Asas kadar:</b><span>PP WP1.4 berkuat kuasa 1 Mei 2026 · perbatuan kadar interim mulai 1 Mei 2026</span><span class="semak">✓ Disemak 14 Nov 2026</span></p>
-      <script>(function () { var e = document.getElementById("asas"); if (!e) return; var d = Date.parse(e.getAttribute("data-semak") + "T00:00:00+08:00");
-  if (Date.now() - d > 183 * 864e5) { e.classList.add("lapuk"); e.insertAdjacentHTML("beforeend", '<b class="lapuk-t">Lebih 6 bulan sejak semakan terakhir. Sahkan kadar dengan Unit Kewangan sebelum hantar tuntutan.</b>'); } })();</script>
-    </div>
-  </header>
 
   <section class="panel" id="step1">
     <div class="step-h"><span class="num">1</span><div><h2>Maklumat pegawai</h2></div><button type="button" class="ghost small act" id="refStaff">Refresh pegawai</button></div>
@@ -350,6 +344,9 @@ button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; fon
       </ul>
     </div>
   </details>
+  <div class="asas-w"><p class="asas" id="asas" data-semak="2026-11-14"><b>Asas kadar:</b><span>PP WP1.4 berkuat kuasa 1 Mei 2026 · perbatuan kadar interim mulai 1 Mei 2026</span><span class="semak">✓ Disemak 14 Nov 2026</span></p><script>(function () { var e = document.getElementById("asas"); if (!e) return; var d = Date.parse(e.getAttribute("data-semak") + "T00:00:00+08:00");
+  if (Date.now() - d > 183 * 864e5) { e.classList.add("lapuk"); e.insertAdjacentHTML("beforeend", '<b class="lapuk-t">Lebih 6 bulan sejak semakan terakhir. Sahkan kadar dengan Unit Kewangan sebelum hantar tuntutan.</b>');
+    var n = document.querySelector(".apps"); if (n) (n.closest(".topbar") || n).insertAdjacentHTML("afterend", '<p class="asas-top">Kadar dalam laman ini kali terakhir disemak lebih 6 bulan lalu. Sahkan dengan Unit Kewangan sebelum hantar tuntutan.</p>'); } })();</script></div>
   <p class="kaki">Jumpa kesilapan atau ada cadangan? <a href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20Perjalanan" target="_blank" rel="noopener">Lapor melalui borang maklum balas</a>.</p>
 </div>
 
