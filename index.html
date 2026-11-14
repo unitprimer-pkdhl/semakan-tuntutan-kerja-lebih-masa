@@ -694,6 +694,9 @@ tr.sasar > td { background-color: var(--warn-soft); }
 #quickIssue[data-act="cari"], .ot-sheet td.status-cell[data-act] { cursor: pointer; }
 #quickIssue[data-act="cari"] { text-decoration: underline; text-underline-offset: 2px; }
 .cari-btn { margin-left: auto; border-color: var(--warn); color: var(--warn); }
+/* Butiran tarikh dalam jadual: medan bersyarat */
+.sheet-extra.has-ganti .dep-noganti, .sheet-extra:not(.has-ganti) .dep-ganti,
+.sheet-extra:not(.need8) .dep-8, .sheet-extra:not(.panggil) .dep-panggil { display: none; }
 </style>
 </head>
 <body>
@@ -1575,7 +1578,9 @@ function sheetExtraHtml(key,d,r,x,colSpan) {
   if (key === "etap" || key === "bap") primary = chkF("dipanggil","Dipanggil masuk ke klinik",r) + (r.dipanggil ? timeF("masuk","Masa masuk",r) + timeF("keluar","Masa keluar",r) : "");
   const docs = '<div class="sheet-mobile-docs"><strong>Butiran utama</strong><div class="g2">' + primary + '</div><strong>Semakan dokumen</strong>' + docsHtml(key,r) + '</div>';
   const issues = x && (x.k.length || x.a.length) ? '<div class="issues">' + x.k.map(y => '<span class="k">• ' + esc(y) + "</span>").join("") + x.a.map(y => '<span class="a">• ' + esc(y) + "</span>").join("") + "</div>" : '<span class="hint">Tiada masalah pada tarikh ini dikesan oleh sistem.</span>';
-  return '<tr class="sheet-extra" data-d="' + d + '"><td colspan="' + colSpan + '"><div class="sheet-extra-inner"><strong>Butiran tambahan · ' + d + " " + BULAN[monthInfo().m - 1] + '</strong><div class="g2">' + docs + fields + '</div>' + issues + "</div></td></tr>";
+  const req = reqDocs(key, r, x && x.c), have = req.filter(k => r[k]).length, cukup = have === req.length;
+  const cls = (r.ganti ? " has-ganti" : "") + (key === "elm" && x && x.c && x.c.gross > 480 ? " need8" : "") + (r.dipanggil ? " panggil" : "");
+  return ('<tr class="sheet-extra' + cls + '" data-d="' + d + '"><td colspan="' + colSpan + '"><div class="sheet-extra-inner"><strong>Butiran tambahan · ' + d + " " + BULAN[monthInfo().m - 1] + '</strong><div class="g2">' + docs + fields + '</div>' + issues + "</div></td></tr>").replace('<span class="docn" data-docn></span>', '<span class="docn ' + (cukup ? "ok" : "bad") + '" data-docn>' + have + "/" + req.length + (cukup ? " lengkap" : "") + "</span>").replace('data-act="tickall">Tick semua', 'data-act="tickall">' + (cukup ? "Buang semua" : "Tick semua"));
 }
 function sheetTableHtml(key) {
   const cols = SHEET_COLS[key], mo = monthInfo(), rows = md(key).rows;
@@ -2247,6 +2252,16 @@ function showItem(d, block) {
 const sideBySide = () => window.matchMedia && window.matchMedia("(min-width: 760px)").matches;
 
 $("module").addEventListener("click", e => {
+  const ta=e.target.closest('[data-act="tickall"]');
+  if (ta) {
+    const line=ta.closest("[data-d]"), d=line && +line.dataset.d, key=activeTab(); if (!d || !key) return;
+    const r=md(key).rows[d]; if (!r) return;
+    const x=evalModule(key).days.find(y => y.d === d), req=reqDocs(key, r, x && x.c), all=req.every(k => r[k]);
+    req.forEach(k => { r[k] = !all; });
+    save(); redrawSheet();
+    $("msg").textContent = (all ? "Tanda dokumen dibuang bagi " : "Semua dokumen ditanda bagi ") + d + " " + BULAN[monthInfo().m - 1] + ".";
+    return;
+  }
   const bulk=e.target.closest("[data-bulk]");
   if (bulk) {
     const key=activeTab(), k=bulk.dataset.bulk, T=bulkTargets(key,k), all=T.every(r => r[bulkField(k,r)]);
