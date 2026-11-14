@@ -138,7 +138,13 @@ button { font: inherit; font-weight: 600; font-size: 0.9rem; border-radius: 8px;
 .ring .c b { font-family: var(--font-num); font-size: 1.02rem; }
 .ring .c.tot { background: var(--accent-soft); border-color: var(--accent); }
 /* Dokumen */
-.doclist { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 24px; counter-reset: d; }
+#docs { counter-reset: d; }
+.doclist { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 24px; }
+#docs .dr-sec { margin: 10px 0 6px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+#docs .dr-sec::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+#docs .dr-sec:first-child { margin-top: 2px; }
+#docs .dr-na, #step4 .dr-foot { margin: 8px 0 0; color: var(--muted); font-size: 0.74rem; }
+#step4 .dr-foot { padding-top: 6px; border-top: 1px solid var(--line); font-style: italic; }
 @media (max-width: 760px) { .doclist { grid-template-columns: minmax(0, 1fr); } }
 .doclist li { counter-increment: d; display: grid; grid-template-columns: 24px 18px minmax(0, 1fr) auto; gap: 4px 8px; align-items: start; }
 .doclist li::before { content: counter(d) "."; color: var(--muted); font-size: 0.76rem; order: 1; padding-top: 4px; }
@@ -314,7 +320,8 @@ button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; fon
     <div class="step-h"><span class="num">4</span><div><h2>Dokumen wajib dilampirkan</h2><p class="sub">Tekan kotak bila dokumen dah ada. Bulatan ikut tanda dalam setiap kad perjalanan.</p></div></div>
     <details class="dr-borang" id="borangBox"><summary>Borang &amp; pautan untuk dimuat turun <span class="dr-bn">3</span></summary><ul id="borangList"></ul></details>
     <p id="docDone" class="pill" style="display:inline-block;margin:0 0 10px"></p>
-    <ol class="doclist" id="docs"></ol>
+    <div id="docs"></div>
+    <p class="dr-foot">Disusun untuk KK dan PKD Hulu Langat. Hanya tuntutan perjalanan dalam negeri diisi melalui HRMIS; perjalanan luar negeri guna borang WP1.4, dan OT / on-call / EH guna borang manual (tab Tuntutan OT &amp; Elaun). Semua salinan perlu disahkan Ketua Jabatan.</p>
   </section>
 
   <details class="panel rujuk">
@@ -427,7 +434,7 @@ const FASILITI = [["", "Pilih ibu pejabat"], ["pkdhl", "Pejabat Kesihatan Daerah
 const BORANG = {
   wp14: { t: "Pekeliling Perbendaharaan WP1.4 (berkuat kuasa 1 Mei 2026)", lbl: "WP1.4 + Lampiran D", u: "https://mohe.gov.my/warga/muat-turun/manual-dan-garis-panduan/kewangan/1877-peka-kewangan-bil-7-2026-kemudahan-bertugas-rasmi-dan-berkursus-bagi-pegawai-perkhidmatan-persekutuan-pdf/file", n: "Teks penuh pekeliling. Borang Tuntutan Perjalanan Dalam Negeri di Lampiran D (muka surat 52)." },
   tnt:  { t: "Borang Tuntutan Perjalanan Dalam Negeri WP1.4 (Lampiran D, versi Januari 2026)", lbl: "Borang TNT", u: "https://jknjohor.moh.gov.my/hpsf/wp-content/uploads/2026/01/BORANG-TNT-2026-pdf.pdf", n: "Borang 7 muka surat sedia dicetak, salinan daripada laman JKN Johor. Sahkan versi terkini dengan Unit Kewangan PKD." },
-  hrmis: { t: "HRMIS 2.0: Tuntutan Perjalanan Dalam Negeri", lbl: "HRMIS", u: "https://hrmis2.eghrmis.gov.my/HRMISNET/Common/Main/Login.aspx", n: "Log masuk, isi tuntutan di submodul Pengurusan Tuntutan dan Pendahuluan Diri, kemudian cetak borang." },
+  hrmis: { t: "HRMIS 2.0: Tuntutan Perjalanan Dalam Negeri", lbl: "HRMIS", u: "https://hrmis2.eghrmis.gov.my/HRMISNET/Common/Main/Login.aspx", n: "Log masuk > Pengurusan Tuntutan dan Pendahuluan Diri > Tuntutan Perjalanan Dalam Negeri. Isi, hantar dan cetak borang. Pastikan alamat dalam HRMIS terkini supaya tuntutan tidak dikuiri." },
   gaji: { t: "e-Penyata Gaji (JANM)", lbl: "e-Penyata Gaji", u: "https://epenyatagaji-laporan.anm.gov.my/", n: "Log masuk dengan No. KP atau MyDigital ID, pilih bulan tuntutan, muat turun penyata gaji." }
 };
 const CHK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -623,20 +630,20 @@ function docItems(A) {
   const need = (f, g) => { const n = cnt(f), y = cnt(e => f(e) && g(e)); return { n, s: st(y, n) }; };
   const D = e => e.t.d || {};
   const L = [];
-  L.push({ id: "borang", t: "Borang tuntutan perjalanan (cetakan HRMIS)", c: "isi dalam HRMIS, cetak, tandatangan dan sahkan Ketua Jabatan", tk: true, bo: [BORANG.hrmis, BORANG.wp14] });
-  L.push({ id: "hadir", t: "Thumbprint EH / KK pada tarikh perjalanan", c: "rekod kehadiran yang disahkan", tk: true });
+  L.push({ id: "borang", t: "Borang Tuntutan Perjalanan Dalam Negeri (cetakan HRMIS)", c: "isi dalam HRMIS, cetak, tandatangan dan sahkan Ketua Jabatan", tk: true, bo: [BORANG.hrmis, BORANG.wp14] });
+  L.push({ id: "hadir", t: "Thumbprint EH / KK pada tarikh perjalanan", c: "rekod kehadiran yang disahkan", tk: true, pkd: true });
   const ar = need(() => true, e => D(e).arahan); L.push({ t: "Surat / memo / e-mel arahan bertugas rasmi", c: "bagi setiap perjalanan", s: ar.s, n: ar.n });
-  const at = need(e => e.t.jenis === "kursus" || (e.t.luarHQ && (e.M.hari || e.M.harian)), e => D(e).aturcara); L.push({ t: "Aturcara / jadual program / surat panggilan kursus", c: "jika tuntut elaun makan / harian atau kursus", s: at.s, n: at.n });
-  const ho = need(e => e.t.luarHQ && e.t.inap === "hotel", e => D(e).resitHotel); L.push({ t: "Resit hotel atas nama pegawai", c: "jika menginap di hotel", s: ho.s, n: ho.n });
-  const lo = need(e => e.t.luarHQ && e.t.inap === "lojing", e => !!e.t.alamat.trim()); L.push({ t: "Alamat lojing dicatat dalam borang", c: "jika tuntut elaun lojing", s: lo.s, n: lo.n });
-  const to = need(e => e.tol > 0, e => D(e).resitTol); L.push({ t: "Slip / penyata Touch 'n Go (tol) + cop perbendaharaan", c: "jika tuntut tol", s: to.s, n: to.n });
-  const pa = need(e => e.parkir > 0, e => D(e).resitParkir); L.push({ t: "Resit parkir", c: "jika tuntut parkir", s: pa.s, n: pa.n });
-  const ta = need(e => e.tambang > 0, e => D(e).resitTambang); L.push({ t: "Resit tambang pengangkutan awam / e-hailing / teksi", c: "e-resit dengan tarikh, laluan dan jumlah", s: ta.s, n: ta.n });
-  const fl = need(e => e.t.mod === "terbang" && e.terbang > 0, e => D(e).eTiket); L.push({ t: "E-tiket, pas masuk (boarding pass) dan resit penerbangan", c: "jika naik kapal terbang", s: fl.s, n: fl.n });
-  const db = need(e => e.dobi > 0, e => D(e).resitDobi); L.push({ t: "Resit dobi", c: "jika menginap 3 malam atau lebih", s: db.s, n: db.n });
-  L.push({ id: "tukar", t: "Surat pertukaran", c: "jika ada", tk: true, opt: true });
-  L.push({ id: "gaji", t: "Salinan slip gaji (penyata gaji) bulan tuntutan", c: "muat turun daripada e-Penyata Gaji", tk: true, bo: [BORANG.gaji] });
-  L.push({ id: "bank", t: "Salinan penyata akaun bank", c: "menunjukkan nama dan nombor akaun", tk: true });
+  const at = need(e => e.t.jenis === "kursus" || (e.t.luarHQ && (e.M.hari || e.M.harian)), e => D(e).aturcara); L.push({ sh: "Aturcara", t: "Aturcara / jadual program / surat panggilan kursus", c: "jika tuntut elaun makan / harian atau kursus", s: at.s, n: at.n });
+  const ho = need(e => e.t.luarHQ && e.t.inap === "hotel", e => D(e).resitHotel); L.push({ sh: "Resit hotel", t: "Resit hotel atas nama pegawai", c: "jika menginap di hotel", s: ho.s, n: ho.n });
+  const lo = need(e => e.t.luarHQ && e.t.inap === "lojing", e => !!e.t.alamat.trim()); L.push({ sh: "Alamat lojing", t: "Alamat lojing dicatat dalam borang", c: "jika tuntut elaun lojing", s: lo.s, n: lo.n });
+  const to = need(e => e.tol > 0, e => D(e).resitTol); L.push({ sh: "Slip Touch 'n Go", t: "Slip / penyata Touch 'n Go (tol) + cop perbendaharaan", c: "jika tuntut tol", s: to.s, n: to.n });
+  const pa = need(e => e.parkir > 0, e => D(e).resitParkir); L.push({ sh: "Resit parkir", t: "Resit parkir", c: "jika tuntut parkir", s: pa.s, n: pa.n });
+  const ta = need(e => e.tambang > 0, e => D(e).resitTambang); L.push({ sh: "Resit tambang", t: "Resit tambang pengangkutan awam / e-hailing / teksi", c: "e-resit dengan tarikh, laluan dan jumlah", s: ta.s, n: ta.n });
+  const fl = need(e => e.t.mod === "terbang" && e.terbang > 0, e => D(e).eTiket); L.push({ sh: "E-tiket penerbangan", t: "E-tiket, pas masuk (boarding pass) dan resit penerbangan", c: "jika naik kapal terbang", s: fl.s, n: fl.n });
+  const db = need(e => e.dobi > 0, e => D(e).resitDobi); L.push({ sh: "Resit dobi", t: "Resit dobi", c: "jika menginap 3 malam atau lebih", s: db.s, n: db.n });
+  L.push({ id: "tukar", t: "Surat pertukaran", c: "jika ada", tk: true, opt: true, pkd: true });
+  L.push({ id: "gaji", t: "Salinan slip gaji (penyata gaji) bulan tuntutan", c: "muat turun daripada e-Penyata Gaji", tk: true, bo: [BORANG.gaji], pkd: true });
+  L.push({ id: "bank", t: "Salinan penyata akaun bank", c: "menunjukkan nama dan nombor akaun", tk: true, pkd: true });
   return L.map(i => {
     if (i.tk) { const on = !!(state.sedia || {})[i.id]; return Object.assign(i, { s: on ? ["ok", "✓ Sedia"] : i.opt ? ["opt", "Tanda", "Jika berkenaan"] : ["man", "Tanda"], on }); }
     if (!has) return Object.assign(i, { s: null });
@@ -644,14 +651,22 @@ function docItems(A) {
     return i;
   });
 }
+// Senarai rasmi (WP1.4 / senarai semak JANM) dahulu, kemudian tambahan PKD. Dokumen yang tidak perlu bulan ini disembunyikan.
+function susunDok(L) {
+  const v = L.map((i, n) => ({ i, n })).filter(o => !o.i.na);
+  return { rasmi: v.filter(o => !o.i.pkd), pkd: v.filter(o => o.i.pkd), tak: L.filter(i => i.na) };
+}
 function renderDocs(A) {
   const L = docItems(A), has = A.ev.length > 0;
   const belum = has ? L.filter(i => !i.na && i.s && (i.s[0] === "bad" || i.s[0] === "man")).length : 0;
-  $("docs").innerHTML = L.map(i => '<li class="' + (i.na ? "na" : "") + '">' +
+  const li = (i, n) => '<li data-i="' + n + '" class="' + (i.na ? "na" : "") + '">' +
     (i.tk ? '<button type="button" class="cb' + (i.on ? " on" : "") + (i.opt ? " opt" : "") + '" data-sedia="' + i.id + '" role="checkbox" aria-checked="' + !!i.on + '" aria-label="' + esc(i.t) + '" title="' + (i.on ? "Sedia. Tekan untuk buang tanda" : "Tekan bila dokumen sudah sedia") + '">' + CHK + "</button>"
       : '<span class="cb-auto ' + (i.na || !i.s ? "na" : i.s[0]) + '" title="Status ikut tanda dalam kad perjalanan">' + CHK + "</span>") +
     '<span>' + esc(i.t) + "<em>" + esc(i.na ? "tidak perlu bulan ini" : i.c) + "</em>" + (i.bo ? '<span class="dr-links">' + i.bo.map(borLink).join("") + "</span>" : "") + "</span>" +
-    (i.s && !i.tk && !i.na && i.s[0] !== "ok" ? '<span class="ds ' + i.s[0] + '">' + esc(i.s[1]) + "</span>" : "<span></span>") + "</li>").join("");
+    (i.s && !i.tk && !i.na && i.s[0] !== "ok" ? '<span class="ds ' + i.s[0] + '">' + esc(i.s[1]) + "</span>" : "<span></span>") + "</li>";
+  const S = susunDok(L), ol = a => '<ol class="doclist">' + a.map(o => li(o.i, o.n)).join("") + "</ol>";
+  $("docs").innerHTML = '<p class="dr-sec">Senarai semak rasmi</p>' + ol(S.rasmi) + '<p class="dr-sec">Tambahan Unit Kewangan PKD</p>' + ol(S.pkd) +
+    (S.tak.length ? '<p class="dr-na">Muncul bila berkenaan dalam kad perjalanan: ' + S.tak.map(i => esc(i.sh || i.t)).join(", ") + ".</p>" : "");
   const p = $("docDone");
   p.hidden = !has;
   if (has) { p.className = "pill " + (belum ? "warn" : A.bad ? "warn" : "ok"); p.textContent = belum ? belum + " dokumen belum lengkap →" : A.bad ? "✓ Dokumen ditanda. Masih ada perjalanan belum lengkap →" : "✓ Semua dokumen lengkap. Sedia untuk dihantar."; p.dataset.act = belum || A.bad ? "cari" : ""; }
@@ -788,10 +803,10 @@ function buildPdf() {
     headStyles: { fillColor: [226, 230, 232], textColor: [40, 50, 55], fontStyle: "bold" }, columnStyles: { 0: { cellWidth: 150 }, 1: { cellWidth: 40, halign: "right" } }, margin: { left: 14, right: 14 },
     didParseCell: h => { if (h.section === "body" && h.row.index === rows.length - 1) { h.cell.styles.fontStyle = "bold"; h.cell.styles.fillColor = [238, 243, 245]; } } });
   y = doc.lastAutoTable.finalY + 6;
-  const L = docItems(A).filter(i => !i.na && i.s);
+  const SD = susunDok(docItems(A)), L = SD.rasmi.concat(SD.pkd).map(o => o.i).filter(i => i.s);
   if (y + 9.5 + 3 * 6 > H - 10) { doc.addPage(); y = 16; }
   y = band(y, "3.  SENARAI SEMAK DOKUMEN");
-  doc.autoTable({ startY: y, theme: "grid", head: [["Bil", "Dokumen", "Keterangan", "Semakan sistem", "Disemak"]], body: L.map((i, n) => [String(n + 1), P(i.t), P(i.c), P(i.s[0] === "ok" ? "Ada" : i.s[0] === "man" ? "Belum ditanda" : i.s[0] === "opt" ? "Jika berkenaan" : i.s[1]), ""]),
+  doc.autoTable({ startY: y, theme: "grid", head: [["Bil", "Dokumen", "Keterangan", "Semakan sistem", "Disemak"]], body: L.map((i, n) => [String(n + 1), P(i.t + (i.pkd ? " (keperluan PKD)" : "")), P(i.c), P(i.s[0] === "ok" ? "Ada" : i.s[0] === "man" ? "Belum ditanda" : i.s[0] === "opt" ? "Jika berkenaan" : i.s[1]), ""]),
     styles: { fontSize: 8, cellPadding: 0.9, lineColor: [200, 208, 214], lineWidth: 0.15, valign: "middle" }, headStyles: { fillColor: [226, 236, 239], textColor: [15, 92, 110], fontStyle: "bold" },
     columnStyles: { 0: { cellWidth: 10, halign: "center" }, 1: { cellWidth: 100, fontStyle: "bold" }, 2: { fontSize: 7.2, fontStyle: "italic", textColor: [90, 90, 90] }, 3: { cellWidth: 30 }, 4: { cellWidth: 18 } }, margin: { left: 14, right: 14 },
     didParseCell: h => { if (h.section === "body" && h.column.index === 3) { const s = L[h.row.index].s[0]; h.cell.styles.textColor = s === "ok" ? [27, 127, 75] : s === "bad" ? [180, 35, 24] : [90, 90, 90]; h.cell.styles.fontStyle = "bold"; } },
@@ -852,8 +867,8 @@ function pergiIsu() {
   const A = evalAll();
   let e = A.ev.find(x => x.k.length);
   if (e) return bukaDanCari(e.t.id, e.kf[0], e.k[0]);
-  const L = docItems(A), i = L.findIndex(x => !x.na && x.s && (x.s[0] === "bad" || x.s[0] === "man"));
-  if (i >= 0) return sorot($("docs").children[i], "dokumen: " + L[i].t);
+  const S = susunDok(docItems(A)), f = S.rasmi.concat(S.pkd).find(({ i: x }) => x.s && (x.s[0] === "bad" || x.s[0] === "man"));
+  if (f) return sorot($("docs").querySelector('li[data-i="' + f.n + '"]'), "dokumen: " + f.i.t);
   e = A.ev.find(x => x.a.length);
   if (e) return bukaDanCari(e.t.id, null, e.a[0]);
   $("msg").textContent = "Tiada bahagian belum lengkap dikesan.";
