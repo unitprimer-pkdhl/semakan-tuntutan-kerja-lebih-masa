@@ -650,6 +650,31 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 .lapor.pasang { background: var(--accent); color: var(--surface); border-color: var(--accent); cursor: pointer; font: inherit; font-size: 0.8rem; font-weight: 600; }
 .lapor.pasang:hover { background: var(--accent); opacity: 0.9; }
 .pasang-ios { flex-basis: 100%; font-size: 0.78rem; color: var(--fg); background: var(--accent-soft); border-radius: 7px; padding: 7px 10px; margin: 0; }
+/* Pautan borang dalam panel dokumen */
+.docref .dr-link { display: table; margin-top: 3px; font-size: 0.72rem; font-weight: 600; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); border-radius: 999px; padding: 1px 8px; background: var(--surface); }
+.docref .dr-link:hover { background: var(--accent-soft); }
+.docref .dr-borang { margin: 0 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.docref .dr-borang > summary { cursor: pointer; padding: 7px 10px; font-size: 0.8rem; font-weight: 600; color: var(--accent); list-style-position: inside; }
+.docref .dr-borang .dr-bn { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--surface); font-size: 0.68rem; line-height: 18px; text-align: center; margin-left: 4px; }
+.docref .dr-borang ul { list-style: none; margin: 0; padding: 0 10px 8px; display: flex; flex-direction: column; gap: 7px; }
+.docref .dr-borang li { display: block; font-size: 0.8rem; counter-increment: none; }
+.docref .dr-borang li::before { content: none; }
+.docref .dr-borang li a { color: var(--accent); font-weight: 600; }
+.docref .dr-borang li small { display: block; font-size: 0.72rem; font-style: italic; color: var(--muted); }
+/* Telefon / app: pengenalan ringkas, tab melekat di atas, bar bawah satu baris */
+.intro-tog { display: none; }
+@media (max-width: 760px) {
+  .intro:not(.buka) .intro-p, .intro:not(.buka) .intro-g, .intro:not(.buka) .intro-n { display: none; }
+  .intro-tog { display: inline-block; }
+  .intro-f { margin-top: 2px; }
+  .apps { position: sticky; top: 0; z-index: 30; display: flex; width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .apps a { flex: 1 1 0; text-align: center; padding: 9px 6px; }
+}
+@media (max-width: 480px) {
+  .bar .btns { display: grid !important; grid-template-columns: 1fr 1.2fr 1fr; width: 100%; gap: 6px; }
+  .bar .btns button, .bar .btns .refresh-all, .bar .btns #resetBtn { grid-column: auto !important; padding: 9px 4px; font-size: 0.8rem; text-align: center; justify-content: center; white-space: nowrap; }
+  .bar .btns svg { display: none; }
+}
 </style>
 </head>
 <body>
@@ -664,7 +689,7 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
       <li><b>Privasi</b><span>Data kekal dalam pelayar peranti ini sahaja, tidak dihantar ke mana-mana pelayan, dan dipadam sendiri selepas 30 hari.</span></li>
     </ul>
     <div class="intro-f"><p class="intro-n">Hasil semakan ialah panduan awal, bukan kelulusan. Kelayakan muktamad tertakluk kepada pengesahan Ketua Jabatan dan Unit Kewangan.</p>
-      <span class="intro-act"><button type="button" class="lapor pasang" id="pasangBtn" hidden>Pasang aplikasi</button><a class="lapor" href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20OT%20%26%20Elaun" target="_blank" rel="noopener">Lapor kesilapan / cadangan ↗</a></span>
+      <span class="intro-act"><button type="button" class="lapor intro-tog" id="introTog" aria-expanded="false">Tentang laman ▾</button><button type="button" class="lapor pasang" id="pasangBtn" hidden>Pasang aplikasi</button><a class="lapor" href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20OT%20%26%20Elaun" target="_blank" rel="noopener">Lapor kesilapan / cadangan ↗</a></span>
       <p class="pasang-ios" id="pasangIos" hidden>Di iPhone / iPad: buka laman ini dalam Safari, tekan butang <b>Kongsi</b> (petak dengan anak panah ke atas), kemudian pilih <b>Add to Home Screen</b>.</p></div>
   </section>
   <nav class="apps" aria-label="Jenis semakan"><a href="./" aria-current="page">Tuntutan OT &amp; Elaun</a><a href="perjalanan/">Tuntutan Perjalanan</a></nav>
@@ -1831,6 +1856,13 @@ const docJadual = (C, sh, t, d) => ({ t, sh, d, s: C.has ? C.st(C.cnt(r => r.gan
 const docSurat = (C, sh, t, d, c) => ({ t, sh, c, d, s: C.has ? C.st(C.cnt(r => r.surat), C.n) : null });
 const docHadir = (C, sh, t, d) => ({ t, sh, d, s: C.has ? C.st(C.cnt(r => r.thumb), C.n) : null });
 const docGanti = C => { const g = C.cnt(r => r.ganti); return { t: "Borang penggantian tugas", sh: "Borang penggantian", c: "jika ganti anggota lain", d: "Bagi tarikh menggantikan anggota lain, dengan nama anggota yang diganti.", app: C.has ? g > 0 : null, s: C.has && g ? C.st(C.cnt(r => r.ganti && r.borang), g) : null }; };
+// Pautan borang / laman rasmi untuk dimuat turun. Semak semula bila pekeliling baharu keluar.
+const BORANG = {
+  gaji:  { t: "e-Penyata Gaji (JANM)", lbl: "e-Penyata Gaji", u: "https://epenyatagaji-laporan.anm.gov.my/", n: "Log masuk dengan No. KP atau MyDigital ID, pilih bulan tuntutan, muat turun penyata gaji." },
+  etap:  { t: "Penyata Tuntutan ETAP (format KKM, kadar mulai 1 Okt 2025)", lbl: "Borang ETAP", u: "https://jknkedah.moh.gov.my/hsb/images/borang/kewangan/PENYATA_TUNTUTAN_BAHARU.pdf", n: "PDF 5 muka surat. Salinan daripada laman JKN Kedah; sahkan versi dengan Unit Kewangan PKD." },
+  lokum: { t: "Surat Edaran KKM 10 Dis 2025: Elaun Bertugas Selepas Waktu Pejabat", lbl: "Borang (Lampiran D)", u: "https://jknkedah.moh.gov.my/hsb/images/borang/kewangan/SE_Lokum_10122025.pdf", n: "Borang tuntutan di Lampiran D (muka surat 18). Lampiran C: waktu operasi yang layak." }
+};
+const borLink = (b, lbl) => b ? '<a class="dr-link" href="' + b.u + '" target="_blank" rel="noopener" title="' + esc(b.t) + '">' + esc(lbl || b.lbl) + " ↗</a>" : "";
 function otDocList() {
   const C = docCtx(["elm", "elmeh"]), MS = md("elm"), S = C.has ? evalModule(C.ks[0]).sum : {};
   const adaEh = C.ks.indexOf("elmeh") >= 0, bolehEh = mods().indexOf("elmeh") >= 0;
@@ -1838,21 +1870,21 @@ function otDocList() {
   const J = docJadual(C, "Jadual tugas" + (adaEh ? " + jadual EH" : ""), "Jadual tugas (roster) yang disahkan" + (adaEh ? ", termasuk jadual extended hours" : ""), "Nama pegawai ada pada tarikh tuntutan. Hari rehat dan cuti umum ditanda jelas.");
   if (!adaEh && bolehEh) J.c = "+ jadual EH bagi OT extended hours";
   return [
-    { t: "Borang / penyata tuntutan Elaun Lebih Masa", sh: "Borang tuntutan ELM", d: "Lengkap, ditandatangan dan dicop oleh pegawai, penyemak dan Ketua Jabatan. Ikut format Unit Kewangan PKD.", tk: "elm:borang", s: tandaS("elm:borang") },
+    { t: "Borang / penyata tuntutan Elaun Lebih Masa", sh: "Borang tuntutan ELM", c: "format Unit Kewangan PKD", d: "Lengkap, ditandatangan dan dicop oleh pegawai, penyemak dan Ketua Jabatan. Ikut format Unit Kewangan PKD.", tk: "elm:borang", s: tandaS("elm:borang") },
     docHadir(C, "Rekod kehadiran / thumbprint", "Salinan rekod kehadiran (thumbprint / laporan kehadiran elektronik)", "Disahkan, menunjukkan masa masuk dan keluar bagi setiap tarikh OT."),
     docSurat(C, "Surat arahan OT", "Surat arahan kerja lebih masa", "Dikeluarkan sebelum OT dibuat. Ada nama, tarikh, masa, tugas, tandatangan dan cop Ketua Jabatan.", "dikeluarkan sebelum OT"),
     J,
     docGanti(C),
     { t: "Surat pengesahan OT melebihi 8 jam", sh: "Surat OT melebihi 8 jam", c: "jika berkenaan", d: "Bagi tarikh yang OT melebihi 8 jam berturut-turut.", app: C.has ? lapan > 0 : null, s: C.has && lapan ? C.st(C.cnt((r, c) => c && c.gross > 480 && r.surat8), lapan) : null },
     { t: "Surat kelulusan tuntutan melebihi 1/3 gaji pokok", sh: "Kelulusan melebihi 1/3 gaji", c: "jika melebihi had", d: "Oleh Ketua Jabatan / pegawai P&P Gred 12 ke atas" + (S.gabung ? " (OT biasa + OT extended hours dikira bersama)." : "."), app: C.has ? !!S.lebih : null, tk: "elm:@lulus13", s: C.has && S.lebih ? tandaS("elm:@lulus13") : null },
-    { t: "Salinan penyata gaji bagi bulan tuntutan", sh: "Penyata gaji bulan tuntutan", d: "Gaji pokok dalam penyata ini digunakan untuk kiraan.", tk: "elm:@penyata", s: tandaS("elm:@penyata") },
+    { t: "Salinan penyata gaji bagi bulan tuntutan", sh: "Penyata gaji bulan tuntutan", d: "Gaji pokok dalam penyata ini digunakan untuk kiraan.", tk: "elm:@penyata", s: tandaS("elm:@penyata"), bo: BORANG.gaji },
     kaliDoc({ t: "Salinan penyata akaun bank", sh: "Penyata akaun bank", d: "Tuntutan kali pertama dalam perkhidmatan di daerah ini.", tk: "elm:bank" })
   ];
 }
 function etapDocList() {
   const C = docCtx(["etap"]);
   return [
-    { t: "Penyata Tuntutan ETAP (borang BA.KKM/ETAP)", sh: "Penyata tuntutan ETAP", d: "Bahagian C ditandatangan dan dicop pegawai; Bahagian D disahkan Ketua Jabatan.", tk: "etap:borang", s: tandaS("etap:borang") },
+    { t: "Penyata Tuntutan ETAP (borang BA.KKM/ETAP)", sh: "Penyata tuntutan ETAP", d: "Bahagian C ditandatangan dan dicop pegawai; Bahagian D disahkan Ketua Jabatan.", tk: "etap:borang", s: tandaS("etap:borang"), bo: BORANG.etap },
     docHadir(C, "Rekod kehadiran / thumbprint", "Salinan kad perakam waktu / laporan kehadiran elektronik yang disahkan", "Lengkap dengan masa mula dan akhir bertugas, disahkan."),
     docJadual(C, "Jadual on-call (ETAP)", "Salinan jadual tugas atas panggilan (ETAP) yang disahkan", "Nama pegawai ada pada tarikh on-call."),
     docSurat(C, "Surat arahan on-call", "Surat arahan bertugas atas panggilan", "Arahan Ketua Jabatan bagi tarikh on-call (keperluan PKD)."),
@@ -1863,7 +1895,7 @@ function etapDocList() {
 function lokumDocList() {
   const C = docCtx(["lokum"]);
   return [
-    { t: "Penyata Tuntutan Elaun Lokum (format KKM LOKUM UD/UF/U_2025)", sh: "Borang tuntutan Lokum", d: "Ditandatangan dan dicop pegawai; disahkan Ketua Jabatan. Jam tuntutan maksimum 8 jam sehari.", tk: "lokum:borang", s: tandaS("lokum:borang") },
+    { t: "Penyata Tuntutan Elaun Lokum (format KKM LOKUM UD/UF/U_2025)", sh: "Borang tuntutan Lokum", d: "Ditandatangan dan dicop pegawai; disahkan Ketua Jabatan. Jam tuntutan maksimum 8 jam sehari.", tk: "lokum:borang", s: tandaS("lokum:borang"), bo: BORANG.lokum },
     docJadual(C, "Jadual bertugas Elaun Lokum (EH)", "Jadual bertugas Elaun Lokum (jadual extended hours) yang disahkan", "Nama pegawai ada pada tarikh EH di KK Ampang / KK Kajang."),
     docHadir(C, "Rekod kehadiran / thumbprint", "Salinan kad perakam waktu / buku daftar kedatangan / sistem kehadiran yang disahkan", "Menunjukkan masa masuk dan keluar bagi setiap sesi EH."),
     docSurat(C, "Surat arahan / memo EH", "Surat arahan atau memo extended hours", "Arahan bertugas extended hours bagi tarikh dituntut (keperluan PKD)."),
@@ -1889,6 +1921,17 @@ function docGroups() {
   if (ms.indexOf("bap") >= 0) G.push({ k: "bap", has: docCtx(["bap"]).has, tab: "bap", short: "Atas panggilan", nm: "Bersedia atas panggilan", src: "Format Unit Kewangan PKD", L: bapDocList() });
   return G;
 }
+// Senarai "Borang & pautan" bagi jenis tuntutan semasa (dropdown dalam panel dokumen).
+function borangHtml(g) {
+  const L = g.L.filter(i => i.bo).map(i => i.bo);
+  if (L.indexOf(BORANG.gaji) < 0 && g.k === "ot") L.push(BORANG.gaji);
+  const tiada = g.L.filter(i => !i.bo && /borang/i.test(i.sh)).map(i => i.sh);
+  if (!L.length && !tiada.length) return "";
+  return '<details class="dr-borang"><summary>Borang &amp; pautan untuk dimuat turun <span class="dr-bn">' + L.length + "</span></summary><ul>" +
+    L.map(b => '<li><a href="' + b.u + '" target="_blank" rel="noopener">' + esc(b.t) + ' ↗</a><small>' + esc(b.n) + "</small></li>").join("") +
+    tiada.map(t => "<li><b>" + esc(t) + "</b><small>Format Unit Kewangan PKD. Dapatkan daripada Unit Kewangan atau penyelia.</small></li>").join("") +
+    "</ul></details>";
+}
 let docRefInit = false;
 function renderDocRef() {
   const box = $("docRef"); if (!box) return;
@@ -1905,7 +1948,7 @@ function renderDocRef() {
   const g = G.filter(x => x.k === gk)[0] || G[0];
   // Belum = status merah dari jadual, atau dokumen yang belum ditanda Sedia (hanya bila ada tarikh dituntut).
   const bad = x => x.has ? x.L.filter(i => i.app !== false && i.s && (i.s[0] === "bad" || (i.tk && i.s[0] === "man"))).length : 0;
-  const li = i => '<li class="' + (i.app === false ? "na" : "") + (i.tk ? " tk" : "") + '" title="' + esc(i.d) + '"><span>' + esc(i.sh) + (i.app === false ? "<em>" + esc(i.naTxt || "tidak perlu bulan ini") + "</em>" : i.c ? "<em>" + esc(i.c) + "</em>" : "") + "</span>" +
+  const li = i => '<li class="' + (i.app === false ? "na" : "") + (i.tk ? " tk" : "") + '" title="' + esc(i.d) + '"><span>' + esc(i.sh) + (i.app === false ? "<em>" + esc(i.naTxt || "tidak perlu bulan ini") + "</em>" : i.c ? "<em>" + esc(i.c) + "</em>" : "") + (i.bo && i.app !== false ? borLink(i.bo) : "") + "</span>" +
     (i.tk && i.s && i.app !== false
       ? '<button type="button" class="ds-tick' + (i.s[0] === "ok" ? " on" : "") + '" data-sedia="' + i.tk + '" aria-pressed="' + (i.s[0] === "ok") + '" aria-label="' + esc(i.sh) + ": " + (i.s[0] === "ok" ? "sedia, tekan untuk buang tanda" : "tekan bila dokumen sudah sedia") + '">' + esc(i.s[2]) + "</button>"
       : i.s ? '<span class="ds ' + i.s[0] + '">' + esc(i.s[2]) + "</span>" : "<span></span>") + "</li>";
@@ -1915,7 +1958,7 @@ function renderDocRef() {
     (g ? (G.length > 1 ? '<div class="dr-tabs" role="group" aria-label="Jenis tuntutan">' + G.map(x => { const n = bad(x);
           return '<button type="button" data-tab="' + (x.k === gk ? cur : x.tab) + '" aria-pressed="' + (x === g) + '">' + esc(x.short) + (n ? '<span class="dr-n">' + n + "</span>" : "") + "</button>"; }).join("") + "</div>" : "") +
         '<div class="dr-gh">' + esc(g.nm) + '</div><p class="dr-src">' + esc(g.src) + "</p>" +
-        '<p class="dr-sub">Tekan <b>Tanda</b> bila dokumen dah ada. Status lain ikut tanda dalam jadual. Lampirkan ikut turutan.</p>' +
+        '<p class="dr-sub">Tekan <b>Tanda</b> bila dokumen dah ada. Status lain ikut tanda dalam jadual. Lampirkan ikut turutan.</p>' + borangHtml(g) +
         (g.has ? (() => {
           const evs = (g.k === "ot" ? ["elm", "elmeh"] : [g.k]).filter(k => mods().indexOf(k) >= 0).map(evalModule).filter(e => e.days.length);
           const isu = evs.reduce((t, e) => t + e.days.filter(x => x.k.length).length, 0);
@@ -2481,6 +2524,10 @@ if (expiredOld) $("msg").textContent = "Isian lama (tiada kemas kini lebih 30 ha
     else if (ios) ios.hidden = !ios.hidden;
   });
 })();
+</script>
+<script>
+(function () { var t = document.getElementById("introTog"), b = t && t.closest(".intro"); if (!t || !b) return;
+  t.addEventListener("click", function () { var o = b.classList.toggle("buka"); t.setAttribute("aria-expanded", String(o)); t.textContent = o ? "Tutup maklumat ▴" : "Tentang laman ▾"; }); })();
 </script>
 </body>
 </html>
