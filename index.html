@@ -552,6 +552,29 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 .docref .ds-tick.on { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
 .docref .dr-done { margin: 0 0 8px; padding: 6px 9px; border-radius: 7px; font-size: 0.78rem; font-weight: 600; color: var(--warn); background: var(--warn-soft); }
 .docref .dr-done.ok { color: var(--ok); background: var(--ok-soft); }
+/* ===== Komponen vs panduan =====
+   Komponen (perlu diisi / ditanda / dibaca keputusannya): saiz biasa, tegak.
+   Panduan (cara isi, nota, sumber rujukan): kecil, italic, kelabu. */
+.sub, .hint, .name-note, .top-note, .sheet-help, .panduan, #modeHint, summary .muted, .cal-head .muted,
+.docref .dr-sub, .docref .dr-src, .docref .dr-foot, .sheet-bulk .bulk-h, .tetapan .hint {
+  font-size: 0.76rem; font-style: italic; font-weight: 400; color: var(--muted); line-height: 1.4;
+}
+.sub b, .hint b, .panduan b, .sheet-help b, .docref .dr-sub b { font-weight: 600; color: var(--muted); }
+.field > .hint, .field > .name-note { display: block; margin-top: 3px; }
+.mod-panduan { margin: 2px 4px 8px; }
+.modextra { padding: 9px 12px; margin-bottom: 8px; }
+/* Tajuk setiap komponen sama gaya */
+.docref > summary, .quick-summary > b { font-size: 0.95rem; font-weight: 700; color: var(--fg); }
+.docref .dr-gh { font-size: 0.86rem; margin-top: 12px; }
+.docref .dr-src { margin: 0 0 2px; }
+.docref .dr-sub { margin: 2px 0 8px; }
+.docref li > span:first-child { font-size: 0.86rem; }
+.docref li em { font-style: italic; }
+/* Soalan Ya / Tidak */
+.pilih2 { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); width: max-content; }
+.pilih2 button { border: 0; border-radius: 0; padding: 8px 22px; background: transparent; color: var(--fg); font-size: 0.9rem; }
+.pilih2 button + button { border-left: 1px solid var(--line); }
+.pilih2 button[aria-checked="true"] { background: var(--accent); color: var(--surface); }
 </style>
 </head>
 <body>
@@ -578,6 +601,9 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
       <div class="field span2"><label for="jawatan">Jawatan</label><select id="jawatan"></select></div>
       <div class="field"><label for="fasiliti">Klinik bertugas</label><select id="fasiliti"></select></div>
       <div class="field"><label for="bulan">Bulan tuntutan</label><input id="bulan" type="month"></div>
+      <div class="field span2" id="kaliField" hidden><label id="kaliL">Kali pertama membuat tuntutan dalam perkhidmatan di daerah ini?</label>
+        <div class="pilih2" role="radiogroup" aria-labelledby="kaliL"><button type="button" role="radio" data-kali="ya" aria-checked="false">Ya</button><button type="button" role="radio" data-kali="tidak" aria-checked="false">Tidak</button></div>
+        <small class="hint">Jika ya, salinan kad pengenalan dan buku / penyata bank perlu dilampirkan.</small></div>
       <div class="field span2" id="gajiField" hidden><label for="gaji">Gaji pokok</label><div class="money"><span>RM</span><input id="gaji" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Taip ikut penyata gaji"></div><small class="hint" id="gajiHint"></small></div>
       <details class="officer-more span2"><summary>Pilihan tambahan <span class="muted">· jika berkaitan sahaja</span></summary><label class="ck" id="tkField" hidden><input type="checkbox" id="tanggung"> Terima Elaun Penanggungan Kerja (EPK)</label><p class="hint">Tandakan jika menerima EPK melalui arahan rasmi. Potongan OT hari bekerja biasa dikira jika berkenaan.</p></details>
     </div>
@@ -967,7 +993,7 @@ const KEY = "semakan-ot-v2", KEYSET = "semakan-ot-tetapan-v1";
 const SET_DEFAULT = { tolak215: false, hadHarian: false, hadBiasa: "3", hadRehat: "5", lokumHad: "4", kadarMO: "80", kadarPF: "25", kadarJXR: "25", bapKadar: "", cutiTambahan: "", mod: "ringkas" };
 
 function thisMonth() { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); }
-function blankForm(bulan) { return { nama: "", jawatan: "", fasiliti: "", bulan: bulan || thisMonth(), gaji: "", tab: "", data: {} }; }
+function blankForm(bulan) { return { nama: "", jawatan: "", fasiliti: "", bulan: bulan || thisMonth(), gaji: "", kaliPertama: null, tab: "", data: {} }; }
 function load(k) { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
 function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 
@@ -1146,6 +1172,8 @@ function renderTabs() {
   const adaOt = ms.some(isOt);
   $("gajiField").hidden = !ms.length || (isSimple() && !adaOt);
   $("tkField").hidden = !adaOt;
+  $("kaliField").hidden = !(adaOt || ms.indexOf("etap") >= 0);
+  document.querySelectorAll("[data-kali]").forEach(b => b.setAttribute("aria-checked", String(state.kaliPertama === b.dataset.kali)));
   $("step1").classList.toggle("nogaji", $("gajiField").hidden);
   $("gajiHint").textContent = adaOt ? "Ambil baris Gaji Pokok dalam penyata gaji, bukan Jumlah Pendapatan. " + (isSimple() ? "Perlu untuk kira bayaran OT." : "Untuk kira bayaran OT dan semak had 1/3 gaji pokok.")
     : "Untuk perbandingan sahaja. On-call dan extended hours dibayar ikut kadar tetap, bukan gaji.";
@@ -1502,7 +1530,7 @@ function renderModule() {
   const M=md(key), rows=M.rows, mo=monthInfo();
   if (isEh(key)) { for (let d=1; d<=mo.n;d++) if (rows[d] && rows[d].on && !rows[d].mula && !rows[d].tamat) autoFillEh(rows[d],d,key); save(); }
   const extra = key==="etap" ? '<label class="ck q"><input type="checkbox" data-mk="jarak"' + (M.jarak ? " checked" : "") + '> Rumah pegawai dalam 33 km / 30 minit dari tempat bertugas</label>' : "";
-  box.innerHTML = '<div class="modwrap" data-key="' + key + '"><div class="panel modnote"><div>' + (isSimple()?MOD_NOTE_S:MOD_NOTE)[key] + '</div>' + extra + '</div>' + sheetTableHtml(key) + '</div>';
+  box.innerHTML = '<div class="modwrap" data-key="' + key + '"><p class="panduan mod-panduan">' + (isSimple()?MOD_NOTE_S:MOD_NOTE)[key] + '</p>' + (extra ? '<div class="panel modextra">' + extra + '</div>' : "") + sheetTableHtml(key) + '</div>';
   const sc = $("sheetScroll"); if (sc) sc.addEventListener("scroll", updScrollCue, { passive: true });
   res.innerHTML = '<div data-key="' + key + '">' + resultHtml(key) + "</div>";
 }
@@ -1693,6 +1721,13 @@ function docCtx(keys) {
 // Dokumen yang tidak boleh disemak dari jadual: pengguna tekan "Tanda" bila dokumen dah sedia.
 // tk = "kumpulan:id"; id bermula "@" = medan sedia ada dalam md(kumpulan) (cth @penyata).
 function tandaOn(tk) { const p = tk.split(":"), M = md(p[0]); return p[1][0] === "@" ? !!M[p[1].slice(1)] : !!(M.sedia && M.sedia[p[1]]); }
+// Dokumen "kali pertama": muncul untuk ditanda hanya jika pegawai jawab Ya.
+function kaliDoc(it) {
+  const k = state.kaliPertama;
+  if (k === "tidak") return Object.assign(it, { c: "", app: false, naTxt: "tidak perlu (bukan kali pertama)", s: null });
+  if (k === "ya") return Object.assign(it, { c: "tuntutan kali pertama", s: tandaS(it.tk) });
+  return Object.assign(it, { c: "jawab soalan kali pertama dalam Langkah 1", s: ["bad", "Belum dijawab", "?"] });
+}
 function tandaS(tk) { return tandaOn(tk) ? ["ok", "Sedia (ditanda)", "✓ Sedia"] : ["man", "Belum ditanda", "Tanda"]; }
 const docJadual = (C, sh, t, d) => ({ t, sh, d, s: C.has ? C.st(C.cnt(r => r.ganti ? r.jadualGanti : r.jadual), C.n) : null });
 const docSurat = (C, sh, t, d, c) => ({ t, sh, c, d, s: C.has ? C.st(C.cnt(r => r.surat), C.n) : null });
@@ -1713,7 +1748,7 @@ function otDocList() {
     { t: "Surat pengesahan OT melebihi 8 jam", sh: "Surat OT melebihi 8 jam", c: "jika berkenaan", d: "Bagi tarikh yang OT melebihi 8 jam berturut-turut.", app: C.has ? lapan > 0 : null, s: C.has && lapan ? C.st(C.cnt((r, c) => c && c.gross > 480 && r.surat8), lapan) : null },
     { t: "Surat kelulusan tuntutan melebihi 1/3 gaji pokok", sh: "Kelulusan melebihi 1/3 gaji", c: "jika melebihi had", d: "Oleh Ketua Jabatan / pegawai P&P Gred 12 ke atas" + (S.gabung ? " (OT biasa + OT extended hours dikira bersama)." : "."), app: C.has ? !!S.lebih : null, tk: "elm:@lulus13", s: C.has && S.lebih ? tandaS("elm:@lulus13") : null },
     { t: "Salinan penyata gaji bagi bulan tuntutan", sh: "Penyata gaji bulan tuntutan", d: "Gaji pokok dalam penyata ini digunakan untuk kiraan.", tk: "elm:@penyata", s: tandaS("elm:@penyata") },
-    { t: "Salinan penyata akaun bank", sh: "Penyata akaun bank", c: "tuntutan kali pertama · tanda jika tidak perlu", d: "Tuntutan kali pertama sahaja (jika diminta Unit Kewangan). Tanda juga jika tidak perlu.", tk: "elm:bank", s: tandaS("elm:bank") }
+    kaliDoc({ t: "Salinan penyata akaun bank", sh: "Penyata akaun bank", d: "Tuntutan kali pertama dalam perkhidmatan di daerah ini.", tk: "elm:bank" })
   ];
 }
 function etapDocList() {
@@ -1724,7 +1759,7 @@ function etapDocList() {
     docJadual(C, "Jadual on-call (ETAP)", "Salinan jadual tugas atas panggilan (ETAP) yang disahkan", "Nama pegawai ada pada tarikh on-call."),
     docSurat(C, "Surat arahan on-call", "Surat arahan bertugas atas panggilan", "Arahan Ketua Jabatan bagi tarikh on-call (keperluan PKD)."),
     docGanti(C),
-    { t: "Salinan kad pengenalan dan buku / penyata bank", sh: "Salinan KP + buku bank", c: "tuntutan kali pertama · tanda jika tidak perlu", d: "Untuk tuntutan pertama sahaja. Tanda juga jika tidak perlu.", tk: "etap:kp", s: tandaS("etap:kp") }
+    kaliDoc({ t: "Salinan kad pengenalan dan buku / penyata bank", sh: "Salinan KP + buku bank", d: "Tuntutan kali pertama dalam perkhidmatan di daerah ini.", tk: "etap:kp" })
   ];
 }
 function lokumDocList() {
@@ -1772,7 +1807,7 @@ function renderDocRef() {
   const g = G.filter(x => x.k === gk)[0] || G[0];
   // Belum = status merah dari jadual, atau dokumen yang belum ditanda Sedia (hanya bila ada tarikh dituntut).
   const bad = x => x.has ? x.L.filter(i => i.app !== false && i.s && (i.s[0] === "bad" || (i.tk && i.s[0] === "man"))).length : 0;
-  const li = i => '<li class="' + (i.app === false ? "na" : "") + (i.tk ? " tk" : "") + '" title="' + esc(i.d) + '"><span>' + esc(i.sh) + (i.c ? "<em>" + esc(i.app === false ? "tidak perlu bulan ini" : i.c) + "</em>" : "") + "</span>" +
+  const li = i => '<li class="' + (i.app === false ? "na" : "") + (i.tk ? " tk" : "") + '" title="' + esc(i.d) + '"><span>' + esc(i.sh) + (i.app === false ? "<em>" + esc(i.naTxt || "tidak perlu bulan ini") + "</em>" : i.c ? "<em>" + esc(i.c) + "</em>" : "") + "</span>" +
     (i.tk && i.s && i.app !== false
       ? '<button type="button" class="ds-tick' + (i.s[0] === "ok" ? " on" : "") + '" data-sedia="' + i.tk + '" aria-pressed="' + (i.s[0] === "ok") + '" aria-label="' + esc(i.sh) + ": " + (i.s[0] === "ok" ? "sedia, tekan untuk buang tanda" : "tekan bila dokumen sudah sedia") + '">' + esc(i.s[2]) + "</button>"
       : i.s ? '<span class="ds ' + i.s[0] + '">' + esc(i.s[2]) + "</span>" : "<span></span>") + "</li>";
@@ -2005,9 +2040,12 @@ function onSet(e) {
 $("tetapan").addEventListener("input", onSet);
 $("tetapan").addEventListener("change", onSet);
 
+document.querySelectorAll("[data-kali]").forEach(b => b.addEventListener("click", () => {
+  state.kaliPertama = state.kaliPertama === b.dataset.kali ? null : b.dataset.kali; save(); renderTabs(); refresh();
+}));
 $("refStaff").addEventListener("click", () => {
   if (!window.confirm("Kosongkan maklumat pegawai (nama, jawatan, klinik, gaji dan EPK)? Tarikh tuntutan tidak dipadam.\n\nUntuk staf lain, guna Refresh semua di bawah.")) return;
-  Object.assign(state, { nama: "", jawatan: "", fasiliti: "", gaji: "", tanggungKerja: false, tab: "" });
+  Object.assign(state, { nama: "", jawatan: "", fasiliti: "", gaji: "", kaliPertama: null, tanggungKerja: false, tab: "" });
   nameEditUnlocked = false; save(); renderAll();
   $("msg").textContent = "Maklumat pegawai dikosongkan. Tarikh tuntutan kekal.";
 });
