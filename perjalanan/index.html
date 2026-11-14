@@ -6,6 +6,12 @@
 <title>Semakan Tuntutan Perjalanan</title>
 <meta name="description" content="Semak tuntutan perjalanan dalam negeri (WP1.4) staf Unit Primer PKD Hulu Langat sebelum dihantar: perbatuan, elaun makan / harian, hotel / lojing, tambang, tol dan parkir.">
 <meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="48x48" href="../icons/favicon-48.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Semakan Tuntutan">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
@@ -193,6 +199,11 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 .lapor:hover { background: var(--accent-soft); }
 .kaki { text-align: center; font-size: 0.76rem; color: var(--muted); margin: 8px 0 0; }
 .kaki a { color: var(--accent); font-weight: 600; }
+/* Aplikasi (PWA) */
+.intro-act { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.lapor.pasang { background: var(--accent); color: var(--surface); border-color: var(--accent); cursor: pointer; font: inherit; font-size: 0.8rem; font-weight: 600; }
+.lapor.pasang:hover { background: var(--accent); opacity: 0.9; }
+.pasang-ios { flex-basis: 100%; font-size: 0.78rem; color: var(--fg); background: var(--accent-soft); border-radius: 7px; padding: 7px 10px; margin: 0; }
 </style>
 </head>
 <body>
@@ -207,7 +218,8 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
       <li><b>Privasi</b><span>Data kekal dalam pelayar peranti ini sahaja, tidak dihantar ke mana-mana pelayan, dan dipadam sendiri selepas 30 hari.</span></li>
     </ul>
     <div class="intro-f"><p class="intro-n">Hasil semakan ialah panduan awal, bukan kelulusan. Kelayakan muktamad tertakluk kepada pengesahan Ketua Jabatan dan Unit Kewangan.</p>
-      <a class="lapor" href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20Perjalanan" target="_blank" rel="noopener">Lapor kesilapan / cadangan ↗</a></div>
+      <span class="intro-act"><button type="button" class="lapor pasang" id="pasangBtn" hidden>Pasang aplikasi</button><a class="lapor" href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20Perjalanan" target="_blank" rel="noopener">Lapor kesilapan / cadangan ↗</a></span>
+      <p class="pasang-ios" id="pasangIos" hidden>Di iPhone / iPad: buka laman ini dalam Safari, tekan butang <b>Kongsi</b> (petak dengan anak panah ke atas), kemudian pilih <b>Add to Home Screen</b>.</p></div>
   </section>
   <nav class="apps" aria-label="Jenis semakan"><a href="../">Tuntutan OT &amp; Elaun</a><a href="./" aria-current="page">Tuntutan Perjalanan</a></nav>
   <header>
@@ -736,6 +748,22 @@ $("pdfBtn").addEventListener("click", () => {
 
 renderAll();
 if (expired) $("msg").textContent = "Isian lama (tiada kemas kini lebih 30 hari) telah dipadam untuk privasi.";
+})();
+</script>
+<script>
+(function () {
+  if ("serviceWorker" in navigator) window.addEventListener("load", function () { navigator.serviceWorker.register("../sw.js", { scope: "../" }).catch(function () {}); });
+  var btn = document.getElementById("pasangBtn"), ios = document.getElementById("pasangIos"), tangguh = null;
+  var dipasang = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  if (!btn || dipasang) return;
+  var iPhone = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (iPhone) btn.hidden = false;
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); tangguh = e; btn.hidden = false; });
+  window.addEventListener("appinstalled", function () { btn.hidden = true; if (ios) ios.hidden = true; });
+  btn.addEventListener("click", function () {
+    if (tangguh) { tangguh.prompt(); tangguh.userChoice.then(function () { tangguh = null; btn.hidden = true; }); }
+    else if (ios) ios.hidden = !ios.hidden;
+  });
 })();
 </script>
 </body>
