@@ -687,6 +687,13 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
   .sheet-shell.lajur-penuh .ot-sheet { min-width: 900px; }
   .sheet-shell.lajur-penuh .ot-sheet .col-sebab { min-width: 130px; }
 }
+/* Sorotan bahagian yang belum lengkap */
+@keyframes sasar { 0% { box-shadow: 0 0 0 0 rgba(212,140,0,0.0); } 15% { box-shadow: 0 0 0 4px rgba(212,140,0,0.85); } 100% { box-shadow: 0 0 0 4px rgba(212,140,0,0); } }
+.sasar { animation: sasar 2.2s ease-out; border-radius: 6px; background-color: var(--warn-soft) !important; transition: background-color 1.5s; }
+tr.sasar > td { background-color: var(--warn-soft); }
+#quickIssue[data-act="cari"], .ot-sheet td.status-cell[data-act] { cursor: pointer; }
+#quickIssue[data-act="cari"] { text-decoration: underline; text-underline-offset: 2px; }
+.cari-btn { margin-left: auto; border-color: var(--warn); color: var(--warn); }
 </style>
 </head>
 <body>
@@ -740,7 +747,7 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 
   <div class="quick-summary comp c-hasil" id="quickSummary" role="status"><b>Ringkasan bulan ini</b><span id="quickClaim">0 tarikh</span><span id="quickDone">0 lengkap</span><span id="quickIssue">0 perlu tindakan</span></div>
   <section id="step2"><div class="step-h out"><span class="num">2</span><div><h2>Isi tarikh tuntutan</h2><p class="sub">Tandakan tarikh, isi masa dan tekan <b>Semak</b> untuk dokumen serta pilihan tambahan.</p></div><button type="button" class="ghost refresh-sec" id="refClaim" title="Kosongkan semua isian tuntutan bulan ini. Maklumat pegawai kekal."><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Refresh tuntutan</button></div><nav class="tabs" id="tabs" role="tablist" aria-label="Jenis tuntutan"></nav><div id="module"></div></section>
-  <section class="panel comp c-hasil" id="step3"><div class="step-h"><span class="num">3</span><div><h2>Keputusan akhir</h2></div></div><div id="result"></div><p class="top-note">Semakan automatik bukan kelulusan rasmi. Dokumen dan kelayakan perlu disahkan oleh penyelia / Unit Kewangan.</p></section>
+  <section class="panel comp c-hasil" id="step3"><div class="step-h"><span class="num">3</span><div><h2>Keputusan akhir</h2></div><button type="button" class="ghost small cari-btn" data-act="cari" id="cariBtn" hidden>Tunjuk yang belum lengkap →</button></div><div id="result"></div><p class="top-note">Semakan automatik bukan kelulusan rasmi. Dokumen dan kelayakan perlu disahkan oleh penyelia / Unit Kewangan.</p></section>
 
   <details class="panel tetapan adv" id="tetapan">
     <summary>Tetapan kadar &amp; cuti <span class="muted">· untuk penyelia, isi bila dapat pengesahan Unit Kewangan</span></summary>
@@ -1585,7 +1592,7 @@ function sheetTableHtml(key) {
       '<td class="sticky-date"><div class="datecell"><b>' + d + " " + BULAN[mo.m - 1].slice(0,3) + '</b><small>' + dow + (cu ? ' · Cuti umum' : "") + '</small>' + (cu ? '<span class="cuti" title="' + esc(cu) + '">' + esc(cu) + '</span>' : "") + '</div></td>' +
       '<td class="sticky-on"><label class="sh-check"><input type="checkbox" data-on="1" aria-label="' + label + " " + esc(dateName) + '"' + (active ? " checked" : "") + '></label></td>' +
       cols.map(([c]) => '<td class="col-' + c + " " + kumpCol(c) + ' ' + (c === "masa" || c === "calltime" ? "time-cell" : c === "sebab" ? "reason-cell" : ["surat","jadual","ganti","borang","thumb","dipanggil","tiadacuti","ketik"].includes(c) ? "doc-cell" : "") + '">' + (active ? sheetCell(key,c,r,d,x) : '<span class="sheet-dash">–</span>') + "</td>").join("") +
-      '<td class="status-cell g-hasil"><span class="sh-status ' + status[0] + '">' + status[1] + '</span></td>' +
+      '<td class="status-cell g-hasil"' + (active && status[0] !== "ok" ? ' data-act="detail" data-d="' + d + '" title="Tekan untuk lihat apa yang belum lengkap"' : "") + '><span class="sh-status ' + status[0] + '">' + status[1] + '</span></td>' +
       '<td class="issue-cell col-issue g-hasil"><span class="sh-issue ' + status[0] + '">' + esc(sheetIssue(x)) + '</span></td>' +
       '<td class="g-hasil">' + (active ? '<button type="button" class="ghost sh-more" data-act="detail" data-d="' + d + '" aria-expanded="' + (extraDay === d) + '">' + (extraDay === d ? "Tutup ▴" : "Butiran ▾") + '</button>' : '<span class="sheet-dash">–</span>') + '</td></tr>');
     if (active && extraDay === d) out.push(sheetExtraHtml(key,d,r,x,cols.length+5));
@@ -2019,7 +2026,9 @@ function updateQuickSummary() {
   const done=evs.reduce((n,e)=>n+e.days.filter(x=>!x.k.length&&!x.a.length).length,0);
   $("quickClaim").textContent=total+" tarikh";
   $("quickDone").textContent=done+" lengkap";
-  $("quickIssue").textContent=(total-done)+" perlu tindakan";
+  $("quickIssue").textContent=(total-done)+" perlu tindakan" + (total>done ? " →" : "");
+  $("quickIssue").dataset.act = total>done ? "cari" : "";
+  const cb=$("cariBtn"); if (cb) { const o=overall(); cb.hidden = !(o.cls === "bad" || o.cls === "warn"); }
   $("quickSummary").classList.toggle("needs-attention",total>done);
 }
 function updateBar(key, ev) {
@@ -2031,7 +2040,7 @@ function updateBar(key, ev) {
   let t = (multi ? "Keseluruhan: " : "Keputusan: ") + o.kp;
   if (!multi && ev.gagal) t += " · " + ev.gagal + " tarikh belum lengkap";
   else if (!multi && ev.days.length && !ev.gagal && o.cls !== "idle") t += " · " + ev.days.length + " tarikh";
-  txt.textContent = t;
+  txt.textContent = t + (o.cls === "bad" || o.cls === "warn" ? " · tekan untuk tunjuk" : "");
 }
 
 function refresh() {
@@ -2110,7 +2119,72 @@ $("docRef").addEventListener("click", e => {
   const b = e.target.closest(".dr-tabs [data-tab]"); if (!b) return;
   switchTab(b.dataset.tab);
 });
-$("bstat").addEventListener("click", () => { $("step3").scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" }); });
+$("bstat").addEventListener("click", () => { if ($("bdot").dataset.st === "ok") $("step3").scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" }); else pergiIsu(); });
+/* ---------- Pergi terus ke bahagian yang belum lengkap ---------- */
+function sorot(el, pesan) {
+  if (!el) return false;
+  const host = el.closest("details"); if (host && !host.open) host.open = true;
+  el.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "center" });
+  const kotak = el.closest(".field, label, li, tr, .ck") || el;
+  kotak.classList.remove("sasar"); void kotak.offsetWidth; kotak.classList.add("sasar");
+  setTimeout(() => kotak.classList.remove("sasar"), 2400);
+  if (el.matches("input:not([type=checkbox]), select, textarea, button")) { try { el.focus({ preventScroll: true }); } catch (e) {} }
+  if (pesan) $("msg").textContent = "Perlu tindakan: " + pesan;
+  return true;
+}
+function isuPertama() {
+  if (!String(state.nama || "").trim()) return { el: () => $("nama"), m: "isi nama pegawai" };
+  if (!state.jawatan) return { el: () => $("jawatan"), m: "pilih jawatan" };
+  if (!state.fasiliti) return { el: () => $("fasiliti"), m: "pilih klinik bertugas" };
+  const ms = mods(), cur = activeTab(), urut = [cur].concat(ms.filter(k => k !== cur));
+  if (ms.some(isOt) && urut.some(k => isOt(k) && evalModule(k).days.length) && !(num(state.gaji) > 0)) return { el: () => $("gaji"), m: "isi gaji pokok" };
+  for (const k of urut) {
+    const ev = evalModule(k), x = ev.days.find(y => y.k.length);
+    if (x) return { tab: k, d: x.d, m: x.k[0] + " (" + x.d + " " + BULAN[monthInfo().m - 1].slice(0, 3) + ")" };
+  }
+  for (const k of urut) {
+    const ev = evalModule(k); if (!ev.days.length) continue;
+    const MS = isOt(k) ? md("elm") : md(k);
+    if (isOt(k) && !MS.penyata) return { tab: k, el: () => document.querySelector('#result [data-mk="penyata"]'), m: "tandakan salinan penyata gaji" };
+    if (k === "etap" && !md("etap").jarak) return { tab: k, el: () => document.querySelector('#module [data-mk="jarak"]'), m: "sahkan rumah dalam 33 km / 30 minit" };
+    if (ev.v.cls === "bad" && ev.v.why.some(w => /melebihi kiraan/.test(w))) return { tab: k, el: () => $("s-dit"), m: "jumlah dituntut melebihi kiraan" };
+  }
+  if (state.kaliPertama == null && urut.some(k => evalModule(k).days.length)) return { el: () => document.querySelector("[data-kali]"), m: "jawab soalan kali pertama membuat tuntutan" };
+  // Dokumen yang belum ditanda / belum lengkap dalam panel dokumen
+  const G = docGroups();
+  for (const g of G) {
+    if (!g.has) continue;
+    const i = g.L.findIndex(it => it.app !== false && it.s && (it.s[0] === "bad" || (it.tk && it.s[0] === "man")));
+    if (i >= 0) return { doc: g, idx: i, m: "dokumen: " + g.L[i].sh };
+  }
+  for (const k of urut) {
+    const ev = evalModule(k), x = ev.days.find(y => y.a.length);
+    if (x) return { tab: k, d: x.d, m: x.a[0] + " (" + x.d + " " + BULAN[monthInfo().m - 1].slice(0, 3) + ")" };
+    if (ev.days.length && ev.v.cls === "warn") return { tab: k, el: () => $("s-dit") && !$("s-dit").value ? $("s-dit") : $("result"), m: ev.v.why[0] };
+  }
+  return null;
+}
+function pergiIsu() {
+  const t = isuPertama();
+  if (!t) { $("msg").textContent = "Tiada bahagian belum lengkap dikesan."; $("step3").scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" }); return; }
+  if (t.tab && t.tab !== activeTab()) switchTab(t.tab);
+  if (t.d) {
+    rowFilter = "all"; extraDay = t.d; redrawSheet();
+    const row = document.querySelector('tr.sheet-row[data-d="' + t.d + '"]'), ex = document.querySelector('tr.sheet-extra[data-d="' + t.d + '"]');
+    const kosong = [row, ex].filter(Boolean).map(r => [...r.querySelectorAll('input[type="time"], input[type="text"], select')].find(f => !f.value && f.offsetParent)).find(Boolean);
+    sorot(row, t.m); if (kosong) setTimeout(() => { try { kosong.focus({ preventScroll: true }); } catch (e) {} }, 350);
+    return;
+  }
+  if (t.doc) {
+    const box = $("docRef"); box.open = true;
+    const tb = box.querySelector('.dr-tabs [data-tab="' + t.doc.tab + '"]'); if (tb && tb.getAttribute("aria-pressed") !== "true") { switchTab(t.doc.tab); }
+    const li = $("docRef").querySelectorAll("ol > li")[t.idx];
+    sorot(li || box, t.m); return;
+  }
+  sorot(t.el && t.el(), t.m);
+}
+document.addEventListener("click", e => { if (e.target.closest('[data-act="cari"]')) pergiIsu(); });
+
 
 
 function onModuleInput(e) {
@@ -2184,7 +2258,12 @@ $("module").addEventListener("click", e => {
   const filter=e.target.closest("[data-filter]");
   if (filter) { rowFilter = filter.dataset.filter === "issues" && rowFilter === "issues" ? "claimed" : filter.dataset.filter; extraDay=null; redrawSheet(); return; }
   const detail=e.target.closest('[data-act="detail"]');
-  if (detail) { const d=+detail.dataset.d; extraDay=extraDay===d ? null : d; redrawSheet(); return; }
+  if (detail) {
+    const d=+detail.dataset.d, buka=detail.tagName==="TD";
+    extraDay = buka ? d : (extraDay===d ? null : d); redrawSheet();
+    if (buka) { const ex=document.querySelector('tr.sheet-extra[data-d="' + d + '"]'); if (ex) sorot(ex.querySelector(".issues") || ex); }
+    return;
+  }
   if (e.target.closest('[data-act="lajur"]')) { lajurPenuh = !lajurPenuh; extraDay = null; redrawSheet(); return; }
 });
 

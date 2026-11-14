@@ -233,6 +233,12 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 .dr-borang li { font-size: 0.82rem; }
 .dr-borang li a { color: var(--accent); font-weight: 600; }
 .dr-borang li small { display: block; font-size: 0.74rem; font-style: italic; color: var(--muted); }
+/* Sorotan bahagian yang belum lengkap */
+@keyframes sasar { 0% { box-shadow: 0 0 0 0 rgba(212,140,0,0); } 15% { box-shadow: 0 0 0 4px rgba(212,140,0,0.85); } 100% { box-shadow: 0 0 0 4px rgba(212,140,0,0); } }
+.sasar { animation: sasar 2.2s ease-out; border-radius: 6px; background-color: var(--warn-soft) !important; }
+button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; font-weight: 700; }
+#bst { cursor: pointer; }
+#docDone[data-act="cari"] { cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -319,7 +325,7 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 </div>
 
 <div class="bar" id="bar"><div class="in">
-  <div class="st" id="bst"><span class="dot"></span><span id="btxt">Isi maklumat pegawai untuk mula</span></div>
+  <div class="st" id="bst" role="button" tabindex="0" data-act="cari" title="Tekan untuk pergi ke bahagian yang belum lengkap"><span class="dot"></span><span id="btxt">Isi maklumat pegawai untuk mula</span></div>
   <span class="msg" id="msg" role="status"></span>
   <div class="btns" id="btns">
     <button class="ghost" id="lihatBtn" type="button">Lihat PDF</button>
@@ -438,33 +444,34 @@ function fmtJ(h) { if (h == null) return "–"; const hh = Math.floor(h + 1e-9),
 // ---------- Semakan satu perjalanan ----------
 function evalTrip(t, perb) {
   const g = state.gred, h = jamTrip(t), M = kiraMakan(t, g), I = kiraInap(t, g), P = perb.per[t.id] || { km: 0, rm: 0 };
-  const k = [], a = [], D = t.d || {};
+  const k = [], a = [], kf = [], D = t.d || {};
+  const K = (m, f) => { k.push(m); kf.push(f || null); };
   // e-hailing / teksi tambahan (cth lapangan terbang ke hotel) boleh diisi bagi cara perjalanan selain "awam"
   const tambang = t.mod === "awam" ? numv(t.tambangRM) : numv(t.ehailRM), terbang = t.mod === "terbang" ? numv(t.terbangRM) : 0;
   const tol = numv(t.tolRM), parkir = numv(t.parkirRM), dobi = t.luarHQ && numv(t.malam) >= 3 ? numv(t.dobiRM) : 0;
-  if (!t.tujuan.trim()) k.push("Isi tujuan perjalanan");
-  if (!t.destinasi.trim()) k.push("Isi destinasi");
-  if (h == null) k.push("Isi masa bertolak dan masa sampai balik");
-  else if (h <= 0) k.push("Masa sampai balik mesti selepas masa bertolak");
-  if (t.luarHQ == null) k.push("Jawab: destinasi lebih 25 km dari ibu pejabat?");
+  if (!t.tujuan.trim()) K("Isi tujuan perjalanan", '[data-k="tujuan"]');
+  if (!t.destinasi.trim()) K("Isi destinasi", '[data-k="destinasi"]');
+  if (h == null) K("Isi masa bertolak dan masa sampai balik", '[data-k="mula"]');
+  else if (h <= 0) K("Masa sampai balik mesti selepas masa bertolak", '[data-k="tamat"]');
+  if (t.luarHQ == null) K("Jawab: destinasi lebih 25 km dari ibu pejabat?", '[data-k="luarHQ"]');
   if (state.bulan && t.mula && t.mula.slice(0, 7) !== state.bulan) a.push("Tarikh bertolak bukan dalam bulan tuntutan (" + state.bulan + ")");
-  if (!D.arahan) k.push("Tiada surat / memo / e-mel arahan bertugas rasmi");
+  if (!D.arahan) K("Tiada surat / memo / e-mel arahan bertugas rasmi", '[data-d="arahan"]');
   // Pengangkutan
   if (t.mod === "sendiri") {
-    if (!state.kend || state.kend === "tiada") k.push("Pilih jenis kenderaan sendiri dalam Langkah 1");
-    if (!numv(t.km)) k.push("Isi jarak perjalanan (km, pergi balik)");
+    if (!state.kend || state.kend === "tiada") K("Pilih jenis kenderaan sendiri dalam Langkah 1", "@[data-kend]");
+    if (!numv(t.km)) K("Isi jarak perjalanan (km, pergi balik)", '[data-k="km"]');
   }
   if (t.mod === "awam" && !tambang) a.push("Tiada jumlah tambang pengangkutan awam");
-  if (tambang && !D.resitTambang) k.push("Tiada resit tambang / e-hailing");
+  if (tambang && !D.resitTambang) K("Tiada resit tambang / e-hailing", '[data-d="resitTambang"]');
   if (t.mod === "terbang") {
     if (!terbang) a.push("Tiada jumlah tambang kapal terbang");
-    if (terbang && !D.eTiket) k.push("Tiada e-tiket, pas masuk (boarding pass) dan resit kapal terbang");
+    if (terbang && !D.eTiket) K("Tiada e-tiket, pas masuk (boarding pass) dan resit kapal terbang", '[data-d="eTiket"]');
     a.push("Kelas penerbangan ikut PP WP2.5; tempahan kelas lebih tinggi ditanggung sendiri");
   }
   if (t.mod === "jabatan" && numv(t.km)) a.push("Kenderaan jabatan / penganjur: perbatuan tidak boleh dituntut");
   if (t.mod === "awam" && (tol || parkir)) a.push("Tol / parkir biasanya untuk kenderaan sendiri. Tol perjalanan teksi / e-hailing sudah termasuk dalam tambang; pastikan tidak dituntut dua kali");
-  if (tol && !D.resitTol) k.push("Tiada resit / penyata Touch 'n Go bagi tol");
-  if (parkir && !D.resitParkir) k.push("Tiada resit parkir");
+  if (tol && !D.resitTol) K("Tiada resit / penyata Touch 'n Go bagi tol", '[data-d="resitTol"]');
+  if (parkir && !D.resitParkir) K("Tiada resit parkir", '[data-d="resitParkir"]');
   // Makan / harian
   if (t.luarHQ && (M.hari || M.harian)) {
     if (!D.aturcara) a.push("Lampirkan aturcara / jadual program untuk tunjuk makan yang disediakan");
@@ -472,23 +479,23 @@ function evalTrip(t, perb) {
   }
   // Penginapan
   if (t.luarHQ && (t.inap === "hotel" || t.inap === "lojing")) {
-    if (!numv(t.malam)) k.push("Isi bilangan malam menginap");
+    if (!numv(t.malam)) K("Isi bilangan malam menginap", '[data-k="malam"]');
     if (h != null && numv(t.malam) > Math.ceil(h / 24)) a.push("Bilangan malam melebihi tempoh perjalanan");
   }
   if (t.luarHQ && t.inap === "hotel") {
-    if (!numv(t.hotelRM)) k.push("Isi kadar bilik hotel semalam");
-    if (!D.resitHotel) k.push("Tiada resit hotel atas nama pegawai");
+    if (!numv(t.hotelRM)) K("Isi kadar bilik hotel semalam", '[data-k="hotelRM"]');
+    if (!D.resitHotel) K("Tiada resit hotel atas nama pegawai", '[data-d="resitHotel"]');
     if (I.lebihRM) a.push("Kadar bilik melebihi had " + rm(I.had) + " semalam; lebihan " + rm(I.lebihRM) + " tidak dikira (boleh hingga 50% lebih dengan kelulusan bagi program yang diluluskan)");
   }
   if (t.luarHQ && t.inap === "lojing") {
-    if (!t.alamat.trim()) k.push("Isi alamat lojing (tempat menginap)");
+    if (!t.alamat.trim()) K("Isi alamat lojing (tempat menginap)", '[data-k="alamat"]');
     a.push("Lojing tidak boleh dituntut jika menginap di rumah sendiri atau penginapan dibayar pegawai lain");
   }
   if (numv(t.dobiRM) && !(t.luarHQ && numv(t.malam) >= 3)) a.push("Dobi hanya boleh dituntut jika menginap sekurang-kurangnya 3 malam di luar kawasan ibu pejabat");
-  if (dobi && !D.resitDobi) k.push("Tiada resit dobi");
+  if (dobi && !D.resitDobi) K("Tiada resit dobi", '[data-d="resitDobi"]');
   if (t.jenis === "kursus" && !D.aturcara) a.push("Kursus: lampirkan surat panggilan / aturcara kursus");
   const jumlah = r2(M.makanRM + M.harianRM + I.hotelRM + I.cukaiRM + I.lojingRM + P.rm + tambang + terbang + tol + parkir + dobi);
-  return { t, h, M, I, P, tambang, terbang, tol, parkir, dobi, jumlah, k, a, st: k.length ? "bad" : a.length ? "warn" : "ok" };
+  return { t, h, M, I, P, tambang, terbang, tol, parkir, dobi, jumlah, k, a, kf, st: k.length ? "bad" : a.length ? "warn" : "ok" };
 }
 function evalAll() {
   const perb = kiraPerbatuan(state.trips, state.kend);
@@ -539,7 +546,7 @@ function tripHtml(e, i) {
   const pillTxt = e.st === "ok" ? "LENGKAP" : e.st === "warn" ? "PERLU SEMAK" : "BELUM LENGKAP";
   const buka = bukaKad.has(t.id);
   return '<div class="trip' + (buka ? "" : " tutup") + '" data-id="' + t.id + '">' +
-    '<div class="trip-h"><button type="button" class="kad-tog" data-act="tog" aria-expanded="' + buka + '" aria-label="' + (buka ? "Tutup" : "Buka") + ' butiran perjalanan">' + (buka ? "▾" : "▸") + '</button><span class="no">#' + (i + 1) + '</span><span class="ttl">' + esc(t.destinasi || "Perjalanan baharu") + ' <span class="panduan">' + esc(fmtDT(t.mula)) + " → " + esc(fmtDT(t.tamat)) + (e.h != null && e.h > 0 ? " · " + fmtJ(e.h) : "") + '</span></span><span class="pill ' + e.st + '">' + pillTxt + '</span><span class="rm">' + rm(e.jumlah) + '</span><button type="button" class="ghost small risky" data-act="padam">Padam</button></div>' +
+    '<div class="trip-h"><button type="button" class="kad-tog" data-act="tog" aria-expanded="' + buka + '" aria-label="' + (buka ? "Tutup" : "Buka") + ' butiran perjalanan">' + (buka ? "▾" : "▸") + '</button><span class="no">#' + (i + 1) + '</span><span class="ttl">' + esc(t.destinasi || "Perjalanan baharu") + ' <span class="panduan">' + esc(fmtDT(t.mula)) + " → " + esc(fmtDT(t.tamat)) + (e.h != null && e.h > 0 ? " · " + fmtJ(e.h) : "") + '</span></span>' + (e.st === "ok" ? '<span class="pill ok">' + pillTxt + "</span>" : '<button type="button" class="pill ' + e.st + '" data-act="isu-kad" title="Tekan untuk pergi ke bahagian yang belum lengkap">' + pillTxt + " →</button>") + '<span class="rm">' + rm(e.jumlah) + '</span><button type="button" class="ghost small risky" data-act="padam">Padam</button></div>' +
     '<div class="trip-b">' +
       '<div class="sec s-butir"><p class="sec-l">Butiran perjalanan</p><div class="grid4">' +
         '<div class="fm"><label class="lb">Jenis</label>' + pilih("jenis", [["tugas", "Tugas rasmi"], ["kursus", "Kursus"]], t.jenis) + "</div>" +
@@ -590,7 +597,7 @@ function renderSummary(A) {
     (state.kend === "motosikal" ? " Jika bertugas luar dengan motosikal 12 hari atau lebih sebulan (bulan ini " + hariMoto + " hari), boleh tuntut RM150 atau perbatuan, mana lebih tinggi; sahkan dengan Unit Kewangan." : "") : "Pilih jenis kenderaan dalam Langkah 1 untuk kira perbatuan.";
   renderDocs(A);
   const st = $("bst"); st.className = "st " + A.v.cls;
-  $("btxt").textContent = !state.gred ? "Pilih gred pegawai untuk mula" : "Keseluruhan: " + A.v.kp + (A.ev.length ? " · " + rm(A.sum.jumlah) : "");
+  $("btxt").textContent = !state.gred ? "Pilih gred pegawai untuk mula" : "Keseluruhan: " + A.v.kp + (A.ev.length ? " · " + rm(A.sum.jumlah) : "") + (A.v.cls === "bad" || A.v.cls === "warn" ? " · tekan untuk tunjuk" : "");
   updPdfBtns();
 }
 function docItems(A) {
@@ -624,7 +631,7 @@ function renderDocs(A) {
     (i.tk ? '<button type="button" class="ds-tick' + (i.on ? " on" : "") + '" data-sedia="' + i.id + '" aria-pressed="' + !!i.on + '">' + esc(i.s[1]) + "</button>" : i.s && !i.na ? '<span class="ds ' + i.s[0] + '">' + esc(i.s[1]) + "</span>" : "<span></span>") + "</li>").join("");
   const p = $("docDone");
   p.hidden = !has;
-  if (has) { p.className = "pill " + (belum ? "warn" : A.bad ? "warn" : "ok"); p.textContent = belum ? belum + " dokumen belum lengkap" : A.bad ? "✓ Dokumen ditanda. Masih ada perjalanan belum lengkap." : "✓ Semua dokumen lengkap. Sedia untuk dihantar."; }
+  if (has) { p.className = "pill " + (belum ? "warn" : A.bad ? "warn" : "ok"); p.textContent = belum ? belum + " dokumen belum lengkap →" : A.bad ? "✓ Dokumen ditanda. Masih ada perjalanan belum lengkap →" : "✓ Semua dokumen lengkap. Sedia untuk dihantar."; p.dataset.act = belum || A.bad ? "cari" : ""; }
 }
 function renderBorang() {
   $("borangList").innerHTML = [BORANG.tnt, BORANG.wp14].map(b => '<li><a href="' + b.u + '" target="_blank" rel="noopener">' + esc(b.t) + ' ↗</a><small>' + esc(b.n) + "</small></li>").join("") +
@@ -674,6 +681,8 @@ $("trips").addEventListener("click", ev => {
     if (k === "luarHQ" && v === "false") Object.assign(t, { inap: "tiada", malam: "", hotelRM: "", cukaiRM: "", alamat: "", dobiRM: "" });
     save(); lukisSemula(); return;
   }
+  const ik = ev.target.closest('[data-act="isu-kad"]'), ti = ik && tripOf(ik);
+  if (ti) { pergiKad(ti.id); return; }
   const tg = ev.target.closest('[data-act="tog"]') || (!ev.target.closest("button, a, input, select, label") && ev.target.closest(".trip-h"));
   const tt = tg && tripOf(tg);
   if (tt) { if (bukaKad.has(tt.id)) bukaKad.delete(tt.id); else bukaKad.add(tt.id); lukisSemula(); return; }
@@ -791,6 +800,43 @@ $("pdfBtn").addEventListener("click", () => {
 });
 (() => { const m = $("msg"); let tm; new MutationObserver(() => { clearTimeout(tm); if (m.textContent) tm = setTimeout(() => { m.textContent = ""; }, 6000); }).observe(m, { childList: true, characterData: true, subtree: true }); })();
 
+
+// ---------- Pergi terus ke bahagian yang belum lengkap ----------
+function sorot(el, pesan) {
+  if (!el) return false;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  const kotak = el.closest("label, li, .pilih, .sec > .grid4 > div, .isu") || el;
+  kotak.classList.remove("sasar"); void kotak.offsetWidth; kotak.classList.add("sasar");
+  setTimeout(() => kotak.classList.remove("sasar"), 2400);
+  if (el.matches("input, select, textarea, button")) { try { el.focus({ preventScroll: true }); } catch (e) {} }
+  if (pesan) $("msg").textContent = "Perlu tindakan: " + pesan;
+  return true;
+}
+function bukaDanCari(id, sel, pesan) {
+  if (!bukaKad.has(id)) { bukaKad.add(id); lukisSemula(); }
+  const card = document.querySelector('.trip[data-id="' + id + '"]'); if (!card) return;
+  const el = sel ? (sel[0] === "@" ? document.querySelector(sel.slice(1)) : card.querySelector(sel)) : null;
+  sorot(el || card.querySelector(".isu") || card, pesan);
+}
+function pergiKad(id) {
+  const e = evalAll().ev.find(x => x.t.id === id); if (!e) return;
+  if (e.k.length) bukaDanCari(id, e.kf[0], e.k[0]); else bukaDanCari(id, null, e.a[0]);
+}
+function pergiIsu() {
+  if (!String(state.nama || "").trim()) return sorot($("nama"), "isi nama pegawai");
+  if (!state.gred) return sorot($("gred"), "pilih gred pegawai");
+  if (!state.trips.length) return sorot($("addTrip"), "tambah perjalanan");
+  const A = evalAll();
+  let e = A.ev.find(x => x.k.length);
+  if (e) return bukaDanCari(e.t.id, e.kf[0], e.k[0]);
+  const L = docItems(A), i = L.findIndex(x => !x.na && x.s && (x.s[0] === "bad" || x.s[0] === "man"));
+  if (i >= 0) return sorot($("docs").children[i], "dokumen: " + L[i].t);
+  e = A.ev.find(x => x.a.length);
+  if (e) return bukaDanCari(e.t.id, null, e.a[0]);
+  $("msg").textContent = "Tiada bahagian belum lengkap dikesan.";
+}
+document.addEventListener("click", e => { if (e.target.closest('[data-act="cari"]')) pergiIsu(); });
+$("bst").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pergiIsu(); } });
 if (state.trips.length === 1) bukaKad.add(state.trips[0].id);
 renderAll();
 if (expired) $("msg").textContent = "Isian lama (tiada kemas kini lebih 30 hari) telah dipadam untuk privasi.";
