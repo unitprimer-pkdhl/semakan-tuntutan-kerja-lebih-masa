@@ -2199,14 +2199,14 @@ function pdfDocGroup(doc, y, g) {
   if (!L.length) return y;
   const H = doc.internal.pageSize.getHeight();
   y += 5;
-  if (y + 14 + Math.min(L.length, 4) * 7 > H - 12) { doc.addPage(); y = pdfMiniHeader(doc); }
+  if (y + 10 + 2 * 7 > H - 10) { doc.addPage(); y = pdfMiniHeader(doc); }
   doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(15, 92, 110);
   doc.text(P("Senarai semak dokumen: " + g.nm), 14, y); doc.setTextColor(30, 30, 30);
   doc.autoTable({ startY: y + 1.5, theme: "grid", head: [["Bil", "Dokumen", "Keterangan", "Semakan sistem", "Disemak"]],
     body: L.map((i, n) => [String(n + 1), P(i.t), P(i.d), P(i.s[1]), ""]),
-    styles: { fontSize: 8.2, cellPadding: 1.2, lineColor: [200, 208, 214], lineWidth: 0.15, valign: "middle" },
-    headStyles: { fillColor: [226, 236, 239], textColor: [15, 92, 110], fontStyle: "bold" },
-    columnStyles: { 0: { cellWidth: 10, halign: "center" }, 1: { cellWidth: 80, fontStyle: "bold" }, 3: { cellWidth: 32 }, 4: { cellWidth: 20 } },
+    styles: { fontSize: 8, cellPadding: 0.9, lineColor: [200, 208, 214], lineWidth: 0.15, valign: "middle" },
+    headStyles: { fillColor: [226, 236, 239], textColor: [15, 92, 110], fontStyle: "bold", fontSize: 7.8 },
+    columnStyles: { 0: { cellWidth: 10, halign: "center" }, 1: { cellWidth: 92, fontStyle: "bold" }, 2: { fontSize: 7.2, fontStyle: "italic", textColor: [90, 90, 90] }, 3: { cellWidth: 30 }, 4: { cellWidth: 18 } },
     margin: { left: 14, right: 14 },
     didParseCell: h => { if (h.section === "body" && h.column.index === 3) { const k = L[h.row.index].s[0]; h.cell.styles.textColor = k === "ok" ? [27, 127, 75] : k === "bad" ? [180, 35, 24] : [90, 90, 90]; h.cell.styles.fontStyle = "bold"; } },
     didDrawCell: h => { if (h.section === "body" && h.column.index === 4) { const sz = 3.6, cx = h.cell.x + h.cell.width / 2 - sz / 2, cy = h.cell.y + h.cell.height / 2 - sz / 2; h.doc.setDrawColor(90, 90, 90); h.doc.setLineWidth(0.25); h.doc.rect(cx, cy, sz, sz); } } });
@@ -2248,7 +2248,7 @@ function pdfRingkasan(doc, y, keys) {
 }
 function pdfSign(doc, y) {
   const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
-  let fy = y + 14;
+  let fy = y + 12;
   if (fy > H - 12) { doc.addPage(); fy = pdfMiniHeader(doc) + 14; }
   doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(30, 30, 30); doc.setDrawColor(120, 120, 120); doc.setLineWidth(0.2);
   doc.line(14, fy, 84, fy); doc.text("Disemak oleh (nama & cop)", 14, fy + 4);
@@ -2289,7 +2289,7 @@ function buildPdfX(ringkasanAtas) {
   const G = docGroups().filter(g => g.has), grpKey = k => isOt(k) ? "ot" : k;
   if (ringkasanAtas) { y = pdfRingkasan(doc, y, keys); y = pdfSign(doc, y) + 4; }
   keys.forEach((k, i) => {
-    y += 7;
+    y += 6;
     // Tajuk, maklumat, keputusan dan beberapa baris jadual mesti muat sehalaman; jika tidak, mula halaman baharu.
     const infoRows = { elm: 6, elmeh: 6, etap: 4, lokum: 4, bap: 2 }[k] || 4;
     const need = 11 + infoRows * 5.5 + 16 + 9 + Math.min(evalModule(k).days.length, 3) * 8 + 10;
