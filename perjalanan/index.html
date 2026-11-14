@@ -260,6 +260,14 @@ button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; fon
 .cb-auto.ok { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
 .cb-auto.bad { border-color: var(--bad); }
 .cb-auto.na { border-style: dotted; }
+.dr-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 8px; color: var(--muted); font-size: 0.74rem; }
+.dr-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dr-legend .cb, .dr-legend .cb-auto { width: 15px; height: 15px; border-width: 2px; cursor: default; }
+.dr-legend .cb { border-radius: 4px; }
+.dr-legend .cb-auto { border-color: var(--muted); }
+.dr-legend .cb:hover { background: var(--surface); }
+.dr-ke { display: block; width: fit-content; margin-top: 3px; padding: 1px 8px; border: 1px solid var(--accent); border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 0.72rem; font-weight: 600; cursor: pointer; line-height: 1.5; }
+.dr-ke:hover { background: var(--accent); color: var(--surface); }
 </style>
 </head>
 <body>
@@ -317,7 +325,7 @@ button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; fon
   </section>
 
   <section class="panel" id="step4">
-    <div class="step-h"><span class="num">4</span><div><h2>Dokumen wajib dilampirkan</h2><p class="sub">Tekan kotak bila dokumen dah ada. Bulatan ikut tanda dalam setiap kad perjalanan.</p></div></div>
+    <div class="step-h"><span class="num">4</span><div><h2>Dokumen wajib dilampirkan</h2><p class="dr-legend"><span><i class="cb"></i>Tekan bila dokumen dah ada</span><span><i class="cb opt"></i>Jika berkenaan sahaja</span><span><i class="cb-auto"></i>Tanda dalam kad perjalanan di atas</span></p></div></div>
     <details class="dr-borang" id="borangBox"><summary>Borang &amp; pautan untuk dimuat turun <span class="dr-bn">3</span></summary><ul id="borangList"></ul></details>
     <p id="docDone" class="pill" style="display:inline-block;margin:0 0 10px"></p>
     <div id="docs"></div>
@@ -627,20 +635,21 @@ function renderSummary(A) {
 function docItems(A) {
   const ev = A.ev, has = ev.length > 0, cnt = f => ev.filter(f).length;
   const st = (y, n) => n === 0 ? null : y >= n ? ["ok", "✓"] : ["bad", y + "/" + n];
-  const need = (f, g) => { const n = cnt(f), y = cnt(e => f(e) && g(e)); return { n, s: st(y, n) }; };
+  // lj = kad pertama yang belum ditanda: { id, sel } untuk butang "Tanda dalam kad perjalanan".
+  const need = (f, g, sel) => { const n = cnt(f), y = cnt(e => f(e) && g(e)), x = ev.find(e => f(e) && !g(e)); return { n, s: st(y, n), lj: x && sel ? { id: x.t.id, sel } : null }; };
   const D = e => e.t.d || {};
   const L = [];
   L.push({ id: "borang", t: "Borang Tuntutan Perjalanan Dalam Negeri (cetakan HRMIS)", c: "isi dalam HRMIS, cetak, tandatangan dan sahkan Ketua Jabatan", tk: true, bo: [BORANG.hrmis, BORANG.wp14] });
   L.push({ id: "hadir", t: "Thumbprint EH / KK pada tarikh perjalanan", c: "rekod kehadiran yang disahkan", tk: true, pkd: true });
-  const ar = need(() => true, e => D(e).arahan); L.push({ t: "Surat / memo / e-mel arahan bertugas rasmi", c: "bagi setiap perjalanan", s: ar.s, n: ar.n });
-  const at = need(e => e.t.jenis === "kursus" || (e.t.luarHQ && (e.M.hari || e.M.harian)), e => D(e).aturcara); L.push({ sh: "Aturcara", t: "Aturcara / jadual program / surat panggilan kursus", c: "jika tuntut elaun makan / harian atau kursus", s: at.s, n: at.n });
-  const ho = need(e => e.t.luarHQ && e.t.inap === "hotel", e => D(e).resitHotel); L.push({ sh: "Resit hotel", t: "Resit hotel atas nama pegawai", c: "jika menginap di hotel", s: ho.s, n: ho.n });
-  const lo = need(e => e.t.luarHQ && e.t.inap === "lojing", e => !!e.t.alamat.trim()); L.push({ sh: "Alamat lojing", t: "Alamat lojing dicatat dalam borang", c: "jika tuntut elaun lojing", s: lo.s, n: lo.n });
-  const to = need(e => e.tol > 0, e => D(e).resitTol); L.push({ sh: "Slip Touch 'n Go", t: "Slip / penyata Touch 'n Go (tol) + cop perbendaharaan", c: "jika tuntut tol", s: to.s, n: to.n });
-  const pa = need(e => e.parkir > 0, e => D(e).resitParkir); L.push({ sh: "Resit parkir", t: "Resit parkir", c: "jika tuntut parkir", s: pa.s, n: pa.n });
-  const ta = need(e => e.tambang > 0, e => D(e).resitTambang); L.push({ sh: "Resit tambang", t: "Resit tambang pengangkutan awam / e-hailing / teksi", c: "e-resit dengan tarikh, laluan dan jumlah", s: ta.s, n: ta.n });
-  const fl = need(e => e.t.mod === "terbang" && e.terbang > 0, e => D(e).eTiket); L.push({ sh: "E-tiket penerbangan", t: "E-tiket, pas masuk (boarding pass) dan resit penerbangan", c: "jika naik kapal terbang", s: fl.s, n: fl.n });
-  const db = need(e => e.dobi > 0, e => D(e).resitDobi); L.push({ sh: "Resit dobi", t: "Resit dobi", c: "jika menginap 3 malam atau lebih", s: db.s, n: db.n });
+  const ar = need(() => true, e => D(e).arahan, '[data-d="arahan"]'); L.push({ t: "Surat / memo / e-mel arahan bertugas rasmi", c: "bagi setiap perjalanan", s: ar.s, n: ar.n, lj: ar.lj });
+  const at = need(e => e.t.jenis === "kursus" || (e.t.luarHQ && (e.M.hari || e.M.harian)), e => D(e).aturcara, '[data-d="aturcara"]'); L.push({ sh: "Aturcara", t: "Aturcara / jadual program / surat panggilan kursus", c: "jika tuntut elaun makan / harian atau kursus", s: at.s, n: at.n, lj: at.lj });
+  const ho = need(e => e.t.luarHQ && e.t.inap === "hotel", e => D(e).resitHotel, '[data-d="resitHotel"]'); L.push({ sh: "Resit hotel", t: "Resit hotel atas nama pegawai", c: "jika menginap di hotel", s: ho.s, n: ho.n, lj: ho.lj });
+  const lo = need(e => e.t.luarHQ && e.t.inap === "lojing", e => !!e.t.alamat.trim(), '[data-k="alamat"]'); L.push({ sh: "Alamat lojing", t: "Alamat lojing dicatat dalam borang", c: "jika tuntut elaun lojing", s: lo.s, n: lo.n, lj: lo.lj });
+  const to = need(e => e.tol > 0, e => D(e).resitTol, '[data-d="resitTol"]'); L.push({ lj: to.lj, sh: "Slip Touch 'n Go", t: "Slip / penyata Touch 'n Go (tol) + cop perbendaharaan", c: "jika tuntut tol", s: to.s, n: to.n });
+  const pa = need(e => e.parkir > 0, e => D(e).resitParkir, '[data-d="resitParkir"]'); L.push({ lj: pa.lj, sh: "Resit parkir", t: "Resit parkir", c: "jika tuntut parkir", s: pa.s, n: pa.n });
+  const ta = need(e => e.tambang > 0, e => D(e).resitTambang, '[data-d="resitTambang"]'); L.push({ lj: ta.lj, sh: "Resit tambang", t: "Resit tambang pengangkutan awam / e-hailing / teksi", c: "e-resit dengan tarikh, laluan dan jumlah", s: ta.s, n: ta.n });
+  const fl = need(e => e.t.mod === "terbang" && e.terbang > 0, e => D(e).eTiket, '[data-d="eTiket"]'); L.push({ lj: fl.lj, sh: "E-tiket penerbangan", t: "E-tiket, pas masuk (boarding pass) dan resit penerbangan", c: "jika naik kapal terbang", s: fl.s, n: fl.n });
+  const db = need(e => e.dobi > 0, e => D(e).resitDobi, '[data-d="resitDobi"]'); L.push({ lj: db.lj, sh: "Resit dobi", t: "Resit dobi", c: "jika menginap 3 malam atau lebih", s: db.s, n: db.n });
   L.push({ id: "tukar", t: "Surat pertukaran", c: "jika ada", tk: true, opt: true, pkd: true });
   L.push({ id: "gaji", t: "Salinan slip gaji (penyata gaji) bulan tuntutan", c: "muat turun daripada e-Penyata Gaji", tk: true, bo: [BORANG.gaji], pkd: true });
   L.push({ id: "bank", t: "Salinan penyata akaun bank", c: "menunjukkan nama dan nombor akaun", tk: true, pkd: true });
@@ -662,7 +671,8 @@ function renderDocs(A) {
   const li = (i, n) => '<li data-i="' + n + '" class="' + (i.na ? "na" : "") + '">' +
     (i.tk ? '<button type="button" class="cb' + (i.on ? " on" : "") + (i.opt ? " opt" : "") + '" data-sedia="' + i.id + '" role="checkbox" aria-checked="' + !!i.on + '" aria-label="' + esc(i.t) + '" title="' + (i.on ? "Sedia. Tekan untuk buang tanda" : "Tekan bila dokumen sudah sedia") + '">' + CHK + "</button>"
       : '<span class="cb-auto ' + (i.na || !i.s ? "na" : i.s[0]) + '" title="Status ikut tanda dalam kad perjalanan">' + CHK + "</span>") +
-    '<span>' + esc(i.t) + "<em>" + esc(i.na ? "tidak perlu bulan ini" : i.c) + "</em>" + (i.bo ? '<span class="dr-links">' + i.bo.map(borLink).join("") + "</span>" : "") + "</span>" +
+    '<span>' + esc(i.t) + "<em>" + esc(i.na ? "tidak perlu bulan ini" : i.c) + "</em>" + (i.bo ? '<span class="dr-links">' + i.bo.map(borLink).join("") + "</span>" : "") +
+    (!i.tk && i.lj && i.s && i.s[0] !== "ok" ? '<button type="button" class="dr-ke" data-act="ke-kad" data-id="' + i.lj.id + '" data-sel="' + esc(i.lj.sel) + '" data-nm="' + esc(i.sh || i.t) + '">Tanda dalam kad perjalanan ↑</button>' : "") + "</span>" +
     (i.s && !i.tk && !i.na && i.s[0] !== "ok" ? '<span class="ds ' + i.s[0] + '">' + esc(i.s[1]) + "</span>" : "<span></span>") + "</li>";
   const S = susunDok(L), ol = a => '<ol class="doclist">' + a.map(o => li(o.i, o.n)).join("") + "</ol>";
   $("docs").innerHTML = '<p class="dr-sec">Senarai semak rasmi</p>' + ol(S.rasmi) + '<p class="dr-sec">Tambahan Unit Kewangan PKD</p>' + ol(S.pkd) +
@@ -874,6 +884,10 @@ function pergiIsu() {
   $("msg").textContent = "Tiada bahagian belum lengkap dikesan.";
 }
 document.addEventListener("click", e => { if (e.target.closest('[data-act="cari"]')) pergiIsu(); });
+document.addEventListener("click", e => {
+  const b = e.target.closest('[data-act="ke-kad"]'); if (!b) return;
+  bukaDanCari(b.dataset.id, b.dataset.sel, "tanda " + b.dataset.nm);
+});
 $("bst").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pergiIsu(); } });
 if (state.trips.length === 1) bukaKad.add(state.trips[0].id);
 renderAll();
