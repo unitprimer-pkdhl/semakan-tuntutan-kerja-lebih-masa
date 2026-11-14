@@ -2097,88 +2097,26 @@ function pdfVerdict(doc, y, label, v) {
   return y + hBar + 3;
 }
 
-function pdfOverview(doc, y) {
-  const ms = mods();
-  let tot = 0, totDit = 0, anyDit = false, unknown = false, hari = 0;
-  const body = ms.map(k => {
-    const ev = evalModule(k), S = ev.sum, n = ev.days.length; hari += n;
-    let calc = "-";
-    if (n) {
-      if ((k === "lokum" || k === "bap") && S.kadarKosong) { calc = "Kadar belum diisi"; unknown = true; }
-      else if (isOt(k) && !(S.gaji > 0)) { calc = "Gaji belum diisi"; unknown = true; }
-      else { calc = "RM " + rmP(S.rm); tot += S.rm; }
-    }
-    if (S.dit != null) { totDit += S.dit; anyDit = true; }
-    return [MODS[k].tab, String(n), calc, S.dit != null ? "RM " + rmP(S.dit) : "-", n ? ev.v.kp : "-"];
-  });
-  const o = overall();
-  body.push(["Jumlah", String(hari), "RM " + rmP(tot) + (unknown ? " *" : ""), anyDit ? "RM " + rmP(totDit) : "-", o.kp]);
-  doc.setFont("helvetica", "bold"); doc.setFontSize(11.5); doc.setTextColor(15, 92, 110);
-  doc.text("RINGKASAN SEMUA TUNTUTAN", 14, y); doc.setTextColor(30, 30, 30);
-  const last = body.length - 1;
-  doc.autoTable({ startY: y + 3, head: [["Jenis tuntutan", "Hari", "Jumlah dikira", "Jumlah dituntut", "Keputusan"]], body: body.map(r => r.map(P)), theme: "grid",
-    styles: { fontSize: 9, cellPadding: 1.4, lineColor: [200, 208, 214], lineWidth: 0.15 },
-    headStyles: { fillColor: [15, 92, 110], textColor: 255, fontStyle: "bold" },
-    columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 18, halign: "right" }, 2: { cellWidth: 45, halign: "right" }, 3: { cellWidth: 45, halign: "right" }, 4: { fontStyle: "bold" } },
-    margin: { left: 14, right: 14 },
-    didParseCell: h => {
-      if (h.section !== "body") return;
-      if (h.row.index === last) { h.cell.styles.fontStyle = "bold"; h.cell.styles.fillColor = [238, 243, 245]; }
-      if (h.column.index === 4) h.cell.styles.textColor = h.cell.raw === "SEMAKAN LENGKAP" ? [29, 122, 70] : h.cell.raw === "BELUM LENGKAP" ? [179, 38, 30] : h.cell.raw === "-" ? [60, 60, 60] : [138, 90, 0];
-    } });
-  let ny = doc.lastAutoTable.finalY;
-  doc.setFont("helvetica", "normal"); doc.setFontSize(8.5);
-  if (gajiNote(tot)) { ny += 4.5; doc.text(P(gajiNote(tot)), 14, ny); }
-  if (unknown) { ny += 4; doc.setFontSize(8); doc.text("* Belum termasuk tuntutan yang kadar atau gajinya belum diisi.", 14, ny); }
-  return ny;
+// Tajuk bahagian PDF: jalur berwarna penuh lebar, nombor bahagian di kiri, ringkasan kecil di kanan.
+const PDF_TAJUK = { etap: "ON-CALL (ETAP)", lokum: "EXTENDED HOURS (ELAUN LOKUM)", elmeh: "OT EXTENDED HOURS (ELM)", elm: "KERJA LEBIH MASA BIASA (ELM)", bap: "BERSEDIA ATAS PANGGILAN" };
+const PDF_SUSUN = ["etap", "lokum", "elmeh", "elm", "bap"];
+function pdfSecHead(doc, y, tajuk, kanan, warna) {
+  const W = doc.internal.pageSize.getWidth(), c = warna || [15, 92, 110];
+  doc.setFillColor(c[0], c[1], c[2]); doc.rect(14, y, W - 28, 8.5, "F");
+  doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(255, 255, 255);
+  doc.text(P(tajuk), 17, y + 5.8);
+  if (kanan) { doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.text(P(kanan), W - 17, y + 5.8, { align: "right" }); }
+  doc.setTextColor(30, 30, 30);
+  return y + 8.5;
 }
-
-function pdfOncallEh(doc, y) {
-  const e1 = evalModule("etap"), e2 = evalModule("lokum"), S1 = e1.sum, S2 = e2.sum, j = jw() || {}, M1 = md("etap");
-  const bz = S => S.beza == null ? "-" : Math.abs(S.beza) <= 0.05 ? "Sepadan" : (S.beza > 0 ? "Lebih RM " : "Kurang RM ") + rmP(Math.abs(S.beza));
-  const k = numOrNull(set["kadar" + j.lokum]);
-  doc.setFont("helvetica", "bold"); doc.setFontSize(11.5); doc.setTextColor(15, 92, 110);
-  doc.text("ON-CALL (ETAP) DAN EXTENDED HOURS (LOKUM)", 14, y); doc.setTextColor(30, 30, 30);
-  const info = [
-    ["ETAP dikira", "RM " + rmP(S1.rm) + " (" + (j.etap === "pakar" ? "kadar pakar" : "kadar pegawai") + ", 1 Okt 2025)", "ETAP dituntut", S1.dit != null ? "RM " + rmP(S1.dit) + " (" + bz(S1) + ")" : "-"],
-    ["Kategori ETAP", S1.p4 + " x dipanggil 4 jam atau lebih, " + S1.p0 + " x kurang 4 jam / tidak dipanggil", "", ""],
-    ["Extended hours dikira", S2.kadarKosong ? "- (kadar belum diisi)" : "RM " + rmP(S2.rm), "Extended hours dituntut", S2.dit != null ? "RM " + rmP(S2.dit) + " (" + bz(S2) + ")" : "-"],
-    ["Lokasi", lokTxt(S2.lok), "Kadar / jam dibayar", (k != null ? "RM " + rmP(k) + " sejam" : "Kadar belum diisi") + " / " + fmtJ(S2.jam)],
-    ["Jarak rumah (on-call)", M1.jarak ? "Dalam 33 km / 30 minit" : "Belum disahkan", "", ""],
-    ["Berbanding gaji pokok", pctInfo(S1.rm + (S2.kadarKosong ? 0 : S2.rm)).txt, "", ""]
-  ];
-  doc.autoTable({ startY: y + 3, body: info.map(r => r.map(P)), theme: "plain", styles: { fontSize: 9, cellPadding: 1.1 },
-    columnStyles: { 0: { fontStyle: "bold", cellWidth: 40 }, 1: { cellWidth: 96 }, 2: { fontStyle: "bold", cellWidth: 42 } }, margin: { left: 14, right: 14 } });
-  y = doc.lastAutoTable.finalY + 2;
-  y = pdfVerdict(doc, y, "ETAP", e1.v);
-  y = pdfVerdict(doc, y - 1, "EXTENDED HOURS", e2.v);
-  const st = x => x.k.length ? "BELUM LENGKAP" : x.a.length ? "PERLU SEMAK" : "LENGKAP";
-  const issues = x => x.k.concat(x.a).join("; ");
-  const rows = [];
-  e2.days.forEach(x => rows.push({ d: x.d, o: 0, c: [x.d + " " + HARI[x.wd] + (x.r.am ? " (KA)" : ""), "Extended hours", EH_L[x.r.lokasi] || "-", masa(x.r.mula, x.r.tamat),
-    withGt("Dikira " + fmtJ(x.c.bayar) + (x.c.luar ? ", " + fmtJ(x.c.luar) + " di luar waktu" : ""), x.r), x.c.rm != null ? rmP(x.c.rm) : "-", st(x), issues(x)] }));
-  e1.days.forEach(x => rows.push({ d: x.d, o: 1, c: [x.d + " " + HARI[x.wd], "On-call", fasLabel(), x.r.dipanggil ? masa(x.r.masuk, x.r.keluar) : "Tidak dipanggil",
-    withGt(KAT_L[x.c.kat] + (x.c.jenis === "biasa" ? ", hari bekerja" : ", rehat / kelepasan"), x.r), rmP(x.c.rm), st(x), issues(x)] }));
-  rows.sort((a, b) => a.d - b.d || a.o - b.o);
-  doc.autoTable({
-    startY: y, head: [["Tarikh", "Jenis", "Lokasi", "Masa", "Butiran", "RM", "Status", "Kekurangan / amaran"].map(P)], body: rows.map(r => r.c.map(P)), theme: "grid",
-    styles: { fontSize: 7.6, cellPadding: 1, valign: "middle", lineColor: [200, 208, 214], lineWidth: 0.15 },
-    headStyles: { fillColor: [15, 92, 110], textColor: 255, fontStyle: "bold", fontSize: 7.4 },
-    columnStyles: { 0: { cellWidth: 17 }, 1: { cellWidth: 22 }, 2: { cellWidth: 30 }, 3: { cellWidth: 24 }, 4: { cellWidth: 58 }, 5: { cellWidth: 16, halign: "right" }, 6: { cellWidth: 21, fontStyle: "bold" } },
-    margin: { left: 14, right: 14 },
-    didParseCell: h => {
-      if (h.section !== "body") return;
-      if (h.column.index === 6) h.cell.styles.textColor = h.cell.raw === "LENGKAP" ? [29, 122, 70] : h.cell.raw === "PERLU SEMAK" ? [138, 90, 0] : [179, 38, 30];
-      if (h.column.index === 7) h.cell.styles.textColor = [150, 40, 30];
-    }
-  });
-  return doc.lastAutoTable.finalY;
+function pdfJumlahTxt(key) {
+  const ev = evalModule(key), S = ev.sum, n = ev.days.length;
+  const rm = (key === "lokum" || key === "bap") && S.kadarKosong ? "kadar belum diisi" : isOt(key) && !(S.gaji > 0) ? "gaji belum diisi" : "dikira RM " + rmP(S.rm);
+  return n + " tarikh  |  " + rm + (S.dit != null ? "  |  dituntut RM " + rmP(S.dit) : "");
 }
-
-function pdfModule(doc, key, y) {
+function pdfModule(doc, key, y, no) {
   const ev = evalModule(key), S = ev.sum, W = doc.internal.pageSize.getWidth(), j = jw() || {};
-  doc.setFont("helvetica", "bold"); doc.setFontSize(11.5); doc.setTextColor(15, 92, 110);
-  doc.text(P(MODS[key].title.toUpperCase()), 14, y); doc.setTextColor(30, 30, 30);
+  y = pdfSecHead(doc, y, no + ".  " + PDF_TAJUK[key], pdfJumlahTxt(key)) + 2;
   const bz = S.beza == null ? "-" : Math.abs(S.beza) <= 0.05 ? "Sepadan" : (S.beza > 0 ? "Lebih RM " : "Kurang RM ") + rmP(Math.abs(S.beza));
   const ditT = S.dit != null ? "RM " + rmP(S.dit) : "-";
   let info;
@@ -2256,30 +2194,57 @@ function pdfModule(doc, key, y) {
   return doc.lastAutoTable.finalY;
 }
 
-function pdfDocs(doc, y) {
-  const G = docGroups().filter(g => g.has).map(g => ({ nm: g.nm, L: g.L.filter(i => i.s && i.app !== false) })).filter(g => g.L.length);
-  if (!G.length) return y;
+function pdfDocGroup(doc, y, g) {
+  const L = g.L.filter(i => i.s && i.app !== false);
+  if (!L.length) return y;
   const H = doc.internal.pageSize.getHeight();
-  y += 7;
-  if (y + 20 + G[0].L.length * 7 > H - 25) { doc.addPage(); y = pdfMiniHeader(doc); }
-  doc.setFont("helvetica", "bold"); doc.setFontSize(11.5); doc.setTextColor(15, 92, 110);
-  doc.text("SENARAI SEMAK DOKUMEN DILAMPIRKAN", 14, y); doc.setTextColor(30, 30, 30);
-  G.forEach((g, gi) => {
-    y += gi ? 6 : 1;
-    if (y + 16 + g.L.length * 7 > H - 25) { doc.addPage(); y = pdfMiniHeader(doc); }
-    y += 4; doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(15, 92, 110);
-    doc.text(P(g.nm.toUpperCase()), 14, y); doc.setTextColor(30, 30, 30);
-    doc.autoTable({ startY: y + 1.5, theme: "grid", head: [["Bil", "Dokumen", "Keterangan", "Semakan sistem", "Disemak"]],
-      body: g.L.map((i, n) => [String(n + 1), P(i.t), P(i.d), P(i.s[1]), ""]),
-      styles: { fontSize: 8.5, cellPadding: 1.4, lineColor: [200, 208, 214], lineWidth: 0.15, valign: "middle" },
-      headStyles: { fillColor: [15, 92, 110], textColor: 255, fontStyle: "bold" },
-      columnStyles: { 0: { cellWidth: 10, halign: "center" }, 1: { cellWidth: 80, fontStyle: "bold" }, 3: { cellWidth: 32 }, 4: { cellWidth: 20 } },
-      margin: { left: 14, right: 14 },
-      didParseCell: h => { if (h.section === "body" && h.column.index === 3) { const k = g.L[h.row.index].s[0]; h.cell.styles.textColor = k === "ok" ? [27, 127, 75] : k === "bad" ? [180, 35, 24] : [90, 90, 90]; h.cell.styles.fontStyle = "bold"; } },
-      didDrawCell: h => { if (h.section === "body" && h.column.index === 4) { const sz = 3.6, cx = h.cell.x + h.cell.width / 2 - sz / 2, cy = h.cell.y + h.cell.height / 2 - sz / 2; h.doc.setDrawColor(90, 90, 90); h.doc.setLineWidth(0.25); h.doc.rect(cx, cy, sz, sz); } } });
-    y = doc.lastAutoTable.finalY;
+  y += 5;
+  if (y + 14 + Math.min(L.length, 4) * 7 > H - 12) { doc.addPage(); y = pdfMiniHeader(doc); }
+  doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(15, 92, 110);
+  doc.text(P("Senarai semak dokumen: " + g.nm), 14, y); doc.setTextColor(30, 30, 30);
+  doc.autoTable({ startY: y + 1.5, theme: "grid", head: [["Bil", "Dokumen", "Keterangan", "Semakan sistem", "Disemak"]],
+    body: L.map((i, n) => [String(n + 1), P(i.t), P(i.d), P(i.s[1]), ""]),
+    styles: { fontSize: 8.2, cellPadding: 1.2, lineColor: [200, 208, 214], lineWidth: 0.15, valign: "middle" },
+    headStyles: { fillColor: [226, 236, 239], textColor: [15, 92, 110], fontStyle: "bold" },
+    columnStyles: { 0: { cellWidth: 10, halign: "center" }, 1: { cellWidth: 80, fontStyle: "bold" }, 3: { cellWidth: 32 }, 4: { cellWidth: 20 } },
+    margin: { left: 14, right: 14 },
+    didParseCell: h => { if (h.section === "body" && h.column.index === 3) { const k = L[h.row.index].s[0]; h.cell.styles.textColor = k === "ok" ? [27, 127, 75] : k === "bad" ? [180, 35, 24] : [90, 90, 90]; h.cell.styles.fontStyle = "bold"; } },
+    didDrawCell: h => { if (h.section === "body" && h.column.index === 4) { const sz = 3.6, cx = h.cell.x + h.cell.width / 2 - sz / 2, cy = h.cell.y + h.cell.height / 2 - sz / 2; h.doc.setDrawColor(90, 90, 90); h.doc.setLineWidth(0.25); h.doc.rect(cx, cy, sz, sz); } } });
+  return doc.lastAutoTable.finalY;
+}
+// Ringkasan semua jenis tuntutan dan jumlah keseluruhan.
+function pdfRingkasanTinggi(keys) { return 8.5 + 4 + (keys.length + 2) * 6.6 + 10; }
+function pdfRingkasan(doc, y, keys) {
+  let tot = 0, totDit = 0, anyDit = false, unknown = false, hari = 0;
+  const body = keys.map(k => {
+    const ev = evalModule(k), S = ev.sum, n = ev.days.length; hari += n;
+    let calc;
+    if ((k === "lokum" || k === "bap") && S.kadarKosong) { calc = "Kadar belum diisi"; unknown = true; }
+    else if (isOt(k) && !(S.gaji > 0)) { calc = "Gaji belum diisi"; unknown = true; }
+    else { calc = "RM " + rmP(S.rm); tot += S.rm; }
+    if (S.dit != null) { totDit += S.dit; anyDit = true; }
+    return [PDF_TAJUK[k], String(n), calc, S.dit != null ? "RM " + rmP(S.dit) : "-", ev.v.kp || "-"];
   });
-  return y;
+  const o = overall();
+  body.push(["JUMLAH KESELURUHAN", String(hari), "RM " + rmP(tot) + (unknown ? " *" : ""), anyDit ? "RM " + rmP(totDit) : "-", o.kp]);
+  y = pdfSecHead(doc, y, "RINGKASAN DAN JUMLAH TUNTUTAN", keys.length + " jenis tuntutan  |  " + hari + " tarikh", [55, 65, 70]) + 1;
+  const last = body.length - 1;
+  doc.autoTable({ startY: y, head: [["Jenis tuntutan", "Hari", "Jumlah dikira", "Jumlah dituntut", "Keputusan"]], body: body.map(r => r.map(P)), theme: "grid",
+    styles: { fontSize: 9, cellPadding: 1.4, lineColor: [200, 208, 214], lineWidth: 0.15 },
+    headStyles: { fillColor: [226, 230, 232], textColor: [40, 50, 55], fontStyle: "bold" },
+    columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 18, halign: "right" }, 2: { cellWidth: 45, halign: "right" }, 3: { cellWidth: 45, halign: "right" }, 4: { fontStyle: "bold" } },
+    margin: { left: 14, right: 14 },
+    didParseCell: h => {
+      if (h.section !== "body") return;
+      if (h.row.index === last) { h.cell.styles.fontStyle = "bold"; h.cell.styles.fillColor = [238, 243, 245]; h.cell.styles.fontSize = 9.6; }
+      if (h.column.index === 4) h.cell.styles.textColor = h.cell.raw === "SEMAKAN LENGKAP" ? [29, 122, 70] : h.cell.raw === "BELUM LENGKAP" ? [179, 38, 30] : h.cell.raw === "-" ? [60, 60, 60] : [138, 90, 0];
+    } });
+  let ny = doc.lastAutoTable.finalY;
+  doc.setFont("helvetica", "italic"); doc.setFontSize(8); doc.setTextColor(90, 90, 90);
+  if (gajiNote(tot)) { ny += 4.2; doc.text(P(gajiNote(tot)), 14, ny); }
+  if (unknown) { ny += 4; doc.text("* Belum termasuk tuntutan yang kadar atau gajinya belum diisi.", 14, ny); }
+  doc.setFont("helvetica", "normal"); doc.setTextColor(30, 30, 30);
+  return ny;
 }
 function pdfSign(doc, y) {
   const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight();
@@ -2301,9 +2266,14 @@ function pdfMiniHeader(doc) {
 }
 
 function buildPdf() {
+  // Cubaan 1: ringkasan di hujung. Jika ringkasan terpaksa ke halaman baharu seorang diri, bina semula dengan ringkasan di halaman pertama.
+  const d1 = buildPdfX(false);
+  return d1.__ringkasanBaru ? buildPdfX(true) : d1;
+}
+function buildPdfX(ringkasanAtas) {
   const jsPDF = window.jspdf.jsPDF;
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-  const mo = monthInfo(), j = jw();
+  const mo = monthInfo(), j = jw(), H = doc.internal.pageSize.getHeight();
   doc.setFont("helvetica", "bold"); doc.setFontSize(14);
   doc.text("SEMAKAN TUNTUTAN KERJA LEBIH MASA DAN ELAUN", 14, 15);
   doc.autoTable({ startY: 19, theme: "plain", styles: { fontSize: 9.5, cellPadding: 1.1 },
@@ -2311,27 +2281,31 @@ function buildPdf() {
       ["Jawatan", P(j ? j.l : "-"), "Fasiliti", P(fasLabel())],
       ["Gaji pokok", num(state.gaji) > 0 ? "RM " + rmP(num(state.gaji)) : "-", "", ""]],
     columnStyles: { 0: { fontStyle: "bold", cellWidth: 36 }, 1: { cellWidth: 96 }, 2: { fontStyle: "bold", cellWidth: 46 } }, margin: { left: 14, right: 14 } });
-  let y = doc.lastAutoTable.finalY + 5;
+  let y = doc.lastAutoTable.finalY + 4;
   doc.setFont("helvetica","italic"); doc.setFontSize(8); doc.setTextColor(100,100,100);
   doc.text(P("Status adalah semakan awal automatik, bukan kelulusan rasmi. Sahkan dokumen dan kelayakan dengan penyelia / Unit Kewangan."), 14, y);
-  doc.setFont("helvetica","normal"); doc.setTextColor(30,30,30); y += 7;
-  const keys = mods().filter(k => evalModule(k).days.length);
-  // Ringkasan semua tuntutan dahulu (jika lebih dari satu jenis), kemudian bahagian setiap jenis tuntutan.
-  if (keys.length >= 2) {
-    y = pdfOverview(doc, y);
-  }
-  // Setiap jenis tuntutan ada ringkasan dan jadual sendiri, disusun berturutan. Halaman baharu hanya bila ruang tidak cukup.
-  const H = doc.internal.pageSize.getHeight();
+  doc.setFont("helvetica","normal"); doc.setTextColor(30,30,30); y += 5;
+  const keys = PDF_SUSUN.filter(k => mods().indexOf(k) >= 0 && evalModule(k).days.length);
+  const G = docGroups().filter(g => g.has), grpKey = k => isOt(k) ? "ot" : k;
+  if (ringkasanAtas) { y = pdfRingkasan(doc, y, keys); y = pdfSign(doc, y) + 4; }
   keys.forEach((k, i) => {
-    if (keys.length >= 2 || i > 0) y += 7;
-    // Pastikan tajuk, ringkasan, keputusan dan sekurang-kurangnya beberapa baris jadual muat dalam halaman yang sama.
+    y += 7;
+    // Tajuk, maklumat, keputusan dan beberapa baris jadual mesti muat sehalaman; jika tidak, mula halaman baharu.
     const infoRows = { elm: 6, elmeh: 6, etap: 4, lokum: 4, bap: 2 }[k] || 4;
-    const need = 6 + infoRows * 5.5 + 16 + 9 + Math.min(evalModule(k).days.length, 3) * 8 + 10;
+    const need = 11 + infoRows * 5.5 + 16 + 9 + Math.min(evalModule(k).days.length, 3) * 8 + 10;
     if (y > 40 && y + need > H) { doc.addPage(); y = pdfMiniHeader(doc); }
-    y = pdfModule(doc, k, y);
+    y = pdfModule(doc, k, y, i + 1);
+    // Senarai semak dokumen kumpulan ini, selepas bahagian terakhir kumpulan tersebut (OT biasa + OT EH berkongsi satu senarai).
+    const g = G.filter(x => x.k === grpKey(k))[0];
+    if (g && !keys.slice(i + 1).some(n => grpKey(n) === g.k)) y = pdfDocGroup(doc, y, g);
   });
-  y = pdfDocs(doc, y);
-  pdfSign(doc, y);
+  if (!ringkasanAtas) {
+    y += 9;
+    const need = pdfRingkasanTinggi(keys) + 20;
+    if (y + need > H - 6) { doc.__ringkasanBaru = true; doc.addPage(); y = pdfMiniHeader(doc); }
+    y = pdfRingkasan(doc, y, keys);
+    pdfSign(doc, y);
+  }
   return doc;
 }
 
