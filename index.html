@@ -9,6 +9,12 @@
 <meta property="og:title" content="Semakan Tuntutan OT &amp; Elaun">
 <meta property="og:description" content="Semak tuntutan OT, ETAP dan extended hours staf KK PKD Hulu Langat sebelum dihantar.">
 <meta property="og:type" content="website">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Semakan Tuntutan">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
@@ -639,6 +645,11 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 .sheet-legend span::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--lg); }
 .sheet-legend .lg-masa { --lg: var(--th-masa); } .sheet-legend .lg-dok { --lg: var(--th-dok); } .sheet-legend .lg-hasil { --lg: var(--th-hasil); }
 .sheet-bulk { border-left: 4px solid var(--c-dok); background: var(--s-dok); }
+/* Aplikasi (PWA) */
+.intro-act { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.lapor.pasang { background: var(--accent); color: var(--surface); border-color: var(--accent); cursor: pointer; font: inherit; font-size: 0.8rem; font-weight: 600; }
+.lapor.pasang:hover { background: var(--accent); opacity: 0.9; }
+.pasang-ios { flex-basis: 100%; font-size: 0.78rem; color: var(--fg); background: var(--accent-soft); border-radius: 7px; padding: 7px 10px; margin: 0; }
 </style>
 </head>
 <body>
@@ -653,7 +664,8 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
       <li><b>Privasi</b><span>Data kekal dalam pelayar peranti ini sahaja, tidak dihantar ke mana-mana pelayan, dan dipadam sendiri selepas 30 hari.</span></li>
     </ul>
     <div class="intro-f"><p class="intro-n">Hasil semakan ialah panduan awal, bukan kelulusan. Kelayakan muktamad tertakluk kepada pengesahan Ketua Jabatan dan Unit Kewangan.</p>
-      <a class="lapor" href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20OT%20%26%20Elaun" target="_blank" rel="noopener">Lapor kesilapan / cadangan ↗</a></div>
+      <span class="intro-act"><button type="button" class="lapor pasang" id="pasangBtn" hidden>Pasang aplikasi</button><a class="lapor" href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20OT%20%26%20Elaun" target="_blank" rel="noopener">Lapor kesilapan / cadangan ↗</a></span>
+      <p class="pasang-ios" id="pasangIos" hidden>Di iPhone / iPad: buka laman ini dalam Safari, tekan butang <b>Kongsi</b> (petak dengan anak panah ke atas), kemudian pilih <b>Add to Home Screen</b>.</p></div>
   </section>
   <nav class="apps" aria-label="Jenis semakan"><a href="./" aria-current="page">Tuntutan OT &amp; Elaun</a><a href="perjalanan/">Tuntutan Perjalanan</a></nav>
   <header>
@@ -2452,6 +2464,22 @@ $("pdfBtn").addEventListener("click", () => {
 (() => { const m = $("msg"); let t; new MutationObserver(() => { clearTimeout(t); $("bar").classList.toggle("hasmsg", !!m.textContent); if (m.textContent) t = setTimeout(() => { m.textContent = ""; }, 5000); }).observe(m, { childList: true, characterData: true, subtree: true }); })();
 renderAll();
 if (expiredOld) $("msg").textContent = "Isian lama (tiada kemas kini lebih 30 hari) telah dipadam untuk privasi.";
+})();
+</script>
+<script>
+(function () {
+  if ("serviceWorker" in navigator) window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js", { scope: "./" }).catch(function () {}); });
+  var btn = document.getElementById("pasangBtn"), ios = document.getElementById("pasangIos"), tangguh = null;
+  var dipasang = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  if (!btn || dipasang) return;
+  var iPhone = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (iPhone) btn.hidden = false;
+  window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); tangguh = e; btn.hidden = false; });
+  window.addEventListener("appinstalled", function () { btn.hidden = true; if (ios) ios.hidden = true; });
+  btn.addEventListener("click", function () {
+    if (tangguh) { tangguh.prompt(); tangguh.userChoice.then(function () { tangguh = null; btn.hidden = true; }); }
+    else if (ios) ios.hidden = !ios.hidden;
+  });
 })();
 </script>
 </body>
