@@ -204,6 +204,35 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 .lapor.pasang { background: var(--accent); color: var(--surface); border-color: var(--accent); cursor: pointer; font: inherit; font-size: 0.8rem; font-weight: 600; }
 .lapor.pasang:hover { background: var(--accent); opacity: 0.9; }
 .pasang-ios { flex-basis: 100%; font-size: 0.78rem; color: var(--fg); background: var(--accent-soft); border-radius: 7px; padding: 7px 10px; margin: 0; }
+/* Telefon / app: pengenalan ringkas, tab melekat di atas, bar bawah satu baris */
+.intro-tog { display: none; }
+@media (max-width: 760px) {
+  .intro:not(.buka) .intro-p, .intro:not(.buka) .intro-g, .intro:not(.buka) .intro-n { display: none; }
+  .intro-tog { display: inline-block; }
+  .intro-f { margin-top: 2px; }
+  .apps { position: sticky; top: 0; z-index: 30; display: flex; width: 100%; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .apps a { flex: 1 1 0; text-align: center; padding: 9px 6px; }
+}
+@media (max-width: 480px) {
+  .bar .btns { display: grid !important; grid-template-columns: 1fr 1.2fr 1fr; width: 100%; gap: 6px; }
+  .bar .btns button, .bar .btns .refresh-all, .bar .btns #resetBtn { grid-column: auto !important; padding: 9px 4px; font-size: 0.8rem; text-align: center; justify-content: center; white-space: nowrap; }
+  .bar .btns svg { display: none; }
+}
+/* Kad perjalanan boleh dilipat; pautan borang */
+.trip.tutup .trip-b { display: none; }
+.trip.tutup .trip-h { border-bottom: 0; border-radius: 10px; }
+.trip-h { cursor: pointer; }
+.kad-tog { border: 1px solid var(--line); background: var(--surface); color: var(--accent); border-radius: 6px; padding: 2px 8px; font-size: 0.8rem; line-height: 1.4; }
+.dr-links { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; }
+.dr-link { display: inline-block; font-size: 0.72rem; font-weight: 600; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); border-radius: 999px; padding: 1px 8px; background: var(--surface); }
+.dr-link:hover { background: var(--accent-soft); }
+.dr-borang { margin: 0 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.dr-borang > summary { cursor: pointer; padding: 7px 10px; font-size: 0.84rem; font-weight: 600; color: var(--accent); }
+.dr-bn { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--surface); font-size: 0.68rem; line-height: 18px; text-align: center; margin-left: 4px; }
+.dr-borang ul { list-style: none; margin: 0; padding: 0 10px 8px; display: flex; flex-direction: column; gap: 7px; }
+.dr-borang li { font-size: 0.82rem; }
+.dr-borang li a { color: var(--accent); font-weight: 600; }
+.dr-borang li small { display: block; font-size: 0.74rem; font-style: italic; color: var(--muted); }
 </style>
 </head>
 <body>
@@ -218,7 +247,7 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
       <li><b>Privasi</b><span>Data kekal dalam pelayar peranti ini sahaja, tidak dihantar ke mana-mana pelayan, dan dipadam sendiri selepas 30 hari.</span></li>
     </ul>
     <div class="intro-f"><p class="intro-n">Hasil semakan ialah panduan awal, bukan kelulusan. Kelayakan muktamad tertakluk kepada pengesahan Ketua Jabatan dan Unit Kewangan.</p>
-      <span class="intro-act"><button type="button" class="lapor pasang" id="pasangBtn" hidden>Pasang aplikasi</button><a class="lapor" href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20Perjalanan" target="_blank" rel="noopener">Lapor kesilapan / cadangan ↗</a></span>
+      <span class="intro-act"><button type="button" class="lapor intro-tog" id="introTog" aria-expanded="false">Tentang laman ▾</button><button type="button" class="lapor pasang" id="pasangBtn" hidden>Pasang aplikasi</button><a class="lapor" href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20Perjalanan" target="_blank" rel="noopener">Lapor kesilapan / cadangan ↗</a></span>
       <p class="pasang-ios" id="pasangIos" hidden>Di iPhone / iPad: buka laman ini dalam Safari, tekan butang <b>Kongsi</b> (petak dengan anak panah ke atas), kemudian pilih <b>Add to Home Screen</b>.</p></div>
   </section>
   <nav class="apps" aria-label="Jenis semakan"><a href="../">Tuntutan OT &amp; Elaun</a><a href="./" aria-current="page">Tuntutan Perjalanan</a></nav>
@@ -263,6 +292,7 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 
   <section class="panel" id="step4">
     <div class="step-h"><span class="num">4</span><div><h2>Dokumen wajib dilampirkan</h2><p class="sub">Tekan Tanda bila dokumen dah ada. Status lain ikut tanda dalam setiap kad perjalanan.</p></div></div>
+    <details class="dr-borang" id="borangBox"><summary>Borang &amp; pautan untuk dimuat turun <span class="dr-bn">2</span></summary><ul id="borangList"></ul></details>
     <p id="docDone" class="pill" style="display:inline-block;margin:0 0 10px"></p>
     <ol class="doclist" id="docs"></ol>
   </section>
@@ -373,6 +403,12 @@ const FASILITI = [["", "Pilih ibu pejabat"], ["pkdhl", "Pejabat Kesihatan Daerah
   ["bangi", "KK Bangi"], ["bt9", "KK Batu 9"], ["bt14", "KK Batu 14"], ["beranang", "KK Beranang"],
   ["kajang", "KK Kajang"], ["rinching", "KK Rinching Tengah"], ["semenyih", "KK Semenyih"],
   ["sgchua", "KK Sungai Chua"], ["sgsekamat", "KK Sungai Sekamat"], ["nirwana", "KK Taman Nirwana"], ["kkiacb", "KKIA Cheras Baru"]];
+// Pautan borang rasmi untuk dimuat turun. Semak semula bila pekeliling baharu keluar.
+const BORANG = {
+  wp14: { t: "Pekeliling Perbendaharaan WP1.4 (berkuat kuasa 1 Mei 2026)", lbl: "WP1.4 + Lampiran D", u: "https://mohe.gov.my/warga/muat-turun/manual-dan-garis-panduan/kewangan/1877-peka-kewangan-bil-7-2026-kemudahan-bertugas-rasmi-dan-berkursus-bagi-pegawai-perkhidmatan-persekutuan-pdf/file", n: "Teks penuh pekeliling. Borang Tuntutan Perjalanan Dalam Negeri di Lampiran D (muka surat 52)." },
+  tnt:  { t: "Borang Tuntutan Perjalanan Dalam Negeri WP1.4 (Lampiran D, versi Januari 2026)", lbl: "Borang TNT", u: "https://jknjohor.moh.gov.my/hpsf/wp-content/uploads/2026/01/BORANG-TNT-2026-pdf.pdf", n: "Borang 7 muka surat sedia dicetak, salinan daripada laman JKN Johor. Sahkan versi terkini dengan Unit Kewangan PKD." }
+};
+const borLink = b => '<a class="dr-link" href="' + b.u + '" target="_blank" rel="noopener" title="' + esc(b.t) + '">' + esc(b.lbl) + " ↗</a>";
 const GRED_L = { g18: "Gred 1 – 8", g910: "Gred 9 – 10", g1113: "Gred 11 – 13", g1415: "Gred 14 – 15" };
 const BULAN = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
 const HARI = ["Ahd", "Isn", "Sel", "Rab", "Kha", "Jum", "Sab"];
@@ -384,6 +420,7 @@ function thisMonth() { const d = new Date(); return d.getFullYear() + "-" + Stri
 function blank(bulan) { return { nama: "", gred: "", hq: "", bulan: bulan || thisMonth(), kend: "", trips: [], sedia: {} }; }
 function load() { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
 let state = load(), expired = false;
+const bukaKad = new Set(); // kad perjalanan yang sedang dibuka (tidak disimpan)
 if (!state || typeof state !== "object" || !Array.isArray(state.trips)) state = blank();
 if (state.savedAt && Date.now() - state.savedAt > SIMPAN_HARI * 864e5) { state = blank(); expired = true; }
 function save() { state.savedAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
@@ -500,8 +537,9 @@ function tripHtml(e, i) {
   if (e.dobi) kira.push(ln("Dobi", e.dobi));
   kira.push('<div class="ln tot"><span>Jumlah perjalanan ini</span><b>' + rm(e.jumlah) + "</b></div>");
   const pillTxt = e.st === "ok" ? "LENGKAP" : e.st === "warn" ? "PERLU SEMAK" : "BELUM LENGKAP";
-  return '<div class="trip" data-id="' + t.id + '">' +
-    '<div class="trip-h"><span class="no">#' + (i + 1) + '</span><span class="ttl">' + esc(t.destinasi || "Perjalanan baharu") + ' <span class="panduan">' + esc(fmtDT(t.mula)) + " → " + esc(fmtDT(t.tamat)) + (e.h != null && e.h > 0 ? " · " + fmtJ(e.h) : "") + '</span></span><span class="pill ' + e.st + '">' + pillTxt + '</span><span class="rm">' + rm(e.jumlah) + '</span><button type="button" class="ghost small risky" data-act="padam">Padam</button></div>' +
+  const buka = bukaKad.has(t.id);
+  return '<div class="trip' + (buka ? "" : " tutup") + '" data-id="' + t.id + '">' +
+    '<div class="trip-h"><button type="button" class="kad-tog" data-act="tog" aria-expanded="' + buka + '" aria-label="' + (buka ? "Tutup" : "Buka") + ' butiran perjalanan">' + (buka ? "▾" : "▸") + '</button><span class="no">#' + (i + 1) + '</span><span class="ttl">' + esc(t.destinasi || "Perjalanan baharu") + ' <span class="panduan">' + esc(fmtDT(t.mula)) + " → " + esc(fmtDT(t.tamat)) + (e.h != null && e.h > 0 ? " · " + fmtJ(e.h) : "") + '</span></span><span class="pill ' + e.st + '">' + pillTxt + '</span><span class="rm">' + rm(e.jumlah) + '</span><button type="button" class="ghost small risky" data-act="padam">Padam</button></div>' +
     '<div class="trip-b">' +
       '<div class="sec s-butir"><p class="sec-l">Butiran perjalanan</p><div class="grid4">' +
         '<div class="fm"><label class="lb">Jenis</label>' + pilih("jenis", [["tugas", "Tugas rasmi"], ["kursus", "Kursus"]], t.jenis) + "</div>" +
@@ -561,7 +599,7 @@ function docItems(A) {
   const need = (f, g) => { const n = cnt(f), y = cnt(e => f(e) && g(e)); return { n, s: st(y, n) }; };
   const D = e => e.t.d || {};
   const L = [];
-  L.push({ id: "borang", t: "Borang Tuntutan Perjalanan Dalam Negeri (Lampiran D, WP1.4)", c: "lengkap, ditandatangan dan disahkan Ketua Jabatan", tk: true });
+  L.push({ id: "borang", t: "Borang Tuntutan Perjalanan Dalam Negeri (Lampiran D, WP1.4)", c: "lengkap, ditandatangan dan disahkan Ketua Jabatan", tk: true, bo: [BORANG.tnt, BORANG.wp14] });
   const ar = need(() => true, e => D(e).arahan); L.push({ t: "Surat / memo / e-mel arahan bertugas rasmi", c: "bagi setiap perjalanan", s: ar.s, n: ar.n });
   const at = need(e => e.t.jenis === "kursus" || (e.t.luarHQ && (e.M.hari || e.M.harian)), e => D(e).aturcara); L.push({ t: "Aturcara / jadual program / surat panggilan kursus", c: "jika tuntut elaun makan / harian atau kursus", s: at.s, n: at.n });
   const ho = need(e => e.t.luarHQ && e.t.inap === "hotel", e => D(e).resitHotel); L.push({ t: "Resit hotel atas nama pegawai", c: "jika menginap di hotel", s: ho.s, n: ho.n });
@@ -582,13 +620,17 @@ function docItems(A) {
 function renderDocs(A) {
   const L = docItems(A), has = A.ev.length > 0;
   const belum = has ? L.filter(i => !i.na && i.s && (i.s[0] === "bad" || i.s[0] === "man")).length : 0;
-  $("docs").innerHTML = L.map(i => '<li class="' + (i.na ? "na" : "") + '"><span>' + esc(i.t) + "<em>" + esc(i.na ? "tidak perlu bulan ini" : i.c) + "</em></span>" +
+  $("docs").innerHTML = L.map(i => '<li class="' + (i.na ? "na" : "") + '"><span>' + esc(i.t) + "<em>" + esc(i.na ? "tidak perlu bulan ini" : i.c) + "</em>" + (i.bo ? '<span class="dr-links">' + i.bo.map(borLink).join("") + "</span>" : "") + "</span>" +
     (i.tk ? '<button type="button" class="ds-tick' + (i.on ? " on" : "") + '" data-sedia="' + i.id + '" aria-pressed="' + !!i.on + '">' + esc(i.s[1]) + "</button>" : i.s && !i.na ? '<span class="ds ' + i.s[0] + '">' + esc(i.s[1]) + "</span>" : "<span></span>") + "</li>").join("");
   const p = $("docDone");
   p.hidden = !has;
   if (has) { p.className = "pill " + (belum ? "warn" : A.bad ? "warn" : "ok"); p.textContent = belum ? belum + " dokumen belum lengkap" : A.bad ? "✓ Dokumen ditanda. Masih ada perjalanan belum lengkap." : "✓ Semua dokumen lengkap. Sedia untuk dihantar."; }
 }
-function renderAll() { fillTop(); renderTrips(); }
+function renderBorang() {
+  $("borangList").innerHTML = [BORANG.tnt, BORANG.wp14].map(b => '<li><a href="' + b.u + '" target="_blank" rel="noopener">' + esc(b.t) + ' ↗</a><small>' + esc(b.n) + "</small></li>").join("") +
+    "<li><b>Surat / memo arahan, aturcara, resit</b><small>Dokumen jabatan dan resit sendiri. Tiada borang khas.</small></li>";
+}
+function renderAll() { fillTop(); renderBorang(); renderTrips(); }
 
 // ---------- Interaksi ----------
 const tripOf = el => { const c = el.closest(".trip"); return c ? state.trips.find(t => t.id === c.dataset.id) : null; };
@@ -632,6 +674,9 @@ $("trips").addEventListener("click", ev => {
     if (k === "luarHQ" && v === "false") Object.assign(t, { inap: "tiada", malam: "", hotelRM: "", cukaiRM: "", alamat: "", dobiRM: "" });
     save(); lukisSemula(); return;
   }
+  const tg = ev.target.closest('[data-act="tog"]') || (!ev.target.closest("button, a, input, select, label") && ev.target.closest(".trip-h"));
+  const tt = tg && tripOf(tg);
+  if (tt) { if (bukaKad.has(tt.id)) bukaKad.delete(tt.id); else bukaKad.add(tt.id); lukisSemula(); return; }
   const p = ev.target.closest('[data-act="padam"]'), tp = p && tripOf(p);
   if (p && tp) { if (!window.confirm("Padam perjalanan ini?")) return; state.trips = state.trips.filter(x => x !== tp); save(); renderTrips(); }
 });
@@ -639,7 +684,7 @@ $("addTrip").addEventListener("click", () => {
   if (!state.gred) { $("msg").textContent = "Pilih gred pegawai dalam Langkah 1 dahulu."; $("gred").focus(); return; }
   const last = state.trips[state.trips.length - 1], t = newTrip();
   if (last) { t.mula = last.mula; t.tamat = last.tamat; t.mod = last.mod; }
-  state.trips.push(t); save(); renderTrips();
+  state.trips.push(t); bukaKad.clear(); bukaKad.add(t.id); save(); renderTrips();
   const el = document.querySelector('.trip[data-id="' + t.id + '"]'); if (el) el.scrollIntoView({ block: "start", behavior: "smooth" });
 });
 $("nama").addEventListener("input", e => { state.nama = e.target.value; save(); });
@@ -746,6 +791,7 @@ $("pdfBtn").addEventListener("click", () => {
 });
 (() => { const m = $("msg"); let tm; new MutationObserver(() => { clearTimeout(tm); if (m.textContent) tm = setTimeout(() => { m.textContent = ""; }, 6000); }).observe(m, { childList: true, characterData: true, subtree: true }); })();
 
+if (state.trips.length === 1) bukaKad.add(state.trips[0].id);
 renderAll();
 if (expired) $("msg").textContent = "Isian lama (tiada kemas kini lebih 30 hari) telah dipadam untuk privasi.";
 })();
@@ -765,6 +811,10 @@ if (expired) $("msg").textContent = "Isian lama (tiada kemas kini lebih 30 hari)
     else if (ios) ios.hidden = !ios.hidden;
   });
 })();
+</script>
+<script>
+(function () { var t = document.getElementById("introTog"), b = t && t.closest(".intro"); if (!t || !b) return;
+  t.addEventListener("click", function () { var o = b.classList.toggle("buka"); t.setAttribute("aria-expanded", String(o)); t.textContent = o ? "Tutup maklumat ▴" : "Tentang laman ▾"; }); })();
 </script>
 </body>
 </html>
