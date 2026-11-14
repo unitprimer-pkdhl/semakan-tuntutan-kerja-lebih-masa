@@ -140,8 +140,11 @@ button { font: inherit; font-weight: 600; font-size: 0.9rem; border-radius: 8px;
 /* Dokumen */
 .doclist { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 24px; counter-reset: d; }
 @media (max-width: 760px) { .doclist { grid-template-columns: minmax(0, 1fr); } }
-.doclist li { counter-increment: d; display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; }
-.doclist li::before { content: counter(d) "."; color: var(--muted); font-size: 0.76rem; }
+.doclist li { counter-increment: d; display: grid; grid-template-columns: 24px 18px minmax(0, 1fr) auto; gap: 4px 8px; align-items: start; }
+.doclist li::before { content: counter(d) "."; color: var(--muted); font-size: 0.76rem; order: 1; padding-top: 4px; }
+.doclist li > .cb, .doclist li > .cb-auto { order: 0; }
+.doclist li > span:not(.cb-auto) { order: 2; padding-top: 2px; }
+.doclist li > span:not(.cb-auto) ~ span { order: 3; }
 .doclist li em { display: block; font-size: 0.72rem; font-style: italic; color: var(--muted); }
 .doclist li.na { opacity: 0.45; }
 .ds { font-size: 0.72rem; font-weight: 700; border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
@@ -173,7 +176,7 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 .intro-k { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
 .intro-t { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
 .intro-p { font-size: 0.9rem; max-width: 92ch; }
-.intro-g { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.intro-g { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .intro-g li { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; font-size: 0.84rem; }
 .intro-g b { font-size: 0.86rem; }
 .intro-g span { color: var(--muted); }
@@ -194,7 +197,7 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 .asas.lapuk { border-color: var(--warn); background: var(--warn-soft); }
 .asas.lapuk .semak, .asas .lapuk-t { color: var(--warn); }
 /* Pautan maklum balas */
-.intro-f { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.intro-f { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 6px 12px; margin-top: 2px; }
 .lapor { font-size: 0.8rem; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 7px; padding: 5px 10px; text-decoration: none; white-space: nowrap; }
 .lapor:hover { background: var(--accent-soft); }
 .kaki { text-align: center; font-size: 0.76rem; color: var(--muted); margin: 8px 0 0; }
@@ -240,6 +243,17 @@ button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; fon
 #bst { cursor: pointer; }
 #docDone[data-act="cari"] { cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
 .ds-tick.opt { border-style: dashed; color: var(--muted); border-color: var(--line); }
+/* Senarai dokumen gaya checklist: kotak boleh klik (dokumen ditanda sendiri), bulatan = status ikut jadual */
+.cb { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--accent); background: var(--surface); display: inline-flex; align-items: center; justify-content: center; padding: 0; margin: 0; cursor: pointer; color: transparent; flex: none; }
+.cb svg, .cb-auto svg { width: 14px; height: 14px; }
+.cb:hover { background: var(--accent-soft); }
+.cb.on { background: var(--ok); border-color: var(--ok); color: #fff; }
+.cb.opt { border-style: dashed; border-color: var(--muted); }
+.cb.opt.on { border-style: solid; border-color: var(--ok); }
+.cb-auto { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: inline-flex; align-items: center; justify-content: center; color: transparent; flex: none; }
+.cb-auto.ok { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.cb-auto.bad { border-color: var(--bad); }
+.cb-auto.na { border-style: dotted; }
 </style>
 </head>
 <body>
@@ -247,13 +261,12 @@ button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; fon
   <section class="intro" aria-labelledby="introT">
     <p class="intro-k">Unit Primer · <span class="lg">Pejabat Kesihatan Daerah</span><span class="sm">PKD</span> Hulu Langat</p>
     <p class="intro-t" id="introT">Semakan Tuntutan Anggota Klinik Kesihatan</p>
-    <p class="intro-p">Alat semakan kendiri sebelum tuntutan dikemukakan kepada penyelia dan Unit Kewangan. Isi maklumat, semak kiraan dan kelengkapan dokumen, kemudian cetak ringkasan PDF untuk dilampirkan bersama borang tuntutan.</p>
+    <p class="intro-p">Alat semakan kendiri sebelum tuntutan dikemukakan kepada penyelia dan Unit Kewangan.</p>
     <ul class="intro-g">
       <li><b>Tuntutan OT &amp; Elaun</b><span>Kerja lebih masa, extended hours, ETAP, Elaun Lokum dan Elaun Bersedia Atas Panggilan.</span></li>
       <li><b>Tuntutan Perjalanan</b><span>Tugas rasmi dan kursus dalam negeri mengikut Pekeliling Perbendaharaan WP1.4.</span></li>
-      <li><b>Privasi</b><span>Data kekal dalam pelayar peranti ini sahaja, tidak dihantar ke mana-mana pelayan, dan dipadam sendiri selepas 30 hari.</span></li>
     </ul>
-    <div class="intro-f"><p class="intro-n">Hasil semakan ialah panduan awal, bukan kelulusan. Kelayakan muktamad tertakluk kepada pengesahan Ketua Jabatan dan Unit Kewangan.</p>
+    <div class="intro-f">
       <span class="intro-act"><button type="button" class="lapor intro-tog" id="introTog" aria-expanded="false">Tentang laman ▾</button><button type="button" class="lapor pasang" id="pasangBtn" hidden>Pasang aplikasi</button><a class="lapor" href="https://docs.google.com/forms/d/e/1FAIpQLScPYu-SmoEU98ZzhJWp0CUulEUHiSOdkNhzAqDnnWZDNGfzqQ/viewform?usp=pp_url&amp;entry.1896277982=Tuntutan%20Perjalanan" target="_blank" rel="noopener">Lapor kesilapan / cadangan ↗</a></span>
       <p class="pasang-ios" id="pasangIos" hidden>Di iPhone / iPad: buka laman ini dalam Safari, tekan butang <b>Kongsi</b> (petak dengan anak panah ke atas), kemudian pilih <b>Add to Home Screen</b>.</p></div>
   </section>
@@ -298,7 +311,7 @@ button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; fon
   </section>
 
   <section class="panel" id="step4">
-    <div class="step-h"><span class="num">4</span><div><h2>Dokumen wajib dilampirkan</h2><p class="sub">Tekan Tanda bila dokumen dah ada. Status lain ikut tanda dalam setiap kad perjalanan.</p></div></div>
+    <div class="step-h"><span class="num">4</span><div><h2>Dokumen wajib dilampirkan</h2><p class="sub">Tekan kotak bila dokumen dah ada. Bulatan ikut tanda dalam setiap kad perjalanan.</p></div></div>
     <details class="dr-borang" id="borangBox"><summary>Borang &amp; pautan untuk dimuat turun <span class="dr-bn">3</span></summary><ul id="borangList"></ul></details>
     <p id="docDone" class="pill" style="display:inline-block;margin:0 0 10px"></p>
     <ol class="doclist" id="docs"></ol>
@@ -417,6 +430,7 @@ const BORANG = {
   hrmis: { t: "HRMIS 2.0: Tuntutan Perjalanan Dalam Negeri", lbl: "HRMIS", u: "https://hrmis2.eghrmis.gov.my/HRMISNET/Common/Main/Login.aspx", n: "Log masuk, isi tuntutan di submodul Pengurusan Tuntutan dan Pendahuluan Diri, kemudian cetak borang." },
   gaji: { t: "e-Penyata Gaji (JANM)", lbl: "e-Penyata Gaji", u: "https://epenyatagaji-laporan.anm.gov.my/", n: "Log masuk dengan No. KP atau MyDigital ID, pilih bulan tuntutan, muat turun penyata gaji." }
 };
+const CHK = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const borLink = b => '<a class="dr-link" href="' + b.u + '" target="_blank" rel="noopener" title="' + esc(b.t) + '">' + esc(b.lbl) + " ↗</a>";
 const GRED_L = { g18: "Gred 1 – 8", g910: "Gred 9 – 10", g1113: "Gred 11 – 13", g1415: "Gred 14 – 15" };
 const BULAN = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
@@ -633,8 +647,11 @@ function docItems(A) {
 function renderDocs(A) {
   const L = docItems(A), has = A.ev.length > 0;
   const belum = has ? L.filter(i => !i.na && i.s && (i.s[0] === "bad" || i.s[0] === "man")).length : 0;
-  $("docs").innerHTML = L.map(i => '<li class="' + (i.na ? "na" : "") + '"><span>' + esc(i.t) + "<em>" + esc(i.na ? "tidak perlu bulan ini" : i.c) + "</em>" + (i.bo ? '<span class="dr-links">' + i.bo.map(borLink).join("") + "</span>" : "") + "</span>" +
-    (i.tk ? '<button type="button" class="ds-tick' + (i.on ? " on" : i.opt ? " opt" : "") + '" data-sedia="' + i.id + '" aria-pressed="' + !!i.on + '">' + esc(i.s[1]) + "</button>" : i.s && !i.na ? '<span class="ds ' + i.s[0] + '">' + esc(i.s[1]) + "</span>" : "<span></span>") + "</li>").join("");
+  $("docs").innerHTML = L.map(i => '<li class="' + (i.na ? "na" : "") + '">' +
+    (i.tk ? '<button type="button" class="cb' + (i.on ? " on" : "") + (i.opt ? " opt" : "") + '" data-sedia="' + i.id + '" role="checkbox" aria-checked="' + !!i.on + '" aria-label="' + esc(i.t) + '" title="' + (i.on ? "Sedia. Tekan untuk buang tanda" : "Tekan bila dokumen sudah sedia") + '">' + CHK + "</button>"
+      : '<span class="cb-auto ' + (i.na || !i.s ? "na" : i.s[0]) + '" title="Status ikut tanda dalam kad perjalanan">' + CHK + "</span>") +
+    '<span>' + esc(i.t) + "<em>" + esc(i.na ? "tidak perlu bulan ini" : i.c) + "</em>" + (i.bo ? '<span class="dr-links">' + i.bo.map(borLink).join("") + "</span>" : "") + "</span>" +
+    (i.s && !i.tk && !i.na && i.s[0] !== "ok" ? '<span class="ds ' + i.s[0] + '">' + esc(i.s[1]) + "</span>" : "<span></span>") + "</li>").join("");
   const p = $("docDone");
   p.hidden = !has;
   if (has) { p.className = "pill " + (belum ? "warn" : A.bad ? "warn" : "ok"); p.textContent = belum ? belum + " dokumen belum lengkap →" : A.bad ? "✓ Dokumen ditanda. Masih ada perjalanan belum lengkap →" : "✓ Semua dokumen lengkap. Sedia untuk dihantar."; p.dataset.act = belum || A.bad ? "cari" : ""; }
