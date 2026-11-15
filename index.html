@@ -487,6 +487,7 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
  .ot-sheet .sh-status { white-space:normal;font-size:.66rem;line-height:1.1; }
  .ot-sheet .sh-more { padding:7px 6px;font-size:.74rem; }
  .sheet-mobile-docs { display:flex;flex-direction:column;gap:7px;grid-column:1/-1; }
+ .sheet-extra .ganti-desk { display:none; }
  .sheet-mobile-docs .sec { background:var(--surface);border-radius:8px;padding:9px; }
  .sheet-extra-inner .clist,.sheet-extra-inner .g2 { grid-template-columns:repeat(2,minmax(0,1fr)); }
  .sheet-toolbar { padding:9px; }
@@ -1511,7 +1512,7 @@ function docsHtml(key, r) {
   else if (key === "etap") h += chkF("tiadacuti", "Tidak bercuti, MC atau kuarantin", r) + chkF("thumb", "Bukti thumbprint", r);
   else if (isEh(key)) h += chkF("thumb", "Thumbprint lengkap", r);
   else h += chkF("ketik", "Ketik masuk dan keluar", r, "dep-panggil");
-  h += '<label class="f wide dep-ganti"><span>Nama anggota yang diganti (pilihan)</span><input type="text" data-k="gantiNama" value="' + esc(r.gantiNama || "") + '"></label>';
+  h += '<label class="f wide dep-ganti"><span>Nama anggota yang diganti</span><input type="text" data-k="gantiNama" value="' + esc(r.gantiNama || "") + '" placeholder="Nama penuh anggota yang diganti"></label>';
   return '<div class="sec"><div class="sec-h">Dokumen <span class="docn" data-docn></span><button type="button" class="link" data-act="tickall">Tick semua</button></div><div class="clist">' + h + "</div></div>";
 }
 
@@ -1641,6 +1642,9 @@ function sheetCell(key,col,r,d,x) {
   const labels = { surat:"Surat arahan",thumb:"Thumbprint lengkap",tiadacuti:"Pengesahan tidak bercuti / MC" };
   return sheetCheck(r,col,(labels[col] || col) + " " + day);
 }
+function isuHtml(x) {
+  return x && (x.k.length || x.a.length) ? '<div class="issues">' + x.k.map(y => '<span class="k">• ' + esc(y) + "</span>").join("") + x.a.map(y => '<span class="a">• ' + esc(y) + "</span>").join("") + "</div>" : '<span class="hint">Tiada masalah pada tarikh ini dikesan oleh sistem.</span>';
+}
 function sheetExtraHtml(key,d,r,x,colSpan) {
   let fields = "";
   if (key === "elm") fields = selF("jenis","Jenis hari",[["biasa","Hari bekerja"],["rehat","Hari rehat"],["am","Kelepasan am"]],r.jenis || autoJenis(weekday(d))) +
@@ -1651,13 +1655,13 @@ function sheetExtraHtml(key,d,r,x,colSpan) {
     selF("bayar","Tuntut sebagai",[["bayaran","Bayaran"],["cg","Cuti gantian"]],r.bayar || "bayaran");
   if (key === "etap") fields = selF("jenis","Jenis hari",[["biasa","Hari bekerja"],["rehat","Hari rehat / kelepasan am"]],r.jenis || autoJenis(weekday(d)));
   if (key === "lokum") fields = '<label class="ck wide"><input type="checkbox" data-k="am"' + (r.am ? " checked" : "") + '> Hari kelepasan am</label>';
-  if (r.ganti) fields += '<label class="f wide"><span>Nama anggota diganti (untuk laporan)</span><input type="text" data-k="gantiNama" value="' + esc(r.gantiNama || "") + '" placeholder="Nama anggota diganti"></label>';
+  if (r.ganti) fields += '<label class="f wide ganti-desk"><span>Nama anggota yang diganti</span><input type="text" data-k="gantiNama" value="' + esc(r.gantiNama || "") + '" placeholder="Nama penuh anggota yang diganti"></label>';
   let primary = "";
   if (key === "elm") primary = '<label class="f wide"><span>Sebab OT</span><input type="text" data-k="sebab" placeholder="Contoh: program kesihatan" value="' + esc(r.sebab || "") + '"></label>';
   if (isEh(key)) primary = selF("lokasi","Lokasi extended hours",[["","Pilih KK"],["ampang","KK Ampang"],["kajang","KK Kajang"]],r.lokasi || "");
   if (key === "etap" || key === "bap") primary = chkF("dipanggil","Dipanggil masuk ke klinik",r) + (r.dipanggil ? timeF("masuk","Masa masuk",r) + timeF("keluar","Masa keluar",r) : "");
   const docs = '<div class="sheet-mobile-docs"><strong>Butiran utama</strong><div class="g2">' + primary + '</div><strong>Semakan dokumen</strong>' + docsHtml(key,r) + '</div>';
-  const issues = x && (x.k.length || x.a.length) ? '<div class="issues">' + x.k.map(y => '<span class="k">• ' + esc(y) + "</span>").join("") + x.a.map(y => '<span class="a">• ' + esc(y) + "</span>").join("") + "</div>" : '<span class="hint">Tiada masalah pada tarikh ini dikesan oleh sistem.</span>';
+  const issues = '<div class="isu-w">' + isuHtml(x) + "</div>";
   const req = reqDocs(key, r, x && x.c), have = req.filter(k => r[k]).length, cukup = have === req.length;
   const cls = (r.ganti ? " has-ganti" : "") + (key === "elm" && x && x.c && x.c.gross > 480 ? " need8" : "") + (r.dipanggil ? " panggil" : "");
   return ('<tr class="sheet-extra' + cls + '" data-d="' + d + '"><td colspan="' + colSpan + '"><div class="sheet-extra-inner"><strong>Butiran tambahan · ' + d + " " + BULAN[monthInfo().m - 1] + '</strong><div class="g2">' + docs + fields + '</div>' + issues + "</div></td></tr>").replace('<span class="docn" data-docn></span>', '<span class="docn ' + (cukup ? "ok" : "bad") + '" data-docn>' + have + "/" + req.length + (cukup ? " lengkap" : "") + "</span>").replace('data-act="tickall">Tick semua', 'data-act="tickall">' + (cukup ? "Buang semua" : "Tick semua"));
@@ -1753,6 +1757,7 @@ function updateSheet(key,ev) {
       (perlu || rowFilter === "issues" ? '<button type="button" class="tindakan" data-filter="issues" aria-pressed="' + (rowFilter === "issues") + '" title="' + (rowFilter === "issues" ? "Tekan untuk tunjuk semula semua tarikh dituntut" : "Tekan untuk tunjuk tarikh yang perlu tindakan sahaja") + '">' + perlu + " perlu tindakan</button>" : "0 perlu tindakan");
   }
   const byDay={}; ev.days.forEach(x => { byDay[x.d]=x; });
+  document.querySelectorAll("tr.sheet-extra[data-d] .isu-w").forEach(w => { const h=isuHtml(byDay[+w.closest("tr").dataset.d] || null); if (w._h !== h) { w._h = h; w.innerHTML = h; } });
   document.querySelectorAll(".kal-c[data-d]").forEach(b => { const st=sheetStatus(byDay[+b.dataset.d] || null)[0]; if (st === "idle") delete b.dataset.st; else b.dataset.st=st; });
   document.querySelectorAll(".kal-d.on[data-kal]").forEach(b => { const st=sheetStatus(byDay[+b.dataset.kal] || null)[0]; if (st === "idle") delete b.dataset.st; else b.dataset.st=st; });
   document.querySelectorAll(".sheet-row[data-d]").forEach(row => {
