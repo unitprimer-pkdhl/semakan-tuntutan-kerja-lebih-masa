@@ -620,6 +620,21 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 .intro-f { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 6px 12px; margin-top: 2px; }
 .lapor { font-size: 0.8rem; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 7px; padding: 5px 10px; text-decoration: none; white-space: nowrap; }
 .lapor:hover { background: var(--accent-soft); }
+.cara { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.cara-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.cara-h b { font-size: 0.98rem; }
+.cara-h span { color: var(--muted); font-size: 0.8rem; }
+.cara-h button { margin-left: auto; }
+.cara-l { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; counter-reset: cara; }
+.cara-l li { counter-increment: cara; }
+.cara-l a { display: grid; grid-template-columns: 26px minmax(0, 1fr); align-content: start; gap: 2px 8px; height: 100%; box-sizing: border-box; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--fg); text-decoration: none; }
+.cara-l a:hover { border-color: var(--accent); }
+.cara-l a::before { content: counter(cara); grid-row: span 2; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--surface); font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
+.cara-l b { font-size: 0.86rem; }
+.cara-l span { color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
+.cara.tutup .cara-l, .cara.tutup .cara-h span { display: none; }
+@media (max-width: 900px) { .cara-l { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .cara-l { grid-template-columns: minmax(0, 1fr); } .cara { padding: 10px 12px; } }
 .topbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
 .topbar .modesw { flex-direction: row; align-items: center; gap: 8px; }
 .docref > summary .num { flex: none; }
@@ -807,6 +822,19 @@ tr.sasar > td { background-color: var(--warn-soft); }
     </div>
   </div>
 
+  <section class="cara" id="cara" aria-label="Cara guna">
+    <div class="cara-h"><b>Cara guna</b><span>4 langkah · tekan langkah untuk pergi ke bahagian itu</span><button type="button" class="ghost small" id="caraTog" aria-expanded="true">Sembunyikan ▴</button></div>
+    <ol class="cara-l">
+      <li><a href="#step1"><b>Isi maklumat pegawai</b><span>Nama, jawatan, klinik dan bulan tuntutan.</span></a></li>
+      <li><a href="#step2"><b>Tekan tarikh dalam kalendar</b><span>Pilih jenis tuntutan (on-call / extended hours / OT), kemudian tekan tarikh bertugas. Masa extended hours diisi automatik ikut waktu dalam surat arahan.</span></a></li>
+      <li><a href="#docRef"><b>Tanda dokumen yang ada</b><span>Dalam jadual (atau butang <b>Butiran</b> di telefon), kemudian tekan kotak dalam senarai dokumen.</span></a></li>
+      <li><a href="#step3"><b>Semak dan muat turun PDF</b><span>Tekan bar di bawah skrin untuk terus ke bahagian belum lengkap. Bila <b>LENGKAP</b>, muat turun PDF dan lampirkan bersama borang.</span></a></li>
+    </ol>
+  </section>
+<script>(function () { var c = document.getElementById("cara"), b = document.getElementById("caraTog"), K = "semakan-cara-ot";
+  function set(t) { c.classList.toggle("tutup", t); b.textContent = t ? "Tunjuk ▾" : "Sembunyikan ▴"; b.setAttribute("aria-expanded", String(!t)); }
+  var t = false; try { t = localStorage.getItem(K) === "1"; } catch (e) {}
+  set(t); b.addEventListener("click", function () { var n = !c.classList.contains("tutup"); set(n); try { localStorage.setItem(K, n ? "1" : "0"); } catch (e) {} }); })();</script>
   <div class="layout">
   <div class="maincol">
   <section class="panel comp c-butir tint" id="step1">
@@ -1403,11 +1431,11 @@ const isSimple = () => set.mod !== "penuh";
 const TAB_S = { elm: "OT", elmeh: "OT extended hours", etap: "On-call", lokum: "Extended hours", bap: "Bersedia atas panggilan" };
 const tabL = k => isSimple() ? (TAB_S[k] || MODS[k].tab) : MODS[k].tab;
 const MOD_NOTE_S = {
-  elm: "<b>OT (kerja lebih masa).</b> Tandakan hari OT dalam jadual, isi masa mula dan tamat serta sahkan dokumen. Bayaran dikira automatik.",
-  elmeh: "<b>OT extended hours.</b> Tandakan hari bertugas dan pilih KK Ampang atau KK Kajang dalam jadual. Sahkan masa sebenar sebelum tuntut.",
-  etap: "<b>On-call.</b> Tandakan hari on-call dalam jadual. Isi waktu dipanggil jika berkenaan dan sahkan dokumen.",
-  lokum: "<b>Extended hours.</b> Tandakan hari bertugas dan pilih KK Ampang atau KK Kajang. Sahkan masa bertugas sebenar.",
-  bap: "<b>Bersedia atas panggilan.</b> Tandakan hari bertugas dalam jadual, kemudian sahkan dokumen. Kadar dan kelayakan memerlukan pengesahan kewangan."
+  elm: "<b>OT (kerja lebih masa).</b> Tekan tarikh OT dalam kalendar, isi masa mula dan tamat ikut surat arahan, kemudian tanda dokumen. Bayaran dikira automatik.",
+  elmeh: "<b>OT extended hours.</b> Tekan tarikh bertugas dalam kalendar dan pilih KK Ampang atau KK Kajang. Masa diisi ikut waktu operasi (Isn–Jum 5–9 malam, Sab 9 pagi–1 tgh); tuntut ikut masa dalam surat arahan walaupun selesai lewat.",
+  etap: "<b>On-call.</b> Tekan tarikh on-call dalam kalendar. Isi waktu dipanggil jika berkenaan, kemudian tanda dokumen.",
+  lokum: "<b>Extended hours.</b> Tekan tarikh bertugas dalam kalendar dan pilih KK Ampang atau KK Kajang. Masa diisi ikut waktu operasi (Isn–Jum 5–9 malam, Sab 9 pagi–1 tgh); tuntut ikut masa dalam surat arahan walaupun selesai lewat.",
+  bap: "<b>Bersedia atas panggilan.</b> Tekan tarikh bertugas dalam kalendar, kemudian tanda dokumen. Kadar dan kelayakan memerlukan pengesahan kewangan."
 };
 const MOD_NOTE = {
   elm: "<b>OT (kerja lebih masa).</b> Bayaran dikira sendiri dari gaji pokok dan masa OT.",
