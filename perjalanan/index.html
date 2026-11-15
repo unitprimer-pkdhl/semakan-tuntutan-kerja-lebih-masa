@@ -180,6 +180,21 @@ details.rujuk > summary { cursor: pointer; font-weight: 600; }
 .asas-w { text-align: center; margin-top: 4px; }
 .asas-w .asas { margin: 0; text-align: left; }
 .asas-top { margin: 0; padding: 6px 10px; border: 1px solid var(--warn); border-radius: 8px; background: var(--warn-soft); color: var(--warn); font-size: 0.8rem; font-weight: 600; }
+.cara { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.cara-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.cara-h b { font-size: 0.98rem; }
+.cara-h span { color: var(--muted); font-size: 0.8rem; }
+.cara-h button { margin-left: auto; }
+.cara-l { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; counter-reset: cara; }
+.cara-l li { counter-increment: cara; }
+.cara-l a { display: grid; grid-template-columns: 26px minmax(0, 1fr); align-content: start; gap: 2px 8px; height: 100%; box-sizing: border-box; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--fg); text-decoration: none; }
+.cara-l a:hover { border-color: var(--accent); }
+.cara-l a::before { content: counter(cara); grid-row: span 2; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--surface); font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
+.cara-l b { font-size: 0.86rem; }
+.cara-l span { color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
+.cara.tutup .cara-l, .cara.tutup .cara-h span { display: none; }
+@media (max-width: 900px) { .cara-l { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .cara-l { grid-template-columns: minmax(0, 1fr); } .cara { padding: 10px 12px; } }
 .intro { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
 .intro p { margin: 0; }
 .intro-k { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
@@ -289,6 +304,19 @@ button.pill { border: 0; cursor: pointer; font: inherit; font-size: 0.72rem; fon
   </section>
   <nav class="apps" aria-label="Jenis semakan"><a href="../">Tuntutan OT &amp; Elaun</a><a href="./" aria-current="page">Tuntutan Perjalanan</a></nav>
 
+  <section class="cara" id="cara" aria-label="Cara guna">
+    <div class="cara-h"><b>Cara guna</b><span>4 langkah · tekan langkah untuk pergi ke bahagian itu</span><button type="button" class="ghost small" id="caraTog" aria-expanded="true">Sembunyikan ▴</button></div>
+    <ol class="cara-l">
+      <li><a href="#step1"><b>Isi maklumat pegawai</b><span>Nama, gred, ibu pejabat, bulan dan kenderaan sendiri.</span></a></li>
+      <li><a href="#step2"><b>Isi satu kad bagi setiap perjalanan</b><span>Masa bertolak dan sampai balik, destinasi, jarak ikut Google Maps, makan dan penginapan.</span></a></li>
+      <li><a href="#step3"><b>Semak jumlah</b><span>Elaun makan / harian, hotel / lojing, perbatuan, tol dan parkir dikira automatik.</span></a></li>
+      <li><a href="#step4"><b>Tanda dokumen dan muat turun PDF</b><span>Tekan bar di bawah skrin untuk terus ke bahagian belum lengkap. Bila <b>LENGKAP</b>, muat turun PDF dan lampirkan bersama borang HRMIS.</span></a></li>
+    </ol>
+  </section>
+<script>(function () { var c = document.getElementById("cara"), b = document.getElementById("caraTog"), K = "semakan-cara-pj";
+  function set(t) { c.classList.toggle("tutup", t); b.textContent = t ? "Tunjuk ▾" : "Sembunyikan ▴"; b.setAttribute("aria-expanded", String(!t)); }
+  var t = false; try { t = localStorage.getItem(K) === "1"; } catch (e) {}
+  set(t); b.addEventListener("click", function () { var n = !c.classList.contains("tutup"); set(n); try { localStorage.setItem(K, n ? "1" : "0"); } catch (e) {} }); })();</script>
   <section class="panel" id="step1">
     <div class="step-h"><span class="num">1</span><div><h2>Maklumat pegawai</h2></div><button type="button" class="ghost small act" id="refStaff">Refresh pegawai</button></div>
     <div class="fields">
