@@ -731,6 +731,47 @@ tr.sasar > td { background-color: var(--warn-soft); }
 .cb-auto.ok { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
 .cb-auto.bad { border-color: var(--bad); }
 .cb-auto.na { border-style: dotted; }
+.kal { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 12px 24px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; }
+.kal-t { font-weight: 700; font-size: 0.9rem; margin: 0 0 6px; }
+.kal-g { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.kal-h { text-align: center; font-size: 0.68rem; font-weight: 600; color: var(--muted); padding: 2px 0; }
+.kal-d { position: relative; height: 38px; min-width: 0; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: 600 0.86rem var(--font-body); cursor: pointer; }
+.kal-d:hover { border-color: var(--accent); }
+.kal-d.we { background: var(--we-bg); border-color: transparent; }
+.kal-d.cu { background: var(--cu-soft); color: var(--cu); border-color: transparent; }
+.kal-d.kini { box-shadow: inset 0 0 0 2px var(--accent); }
+.kal-d.on { background: var(--accent); border-color: var(--accent); color: var(--surface); box-shadow: none; }
+.kal-d[data-st]::after { content: ""; position: absolute; top: -5px; right: -5px; width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--surface); }
+.kal-d[data-st="ok"]::after { background: var(--ok); }
+.kal-d[data-st="bad"]::after { background: var(--bad); }
+.kal-d[data-st="warn"]::after { background: var(--warn); }
+.kal-info { display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem; color: var(--muted); }
+.kal-info b { color: var(--fg); font-size: 0.92rem; }
+.kal-info p { margin: 0; max-width: 60ch; }
+.kal-lg { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.kal-lg span { display: inline-flex; align-items: center; gap: 6px; }
+.kal-s { position: relative; display: inline-block; width: 15px; height: 15px; border-radius: 4px; border: 1px solid var(--line); }
+.kal-s.on { background: var(--accent); border-color: var(--accent); }
+.kal-s.cu { background: var(--cu-soft); border-color: var(--cu); }
+.kal-s.we { background: var(--we-bg); border-color: transparent; }
+.kal-s.ok::after, .kal-s.bad::after { content: ""; position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--surface); }
+.kal-s.ok::after { background: var(--ok); }
+.kal-s.bad::after { background: var(--bad); }
+.kal-pilih { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--line); }
+.kal-pilih b { font-size: 0.84rem; }
+.kal-cs { display: flex; flex-wrap: wrap; gap: 6px; }
+.kal-c { padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); font: 600 0.78rem var(--font-body); cursor: pointer; }
+.kal-c:hover { border-color: var(--accent); color: var(--accent); }
+.kal-c[data-st="ok"] { background: var(--ok-soft); border-color: transparent; color: var(--ok); }
+.kal-c[data-st="bad"] { background: var(--bad-soft); border-color: transparent; color: var(--bad); }
+.kal-c[data-st="warn"] { background: var(--warn-soft); border-color: transparent; color: var(--warn); }
+@media (max-width: 700px) {
+  .kal-pilih { display: none; }
+  .kal { grid-template-columns: minmax(0, 1fr); padding: 10px; }
+  .kal-info { order: -1; gap: 6px; }
+  .kal-info p { display: none; }
+  .kal-d { height: 40px; }
+}
 .dr-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 8px; color: var(--muted); font-size: 0.74rem; }
 .dr-legend span { display: inline-flex; align-items: center; gap: 6px; }
 .dr-legend .cb, .dr-legend .cb-auto { width: 15px; height: 15px; border-width: 2px; cursor: default; }
@@ -782,7 +823,7 @@ tr.sasar > td { background-color: var(--warn-soft); }
     </div>
   </section>
 
-  <section id="step2"><div class="step-h out"><span class="num">2</span><div><h2>Isi tarikh tuntutan</h2><p class="sub">Tandakan tarikh, isi masa dan tekan <b>Butiran</b> untuk dokumen serta pilihan tambahan.</p></div><button type="button" class="ghost refresh-sec" id="refClaim" title="Kosongkan semua isian tuntutan bulan ini. Maklumat pegawai kekal."><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Refresh tuntutan</button></div><nav class="tabs" id="tabs" role="tablist" aria-label="Jenis tuntutan"></nav><div id="module"></div></section>
+  <section id="step2"><div class="step-h out"><span class="num">2</span><div><h2>Isi tarikh tuntutan</h2><p class="sub">Pilih tarikh dalam kalendar, isi masa dan tekan <b>Butiran</b> untuk dokumen serta pilihan tambahan.</p></div><button type="button" class="ghost refresh-sec" id="refClaim" title="Kosongkan semua isian tuntutan bulan ini. Maklumat pegawai kekal."><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Refresh tuntutan</button></div><nav class="tabs" id="tabs" role="tablist" aria-label="Jenis tuntutan"></nav><div id="module"></div></section>
   <section class="panel comp c-hasil" id="step3"><div class="step-h"><span class="num">4</span><div><h2>Keputusan akhir</h2></div><button type="button" class="ghost small cari-btn" data-act="cari" id="cariBtn" hidden>Tunjuk yang belum lengkap →</button></div><div id="result"></div><p class="top-note">Semakan automatik bukan kelulusan rasmi. Dokumen dan kelayakan perlu disahkan oleh penyelia / Unit Kewangan.</p></section>
 
   <details class="panel tetapan adv" id="tetapan">
@@ -1530,7 +1571,7 @@ function itemHtml(key, d) {
 
 
 /* Paparan jadual berasaskan satu baris bagi setiap hari. Data kekal dalam struktur asal untuk PDF dan kiraan. */
-let rowFilter = "all", extraDay = null, lajurPenuh = false;
+let rowFilter = "claimed", extraDay = null, lajurPenuh = false;
 const telefon = () => !!(window.matchMedia && window.matchMedia("(max-width: 760px)").matches);
 const SHEET_COLS = {
   elm:   [["masa","Masa mula–tamat"],["jam","Jam OT"],["sebab","Sebab OT"],["surat","Surat arahan"],["jadual","Nama sendiri / anggota yang diganti ada dalam senarai jadual kerja"],["ganti","Ganti orang?"],["borang","Borang ganti"],["thumb","Thumbprint lengkap"]],
@@ -1621,6 +1662,29 @@ function sheetExtraHtml(key,d,r,x,colSpan) {
   const cls = (r.ganti ? " has-ganti" : "") + (key === "elm" && x && x.c && x.c.gross > 480 ? " need8" : "") + (r.dipanggil ? " panggil" : "");
   return ('<tr class="sheet-extra' + cls + '" data-d="' + d + '"><td colspan="' + colSpan + '"><div class="sheet-extra-inner"><strong>Butiran tambahan · ' + d + " " + BULAN[monthInfo().m - 1] + '</strong><div class="g2">' + docs + fields + '</div>' + issues + "</div></td></tr>").replace('<span class="docn" data-docn></span>', '<span class="docn ' + (cukup ? "ok" : "bad") + '" data-docn>' + have + "/" + req.length + (cukup ? " lengkap" : "") + "</span>").replace('data-act="tickall">Tick semua', 'data-act="tickall">' + (cukup ? "Buang semua" : "Tick semua"));
 }
+// Kalendar kecil untuk pilih tarikh. Tarikh dipilih berwarna; bulatan kecil = status (hijau lengkap, merah belum lengkap, kuning perlu semak).
+function kalHtml(key) {
+  const mo = monthInfo(), rows = md(key).rows, by = {};
+  evalModule(key).days.forEach(x => { by[x.d] = x; });
+  const now = new Date(), kini = now.getFullYear() === mo.y && now.getMonth() + 1 === mo.m ? now.getDate() : 0;
+  const lbl = isOt(key) ? "OT" : key === "etap" ? "on-call" : key === "lokum" ? "extended hours" : "bersedia atas panggilan";
+  let g = HARI.map(h => '<span class="kal-h" aria-hidden="true">' + h + "</span>").join("");
+  for (let i = 0; i < weekday(1); i++) g += '<span aria-hidden="true"></span>';
+  for (let d = 1; d <= mo.n; d++) {
+    const on = !!(rows[d] && rows[d].on), st = on ? sheetStatus(by[d] || null)[0] : "", cu = cuName(d), wd = weekday(d);
+    g += '<button type="button" class="kal-d' + (on ? " on" : "") + (cu ? " cu" : wd === 0 || wd === 6 ? " we" : "") + (d === kini ? " kini" : "") + '" data-kal="' + d + '"' +
+      (st && st !== "idle" ? ' data-st="' + st + '"' : "") + ' aria-pressed="' + on + '" aria-label="' + d + " " + BULAN[mo.m - 1] + ", " + HARI[wd] + (cu ? ", " + esc(cu) : "") + '"' + (cu ? ' title="' + esc(cu) + '"' : "") + ">" + d + "</button>";
+  }
+  const dipilih = [];
+  for (let d = 1; d <= mo.n; d++) if (rows[d] && rows[d].on) {
+    const st = sheetStatus(by[d] || null)[0];
+    dipilih.push('<button type="button" class="kal-c" data-act="kal-buka" data-d="' + d + '"' + (st !== "idle" ? ' data-st="' + st + '"' : "") + ' title="Buka butiran tarikh ini">' + d + " " + BULAN[mo.m - 1].slice(0, 3) + " · " + HARI[weekday(d)] + "</button>");
+  }
+  const senarai = '<div class="kal-pilih"><b>Tarikh dipilih (' + dipilih.length + ')</b>' + (dipilih.length ? '<div class="kal-cs">' + dipilih.join("") + "</div>" : '<span>Belum ada tarikh dipilih.</span>') + "</div>";
+  return '<div class="kal"><div class="kal-cal"><div class="kal-t">' + BULAN[mo.m - 1] + " " + mo.y + '</div><div class="kal-g" role="group" aria-label="Pilih tarikh ' + lbl + '">' + g + "</div></div>" +
+    '<div class="kal-info"><b>Pilih tarikh ' + lbl + "</b><p>Tekan tarikh untuk tambah ke tuntutan. Tekan sekali lagi untuk buang. Jadual di bawah tunjuk tarikh yang dipilih sahaja.</p>" +
+    '<div class="kal-lg"><span><i class="kal-s on"></i>Dipilih</span><span><i class="kal-s on ok"></i>Lengkap</span><span><i class="kal-s on bad"></i>Belum lengkap</span><span><i class="kal-s cu"></i>Cuti umum</span><span><i class="kal-s we"></i>Hujung minggu</span></div>' + senarai + "</div></div>";
+}
 function sheetTableHtml(key) {
   const cols = SHEET_COLS[key], mo = monthInfo(), rows = md(key).rows;
   const ev = evalModule(key), byDay = {};
@@ -1642,16 +1706,16 @@ function sheetTableHtml(key) {
     if (active && extraDay === d) out.push(sheetExtraHtml(key,d,r,x,cols.length+5));
   }
   const head = '<th class="sticky-date">Tarikh</th><th class="sticky-on">' + (isOt(key) ? "Buat OT" : "Bertugas") + '</th>' + cols.map(([c,label]) => '<th class="col-' + c + " " + kumpCol(c) + '">' + label + "</th>").join("") + '<th class="g-hasil">Status</th><th class="col-issue g-hasil">Kekurangan</th><th class="g-hasil">Butiran</th>';
-  const filters = [["all","Semua tarikh"],["claimed","Tarikh dituntut"]].map(f => '<button type="button" data-filter="' + f[0] + '" aria-pressed="' + (rowFilter === f[0]) + '">' + f[1] + "</button>").join("");
+  const filters = [["claimed","Tarikh dituntut"],["all","Semua tarikh"]].map(f => '<button type="button" data-filter="' + f[0] + '" aria-pressed="' + (rowFilter === f[0]) + '">' + f[1] + "</button>").join("");
   const warn = mo.y > 2027 || mo.y < 2026 ? "Senarai cuti umum untuk tahun ini belum dimasukkan. Sahkan jenis hari secara manual." : mo.y === 2027 ? "Cuti ganti / cuti peristiwa 2027 mungkin berubah mengikut warta rasmi." : "";
-  return '<div class="sheet-shell' + (lajurPenuh ? " lajur-penuh" : "") + '"><div class="sheet-toolbar"><div><strong>Jadual ' + BULAN[mo.m - 1] + " " + mo.y + '</strong><div class="sheet-stats" id="sheetStats"></div></div>' +
+  return kalHtml(key) + '<div class="sheet-shell' + (lajurPenuh ? " lajur-penuh" : "") + '"><div class="sheet-toolbar"><div><strong>Jadual ' + BULAN[mo.m - 1] + " " + mo.y + '</strong><div class="sheet-stats" id="sheetStats"></div></div>' +
     '<div class="sheet-legend" aria-label="Petunjuk warna lajur"><span class="lg-masa">Masa &amp; kerja</span><span class="lg-dok">Bukti dokumen</span><span class="lg-hasil">Keputusan</span></div><div class="sheet-filters">' + filters + '</div></div>' +
     '<div class="sheet-bulk" id="sheetBulk"></div>' +
     '<div class="sheet-tel"><span>' + (lajurPenuh ? "Semua lajur dipaparkan. Tatal jadual ke kanan untuk lihat dokumen dan sebab OT." : "Di telefon, sebab OT dan semakan dokumen (surat arahan, jadual, thumbprint) ada dalam butang <b>Butiran</b> pada setiap tarikh.") + '</span>' +
     '<button type="button" class="ghost small" data-act="lajur" aria-pressed="' + lajurPenuh + '">' + (lajurPenuh ? "Paparan ringkas" : "Tunjuk semua lajur ⇆") + "</button></div>" +
     '<div class="sheet-wrap"><div class="sheet-scroll" id="sheetScroll" role="region" tabindex="0" aria-label="Jadual semakan tuntutan"><table class="ot-sheet"><thead><tr>' + head + '</tr></thead><tbody>' +
-    (out.length ? out.join("") : '<tr><td colspan="' + (cols.length + 5) + '" class="sheet-empty">' + (rowFilter === "issues" ? "Tiada tarikh yang perlu tindakan. Semua tarikh dituntut sudah lengkap." : rowFilter === "claimed" ? "Belum ada tarikh dituntut. Pilih <b>Semua tarikh</b> dan tandakan hari bertugas." : "Tiada tarikh untuk paparan ini.") + '</td></tr>') +
-    '</tbody></table></div></div><div class="sheet-help"><b>Tip:</b> Klik kotak di lajur kedua untuk aktifkan tarikh. Tandakan dokumen hanya selepas melihat bukti sebenar.' +
+    (out.length ? out.join("") : '<tr><td colspan="' + (cols.length + 5) + '" class="sheet-empty">' + (rowFilter === "issues" ? "Tiada tarikh yang perlu tindakan. Semua tarikh dituntut sudah lengkap." : rowFilter === "claimed" ? "Belum ada tarikh dipilih. Tekan tarikh dalam kalendar di atas." : "Tiada tarikh untuk paparan ini.") + '</td></tr>') +
+    '</tbody></table></div></div><div class="sheet-help"><b>Tip:</b> Tambah atau buang tarikh melalui kalendar di atas. Tandakan dokumen hanya selepas melihat bukti sebenar.' +
     (warn ? '<div style="margin-top:4px;color:var(--warn)">' + esc(warn) + '</div>' : "") +
     ' <span class="muted">Jadual boleh ditatal ke kanan jika skrin kecil.</span></div></div>';
 }
@@ -1692,6 +1756,8 @@ function updateSheet(key,ev) {
       (perlu || rowFilter === "issues" ? '<button type="button" class="tindakan" data-filter="issues" aria-pressed="' + (rowFilter === "issues") + '" title="' + (rowFilter === "issues" ? "Tekan untuk tunjuk semula semua tarikh dituntut" : "Tekan untuk tunjuk tarikh yang perlu tindakan sahaja") + '">' + perlu + " perlu tindakan</button>" : "0 perlu tindakan");
   }
   const byDay={}; ev.days.forEach(x => { byDay[x.d]=x; });
+  document.querySelectorAll(".kal-c[data-d]").forEach(b => { const st=sheetStatus(byDay[+b.dataset.d] || null)[0]; if (st === "idle") delete b.dataset.st; else b.dataset.st=st; });
+  document.querySelectorAll(".kal-d.on[data-kal]").forEach(b => { const st=sheetStatus(byDay[+b.dataset.kal] || null)[0]; if (st === "idle") delete b.dataset.st; else b.dataset.st=st; });
   document.querySelectorAll(".sheet-row[data-d]").forEach(row => {
     const x=byDay[+row.dataset.d] || null, st=sheetStatus(x);
     row.dataset.status=st[0];
@@ -2265,7 +2331,7 @@ function pergiIsu() {
   if (!t) { $("msg").textContent = "Tiada bahagian belum lengkap dikesan."; $("step3").scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" }); return; }
   if (t.tab && t.tab !== activeTab()) switchTab(t.tab);
   if (t.d) {
-    rowFilter = "all"; extraDay = t.d; redrawSheet();
+    rowFilter = "claimed"; extraDay = t.d; redrawSheet();
     const row = document.querySelector('tr.sheet-row[data-d="' + t.d + '"]'), ex = document.querySelector('tr.sheet-extra[data-d="' + t.d + '"]');
     const kosong = [row, ex].filter(Boolean).map(r => [...r.querySelectorAll('input[type="time"], input[type="text"], select')].find(f => !f.value && f.offsetParent)).find(Boolean);
     sorot(row, t.m); if (kosong) setTimeout(() => { try { kosong.focus({ preventScroll: true }); } catch (e) {} }, 350);
@@ -2286,7 +2352,7 @@ document.addEventListener("click", e => {
   const b = e.target.closest('[data-act="ke-jadual"]'); if (!b) return;
   const tab = b.dataset.tab, d = +b.dataset.d, k = b.dataset.k;
   if (tab && tab !== activeTab()) switchTab(tab);
-  rowFilter = "all"; extraDay = d; redrawSheet();
+  rowFilter = "claimed"; extraDay = d; redrawSheet();
   const rows = ['tr.sheet-row[data-d="' + d + '"]', 'tr.sheet-extra[data-d="' + d + '"]'].map(q => document.querySelector(q)).filter(Boolean);
   const el = rows.map(r => [...r.querySelectorAll('input[data-k="' + k + '"]')].find(x => x.offsetParent)).find(Boolean);
   sorot(el || rows[0], "tanda " + b.dataset.nm + " bagi " + d + " " + BULAN[monthInfo().m - 1]);
@@ -2295,21 +2361,25 @@ document.addEventListener("click", e => {
 
 
 
+// Tanda / buang satu tarikh (dari kalendar atau kotak lajur kedua jadual). Data tarikh yang dibuang disimpan jika ditanda semula.
+function togolTarikh(key, d, on) {
+  const rows=md(key).rows, r=rows[d] || (rows[d]={});
+  r.on=on;
+  if (r.on && isEh(key)) {
+    if (!r.lokasi && WARTA[state.fasiliti]) r.lokasi=state.fasiliti;
+    autoFillEh(r,d,key);
+  }
+  if (!r.on && extraDay===d) extraDay=null;
+  // Di telefon, lajur dokumen tersembunyi: buka butiran terus supaya semua komponen kelihatan.
+  if (r.on && telefon() && !lajurPenuh) extraDay=d;
+  save(); redrawSheet();
+}
 function onModuleInput(e) {
   const t=e.target, host=t.closest("[data-key]"), key=host && host.dataset.key; if (!key) return;
   if ((t.type==="checkbox" || t.tagName==="SELECT") && e.type==="input") return;
   if (t.hasAttribute("data-on")) {
     const line=t.closest(".sheet-row"), d=line && +line.dataset.d; if (!d) return;
-    const rows=md(key).rows, r=rows[d] || (rows[d]={});
-    r.on=t.checked;
-    if (r.on && isEh(key)) {
-      if (!r.lokasi && WARTA[state.fasiliti]) r.lokasi=state.fasiliti;
-      autoFillEh(r,d,key);
-    }
-    if (!r.on && extraDay===d) extraDay=null;
-    // Di telefon, lajur dokumen tersembunyi: buka butiran terus supaya semua komponen kelihatan.
-    if (r.on && telefon() && !lajurPenuh) extraDay=d;
-    save(); redrawSheet(); return;
+    togolTarikh(key, d, t.checked); return;
   }
   if (t.dataset.k) {
     const line=t.closest("[data-d]"), d=line && +line.dataset.d; if (!d) return;
@@ -2380,6 +2450,22 @@ $("module").addEventListener("click", e => {
     $("msg").textContent = BULK[k] + (all ? " dibuang tanda bagi " : " ditandakan bagi ") + T.length + " tarikh.";
     return;
   }
+  const kb=e.target.closest('[data-act="kal-buka"]');
+  if (kb) {
+    const d=+kb.dataset.d; extraDay=d; redrawSheet();
+    const ex=document.querySelector('tr.sheet-extra[data-d="' + d + '"]') || document.querySelector('tr.sheet-row[data-d="' + d + '"]');
+    if (ex) { ex.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "center" }); ex.classList.remove("sasar"); void ex.offsetWidth; ex.classList.add("sasar"); setTimeout(() => ex.classList.remove("sasar"), 2400); }
+    $("msg").textContent = "Butiran " + d + " " + BULAN[monthInfo().m - 1] + " dibuka.";
+    return;
+  }
+  const kal=e.target.closest("[data-kal]");
+  if (kal) {
+    const host=kal.closest("[data-key]"), key=host && host.dataset.key; if (!key) return;
+    const d=+kal.dataset.kal, on=kal.getAttribute("aria-pressed") !== "true";
+    togolTarikh(key, d, on);
+    $("msg").textContent = d + " " + BULAN[monthInfo().m - 1] + (on ? " ditambah." : " dibuang daripada tuntutan.");
+    return;
+  }
   const filter=e.target.closest("[data-filter]");
   if (filter) { rowFilter = filter.dataset.filter === "issues" && rowFilter === "issues" ? "claimed" : filter.dataset.filter; extraDay=null; redrawSheet(); return; }
   const detail=e.target.closest('[data-act="detail"]');
@@ -2416,7 +2502,7 @@ $("refClaim").addEventListener("click", () => {
   const mo = monthInfo();
   if (!window.confirm("Padam semua isian tuntutan bagi " + BULAN[mo.m - 1] + " " + mo.y + " (semua jenis tuntutan, dokumen dan jumlah dituntut)? Maklumat pegawai kekal.")) return;
   if (state.data) delete state.data[state.bulan];
-  rowFilter = "all"; extraDay = null; nameEditUnlocked = false; save(); renderAll();
+  rowFilter = "claimed"; extraDay = null; nameEditUnlocked = false; save(); renderAll();
   $("msg").textContent = "Isian tuntutan " + BULAN[mo.m - 1] + " " + mo.y + " dikosongkan.";
 });
 $("resetBtn").addEventListener("click", () => { $("btns").hidden = true; $("confirm").hidden = false; $("yesBtn").focus(); });
@@ -2426,7 +2512,7 @@ function resetAll(msg) {
   $("confirm").hidden = true; $("afterPdf").hidden = true; $("btns").hidden = false;
   $("msg").textContent = msg;
   $("nama").focus();
-  rowFilter="all"; extraDay=null; nameEditUnlocked=false; refreshNameLock();
+  rowFilter="claimed"; extraDay=null; nameEditUnlocked=false; refreshNameLock();
 }
 $("yesBtn").addEventListener("click", () => resetAll("Semua isian dikosongkan. Sedia untuk pegawai seterusnya."));
 $("padamBtn").addEventListener("click", () => resetAll("Isian dipadam dari komputer ini. PDF yang dimuat turun tidak terjejas."));
