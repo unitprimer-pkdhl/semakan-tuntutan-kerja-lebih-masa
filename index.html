@@ -1682,7 +1682,7 @@ function kalHtml(key) {
   }
   const senarai = '<div class="kal-pilih"><b>Tarikh dipilih (' + dipilih.length + ')</b>' + (dipilih.length ? '<div class="kal-cs">' + dipilih.join("") + "</div>" : '<span>Belum ada tarikh dipilih.</span>') + "</div>";
   return '<div class="kal"><div class="kal-cal"><div class="kal-t">' + BULAN[mo.m - 1] + " " + mo.y + '</div><div class="kal-g" role="group" aria-label="Pilih tarikh ' + lbl + '">' + g + "</div></div>" +
-    '<div class="kal-info"><b>Pilih tarikh ' + lbl + "</b><p>Tekan tarikh untuk tambah ke tuntutan. Tekan sekali lagi untuk buang. Jadual di bawah tunjuk tarikh yang dipilih sahaja.</p>" +
+    '<div class="kal-info"><b>Pilih tarikh ' + lbl + "</b><p>Tekan tarikh untuk tambah ke tuntutan. Tekan sekali lagi untuk buang. Hanya tarikh yang dipilih dipaparkan dalam jadual di bawah.</p>" +
     '<div class="kal-lg"><span><i class="kal-s on"></i>Dipilih</span><span><i class="kal-s on ok"></i>Lengkap</span><span><i class="kal-s on bad"></i>Belum lengkap</span><span><i class="kal-s cu"></i>Cuti umum</span><span><i class="kal-s we"></i>Hujung minggu</span></div>' + senarai + "</div></div>";
 }
 function sheetTableHtml(key) {
@@ -1692,29 +1692,26 @@ function sheetTableHtml(key) {
   const out = [];
   for (let d=1; d<=mo.n; d++) {
     const raw = rows[d] || {}, active = !!raw.on, x = byDay[d] || null, r = active ? rowView(key,raw,d) : raw;
-    if (rowFilter === "claimed" && !active) continue;
+    if (!active) continue;
     if (rowFilter === "issues" && (!active || !x || !(x.k.length || x.a.length))) continue;
-    const status = sheetStatus(x), cu = cuName(d), dow=HARI[weekday(d)], dateName=d + " " + BULAN[mo.m - 1];
-    const label = key === "elm" || key === "elmeh" ? "Buat OT" : key === "etap" ? "Bertugas on-call" : key === "lokum" ? "Bertugas extended hours" : "Bersedia atas panggilan";
+    const status = sheetStatus(x), cu = cuName(d), dow=HARI[weekday(d)];
     out.push('<tr class="sheet-row' + (active ? " on" : "") + '" data-d="' + d + '" data-status="' + status[0] + '">' +
       '<td class="sticky-date"><div class="datecell"><b>' + d + " " + BULAN[mo.m - 1].slice(0,3) + '</b><small>' + dow + (cu ? ' · Cuti umum' : "") + '</small>' + (cu ? '<span class="cuti" title="' + esc(cu) + '">' + esc(cu) + '</span>' : "") + '</div></td>' +
-      '<td class="sticky-on"><label class="sh-check"><input type="checkbox" data-on="1" aria-label="' + label + " " + esc(dateName) + '"' + (active ? " checked" : "") + '></label></td>' +
       cols.map(([c]) => '<td class="col-' + c + " " + kumpCol(c) + ' ' + (c === "masa" || c === "calltime" ? "time-cell" : c === "sebab" ? "reason-cell" : ["surat","jadual","ganti","borang","thumb","dipanggil","tiadacuti","ketik"].includes(c) ? "doc-cell" : "") + '">' + (active ? sheetCell(key,c,r,d,x) : '<span class="sheet-dash">–</span>') + "</td>").join("") +
       '<td class="status-cell g-hasil"' + (active && status[0] !== "ok" ? ' data-act="detail" data-d="' + d + '" title="Tekan untuk lihat apa yang belum lengkap"' : "") + '><span class="sh-status ' + status[0] + '">' + status[1] + '</span></td>' +
       '<td class="issue-cell col-issue g-hasil"><span class="sh-issue ' + status[0] + '">' + esc(sheetIssue(x)) + '</span></td>' +
       '<td class="g-hasil">' + (active ? '<button type="button" class="ghost sh-more" data-act="detail" data-d="' + d + '" aria-expanded="' + (extraDay === d) + '">' + (extraDay === d ? "Tutup ▴" : "Butiran ▾") + '</button>' : '<span class="sheet-dash">–</span>') + '</td></tr>');
-    if (active && extraDay === d) out.push(sheetExtraHtml(key,d,r,x,cols.length+5));
+    if (active && extraDay === d) out.push(sheetExtraHtml(key,d,r,x,cols.length+4));
   }
-  const head = '<th class="sticky-date">Tarikh</th><th class="sticky-on">' + (isOt(key) ? "Buat OT" : "Bertugas") + '</th>' + cols.map(([c,label]) => '<th class="col-' + c + " " + kumpCol(c) + '">' + label + "</th>").join("") + '<th class="g-hasil">Status</th><th class="col-issue g-hasil">Kekurangan</th><th class="g-hasil">Butiran</th>';
-  const filters = [["claimed","Tarikh dituntut"],["all","Semua tarikh"]].map(f => '<button type="button" data-filter="' + f[0] + '" aria-pressed="' + (rowFilter === f[0]) + '">' + f[1] + "</button>").join("");
+  const head = '<th class="sticky-date">Tarikh</th>' + cols.map(([c,label]) => '<th class="col-' + c + " " + kumpCol(c) + '">' + label + "</th>").join("") + '<th class="g-hasil">Status</th><th class="col-issue g-hasil">Kekurangan</th><th class="g-hasil">Butiran</th>';
   const warn = mo.y > 2027 || mo.y < 2026 ? "Senarai cuti umum untuk tahun ini belum dimasukkan. Sahkan jenis hari secara manual." : mo.y === 2027 ? "Cuti ganti / cuti peristiwa 2027 mungkin berubah mengikut warta rasmi." : "";
   return kalHtml(key) + '<div class="sheet-shell' + (lajurPenuh ? " lajur-penuh" : "") + '"><div class="sheet-toolbar"><div><strong>Jadual ' + BULAN[mo.m - 1] + " " + mo.y + '</strong><div class="sheet-stats" id="sheetStats"></div></div>' +
-    '<div class="sheet-legend" aria-label="Petunjuk warna lajur"><span class="lg-masa">Masa &amp; kerja</span><span class="lg-dok">Bukti dokumen</span><span class="lg-hasil">Keputusan</span></div><div class="sheet-filters">' + filters + '</div></div>' +
+    '<div class="sheet-legend" aria-label="Petunjuk warna lajur"><span class="lg-masa">Masa &amp; kerja</span><span class="lg-dok">Bukti dokumen</span><span class="lg-hasil">Keputusan</span></div></div>' +
     '<div class="sheet-bulk" id="sheetBulk"></div>' +
     '<div class="sheet-tel"><span>' + (lajurPenuh ? "Semua lajur dipaparkan. Tatal jadual ke kanan untuk lihat dokumen dan sebab OT." : "Di telefon, sebab OT dan semakan dokumen (surat arahan, jadual, thumbprint) ada dalam butang <b>Butiran</b> pada setiap tarikh.") + '</span>' +
     '<button type="button" class="ghost small" data-act="lajur" aria-pressed="' + lajurPenuh + '">' + (lajurPenuh ? "Paparan ringkas" : "Tunjuk semua lajur ⇆") + "</button></div>" +
     '<div class="sheet-wrap"><div class="sheet-scroll" id="sheetScroll" role="region" tabindex="0" aria-label="Jadual semakan tuntutan"><table class="ot-sheet"><thead><tr>' + head + '</tr></thead><tbody>' +
-    (out.length ? out.join("") : '<tr><td colspan="' + (cols.length + 5) + '" class="sheet-empty">' + (rowFilter === "issues" ? "Tiada tarikh yang perlu tindakan. Semua tarikh dituntut sudah lengkap." : rowFilter === "claimed" ? "Belum ada tarikh dipilih. Tekan tarikh dalam kalendar di atas." : "Tiada tarikh untuk paparan ini.") + '</td></tr>') +
+    (out.length ? out.join("") : '<tr><td colspan="' + (cols.length + 4) + '" class="sheet-empty">' + (rowFilter === "issues" ? "Tiada tarikh yang perlu tindakan. Semua tarikh dituntut sudah lengkap." : "Belum ada tarikh dipilih. Tekan tarikh dalam kalendar di atas.") + '</td></tr>') +
     '</tbody></table></div></div><div class="sheet-help"><b>Tip:</b> Tambah atau buang tarikh melalui kalendar di atas. Tandakan dokumen hanya selepas melihat bukti sebenar.' +
     (warn ? '<div style="margin-top:4px;color:var(--warn)">' + esc(warn) + '</div>' : "") +
     ' <span class="muted">Jadual boleh ditatal ke kanan jika skrin kecil.</span></div></div>';
@@ -2377,10 +2374,6 @@ function togolTarikh(key, d, on) {
 function onModuleInput(e) {
   const t=e.target, host=t.closest("[data-key]"), key=host && host.dataset.key; if (!key) return;
   if ((t.type==="checkbox" || t.tagName==="SELECT") && e.type==="input") return;
-  if (t.hasAttribute("data-on")) {
-    const line=t.closest(".sheet-row"), d=line && +line.dataset.d; if (!d) return;
-    togolTarikh(key, d, t.checked); return;
-  }
   if (t.dataset.k) {
     const line=t.closest("[data-d]"), d=line && +line.dataset.d; if (!d) return;
     const r=md(key).rows[d]; if (!r || !r.on) return;
