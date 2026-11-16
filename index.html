@@ -2419,6 +2419,9 @@ function onModuleInput(e) {
       return;
     }
     r[t.dataset.k]=t.type==="checkbox" ? t.checked : t.value;
+    // Lajur "Nama sendiri / anggota yang diganti ada dalam senarai jadual kerja" disimpan dalam dua medan
+    // (jadual / jadualGanti). Bila status ganti bertukar, bawa tick sedia ada supaya tidak hilang sendiri.
+    if (t.dataset.k==="ganti") { if (t.checked) r.jadualGanti=!!r.jadual; else r.jadual=!!r.jadualGanti; }
     if (isEh(key) && ["mula","tamat"].includes(t.dataset.k)) r.autoMasa=false;
     if (isEh(key) && (key==="lokum" ? ["lokasi","am"] : ["lokasi","jenis"]).includes(t.dataset.k) && e.type==="change") autoFillEh(r,d,key);
     if (t.dataset.k==="ganti" && t.checked) extraDay=d;
