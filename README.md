@@ -6,7 +6,6 @@ Laman:
 - Tuntutan OT & Elaun: https://unitprimer-pkdhl.github.io/semakan-tuntutan-kerja-lebih-masa/
 - Tuntutan Perjalanan (WP1.4, berkuat kuasa 1 Mei 2026; Semenanjung dan Sabah / Sarawak / Labuan): https://unitprimer-pkdhl.github.io/semakan-tuntutan-kerja-lebih-masa/perjalanan/
 
-- Tuntutan OT & Elaun dipaparkan satu langkah satu skrin (Pegawai → Tarikh → Dokumen → Semak), mesra telefon. Enjin kiraan, peraturan dokumen dan PDF tidak berubah daripada versi jadual (commit 45e464b).
 - Satu fail HTML bagi setiap halaman (`index.html`, `perjalanan/index.html`), tiada pelayan. Isian disimpan dalam pelayar pengguna sahaja dan dipadam sendiri selepas 30 hari tanpa kemas kini.
 - Semakan automatik bukan kelulusan rasmi. Dokumen dan kelayakan perlu disahkan oleh penyelia / Unit Kewangan.
 

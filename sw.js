@@ -2,7 +2,7 @@
    Halaman: rangkaian dahulu (versi terkini bila ada internet), salinan simpanan bila luar talian.
    Skrip PDF dan fon dari CDN: salinan simpanan dahulu, dikemas kini di latar belakang.
    Tiada data tuntutan disimpan di sini; isian kekal dalam localStorage pelayar. */
-const VERSI = "semakan-v2";
+const VERSI = "semakan-v3";
 const HALAMAN = ["./", "./perjalanan/", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-48.png"];
 const LUAR = ["https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"];
