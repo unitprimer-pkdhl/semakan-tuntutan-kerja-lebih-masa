@@ -414,10 +414,15 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 .ot-sheet .doc-cell { width: 68px; text-align: center; }
 .ot-sheet td.col-thumb { min-width: 168px; }
 .th-isu-w { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; text-align: left; }
+.th-ck { display: flex; align-items: center; gap: 6px; font-size: 0.76rem; line-height: 1.2; cursor: pointer; padding: 2px 0; }
+.th-ck input { width: 16px; height: 16px; min-height: 0; margin: 0; padding: 0; accent-color: var(--accent); flex: none; cursor: pointer; }
+.th-utama { font-weight: 600; }
+.th-r { display: flex; flex-direction: column; gap: 3px; padding-left: 22px; }
 .ot-sheet .th-isu-w select { min-width: 0; width: 100%; font-size: 0.76rem; }
 .th-tolak { font-size: 0.74rem; color: var(--warn); font-weight: 600; }
 .th-tolak:empty { display: none; }
 .clist .th-isu-w { grid-column: 1 / -1; margin: 0 0 6px 24px; }
+.clist .th-ck { font-size: 0.83rem; min-height: 30px; }
 .clist .th-isu-w select { width: 100%; }
 .ot-sheet .reason-cell { min-width: 155px; max-width: 230px; }
 .ot-sheet .time-cell { min-width: 192px; }
@@ -1137,37 +1142,52 @@ function kurangBap(r, c) {
   if (r.dipanggil && !r.ketik) out.push("Tiada rekod ketik masuk dan keluar");
   return out;
 }
-// Thumbprint tidak lengkap tetapi ada rekod: OT ditolak ikut julat minit lewat / awal (masa dibundar ke 15 minit).
-// hakiki = lewat masuk kerja hakiki: OT hanya bermula selepas staf cukupkan tempoh bekerja sehari (9 jam termasuk rehat);
-//          masuk selepas 9.00 pagi: waktu hakiki dikira tamat 6.00 petang (Soalan Lazim WBF, soalan 9 dan 11).
-// masuk  = lewat masuk OT / EH; keluar = keluar awal daripada OT / EH.
-const THUMB_ISU = { hakiki: "Lewat masuk kerja hakiki", masuk: "Lewat masuk OT / EH", keluar: "Keluar awal" };
+// Thumbprint tidak lengkap tetapi ada rekod lewat / awal: OT ditolak ikut julat minit (masa dibundar ke 15 minit).
+// Staf tick "Ada lewat / keluar awal", kemudian tick satu atau lebih sebab:
+//  Hakiki = lewat masuk kerja hakiki: OT hanya bermula selepas staf cukupkan tempoh bekerja sehari (9 jam termasuk rehat);
+//           masuk selepas 9.00 pagi: waktu hakiki dikira tamat 6.00 petang (Soalan Lazim WBF, soalan 9 dan 11).
+//  Masuk  = lewat masuk OT / EH;  Keluar = keluar awal daripada OT / EH.
+const THUMB_SEBAB = [["Hakiki", "lewat masuk kerja hakiki"], ["Masuk", "lewat masuk OT / EH"], ["Keluar", "keluar awal"]];
 const THUMB_MIN = [["15", "Sehingga 15 minit"], ["30", "Sehingga 30 minit"], ["45", "Sehingga 45 minit"], ["60", "Sehingga 1 jam"]];
 const THUMB_MOD = { elm: true, elmeh: true, lokum: true };
-function thumbAda(r) { return !!r.thumb || (!!THUMB_ISU[r.thumbIsu] && !!r.thumbMin); }
+// Sebab yang ditanda: [{ s: "Hakiki" | "Masuk" | "Keluar", min: "15" | "30" | "45" | "60" | "lebih" | "" }]
+function thumbSebab(key, r) {
+  if (r.thumb || !THUMB_MOD[key] || !r.thumbLewat) return [];
+  return THUMB_SEBAB.filter(o => r["th" + o[0]] && !(o[0] === "Hakiki" && key === "lokum")).map(o => ({ s: o[0], min: r["th" + o[0] + "Min"] || "" }));
+}
+function thumbAda(r) { return !!r.thumb || (!!r.thumbLewat && THUMB_SEBAB.some(o => r["th" + o[0]] && r["th" + o[0] + "Min"])); }
 function kurangThumb(key, r, c) {
   if (r.thumb) return [];
-  if (!THUMB_MOD[key] || !THUMB_ISU[r.thumbIsu] || (key === "lokum" && r.thumbIsu === "hakiki")) return ["Thumbprint tidak lengkap"];
-  if (!r.thumbMin) return ["Pilih berapa minit thumbprint " + (r.thumbIsu === "keluar" ? "keluar awal" : "lewat")];
-  if (r.thumbIsu === "hakiki" && c && c.jenis && c.jenis !== "biasa") return ["Tiada kerja hakiki pada hari ini, pilih sebab thumbprint lain"];
-  return [];
+  if (!THUMB_MOD[key] || !r.thumbLewat) return ["Thumbprint tidak lengkap"];
+  const L = thumbSebab(key, r);
+  if (!L.length) return ["Tandakan sebab thumbprint lewat / keluar awal"];
+  const out = [];
+  L.forEach(t => {
+    const nm = THUMB_SEBAB.find(o => o[0] === t.s)[1];
+    if (!t.min) out.push("Pilih berapa minit " + nm);
+    else if (t.s === "Hakiki" && c && c.jenis && c.jenis !== "biasa") out.push("Tiada kerja hakiki pada hari ini, buang tanda " + nm);
+  });
+  return out;
 }
 // Salinan baris dengan masa yang boleh dikira selepas tolakan thumbprint (data asal tidak diubah).
 function thumbAdj(key, r, wd, hakiki) {
-  if (r.thumb || !THUMB_MOD[key] || !THUMB_ISU[r.thumbIsu] || !r.thumbMin) return r;
+  const L = thumbSebab(key, r).filter(t => t.min);
+  if (!L.length) return r;
   const a = tmin(r.mula), b = tmin(r.tamat);
   if (a == null || b == null || a === b) return r;
-  let A = a, B = b < a ? b + 1440 : b;
-  const m = r.thumbMin === "lebih" ? 0 : num(r.thumbMin);
-  if (r.thumbIsu === "masuk") A += m;
-  else if (r.thumbIsu === "keluar") B -= m;
-  else {
-    if (key === "lokum" || (r.jenis || autoJenis(wd)) !== "biasa") return r;
-    const mulaH = tmin(hakiki) != null ? tmin(hakiki) : 480;
-    const tamatH = r.thumbMin === "lebih" ? 1080 : Math.min(mulaH + 540 + m, 1080);
-    // Hanya OT yang bermula sekitar / selepas tamat waktu hakiki terkesan.
-    if (A >= mulaH + 480 && A < tamatH) A = tamatH; else return r;
-  }
+  let A = a, B = b < a ? b + 1440 : b, ubah = false;
+  L.forEach(t => {
+    const m = t.min === "lebih" ? 0 : num(t.min);
+    if (t.s === "Masuk") { A = Math.max(A, a + m); ubah = true; }
+    else if (t.s === "Keluar") { B -= m; ubah = true; }
+    else if ((r.jenis || autoJenis(wd)) === "biasa") {
+      const mulaH = tmin(hakiki) != null ? tmin(hakiki) : 480;
+      const tamatH = t.min === "lebih" ? 1080 : Math.min(mulaH + 540 + m, 1080);
+      // Hanya OT yang bermula sekitar / selepas tamat waktu hakiki terkesan.
+      if (a >= mulaH + 480 && a < tamatH) { A = Math.max(A, tamatH); ubah = true; }
+    }
+  });
+  if (!ubah) return r;
   const v = Object.assign({}, r);
   if (B <= A) { B = A; v._habis = true; }
   const hm = x => { x = ((x % 1440) + 1440) % 1440; return String(Math.floor(x / 60)).padStart(2, "0") + ":" + String(x % 60).padStart(2, "0"); };
@@ -1361,8 +1381,7 @@ function evalModule(key) {
       c.thumbMin = Math.max(0, key === "lokum" ? c0.bayar - c.bayar : (c0.cg ? c0.cgMin : c0.net) - (c.cg ? c.cgMin : c.net));
       const sen = n => Math.round((n || 0) * 100) / 100; // ikut jumlah RM yang dipaparkan
       c.thumbRm = Math.max(0, sen(c0.rm) - sen(c.rm));
-      c.thumbIsu = r.thumbIsu; c.thumbJulat = r.thumbMin;
-      c.thumbLabel = r.thumbIsu === "masuk" ? (key === "elm" ? "lewat masuk OT" : "lewat masuk EH") : (THUMB_ISU[r.thumbIsu] || "").toLowerCase();
+      c.thumbSebab = thumbSebab(key, r).filter(t => t.min); c.thumbKey = key;
       if (ra._habis) k = k.map(t => t === "Masa mula dan tamat sama" ? "Tiada baki OT selepas tolakan thumbprint" : t);
     }
     days.push({ d, wd, r, c, k, a });
@@ -1521,7 +1540,7 @@ function ruleHtml(key) {
     "<p><b>Waktu operasi (Surat Edaran KKM 10 Dis 2025):</b> hari bekerja 5–9 malam, Sabtu 9 pagi–1 tengah hari. Ahad dan kelepasan am: KK Ampang (KK pasca projek rintis STAR) buka 9 pagi–1 tengah hari; KK Kajang tiada extended hours. Hanya jam dalam waktu operasi dikira.</p>" +
     "<p><b>Lulus bila ada:</b> surat arahan, nama dalam jadual extended hours (atau jika menggantikan anggota lain: jadual dengan nama anggota yang diganti dan borang penggantian), dan thumbprint lengkap.</p>";
   else body = "<p><b>Belum disahkan:</b> kadar dan syarat Elaun Bersedia Atas Panggilan di KK dan KD. Isi kadar dalam Tetapan bila dapat pengesahan Unit Kewangan.</p>";
-  if (THUMB_MOD[key]) body += "<p><b>Thumbprint lewat / keluar awal:</b> pilih sebab dan julat minit; OT ditolak ikut julat itu (masa dibundar ke 15 minit). " +
+  if (THUMB_MOD[key]) body += "<p><b>Thumbprint lewat / keluar awal:</b> tick <i>Ada lewat / keluar awal</i>, kemudian tick sebab (boleh lebih daripada satu) dan julat minit; OT ditolak ikut julat itu (masa dibundar ke 15 minit). " +
     (key === "lokum" ? "" : "Lewat masuk kerja hakiki: OT bermula selepas staf cukupkan tempoh bekerja sehari (waktu hakiki tamat + minit lewat); masuk selepas 9.00 pagi, OT bermula 6.00 petang (Soalan Lazim Waktu Bekerja Fleksi). ") +
     "Thumbprint tanpa rekod langsung kekal belum lengkap.</p>";
   return '<details class="rule adv"><summary>Cara kira dan syarat lulus</summary>' + body + "</details>";
@@ -1700,19 +1719,29 @@ function tolakTxt(x) {
 }
 function tolakNota(x) {
   const c = x && x.c; if (!c || !(c.thumbMin > 0)) return [];
-  const j = c.thumbJulat === "lebih" ? "masuk selepas 9.00 pagi" : ((THUMB_MIN.find(o => o[0] === c.thumbJulat) || [])[1] || "").toLowerCase();
-  return ["Thumbprint " + (c.thumbLabel || "") + (j ? " (" + j + ")" : "") + ": ditolak " + fmtJ(c.thumbMin) + (c.thumbRm > 0.005 ? " (" + rmFmt(c.thumbRm) + ")" : "")];
+  const bah = (c.thumbSebab || []).map(t => {
+    const nm = t.s === "Masuk" ? (c.thumbKey === "elm" ? "lewat masuk OT" : "lewat masuk EH") : THUMB_SEBAB.find(o => o[0] === t.s)[1];
+    const j = t.min === "lebih" ? "masuk selepas 9.00 pagi" : ((THUMB_MIN.find(o => o[0] === t.min) || [])[1] || "").toLowerCase();
+    return nm + (j ? " (" + j + ")" : "");
+  });
+  return ["Thumbprint " + bah.join(", ") + ": ditolak " + fmtJ(c.thumbMin) + (c.thumbRm > 0.005 ? " (" + rmFmt(c.thumbRm) + ")" : "")];
 }
-// Bila thumbprint tidak lengkap: pilih sebab (tiada rekod / lewat masuk hakiki / lewat masuk OT·EH / keluar awal) dan julat minit.
+// Bila thumbprint tidak lengkap: satu kotak "Ada lewat / keluar awal". Bila ditick sahaja, sebab (boleh lebih daripada satu)
+// dan julat minit dipaparkan. Tidak ditick = tiada rekod, kekal belum lengkap.
 function thumbIsuHtml(key, r, jenis, day, x) {
   if (r.thumb || !THUMB_MOD[key]) return "";
-  const hk = key !== "lokum" && (!jenis || jenis === "biasa");
-  const ops = [["", "Sebab tidak lengkap?"], ["tiada", "Tiada rekod"]].concat(hk || r.thumbIsu === "hakiki" ? [["hakiki", "Lewat masuk hakiki"]] : [])
-    .concat([["masuk", key === "elm" ? "Lewat masuk OT" : "Lewat masuk EH"], ["keluar", "Keluar awal"]]);
-  const opt = (o, v) => '<option value="' + o[0] + '"' + ((v || "") === o[0] ? " selected" : "") + ">" + esc(o[1]) + "</option>";
-  let h = '<select data-k="thumbIsu" class="th-isu" aria-label="Sebab thumbprint tidak lengkap ' + esc(day) + '">' + ops.map(o => opt(o, r.thumbIsu)).join("") + "</select>";
-  if (THUMB_ISU[r.thumbIsu]) h += '<select data-k="thumbMin" class="th-min" aria-label="Berapa minit ' + esc(day) + '">' +
-    [["", r.thumbIsu === "keluar" ? "Berapa minit awal?" : "Berapa minit lewat?"]].concat(THUMB_MIN, r.thumbIsu === "hakiki" ? [["lebih", "Masuk selepas 9.00 pagi"]] : []).map(o => opt(o, r.thumbMin)).join("") + "</select>";
+  const ck = (k, label, cls) => '<label class="th-ck' + (cls ? " " + cls : "") + '"><input type="checkbox" data-k="' + k + '"' + (r[k] ? " checked" : "") + ' aria-label="' + esc(label + (day ? " " + day : "")) + '"> ' + esc(label) + "</label>";
+  let h = ck("thumbLewat", "Ada lewat / keluar awal", "th-utama");
+  if (r.thumbLewat) {
+    const hk = key !== "lokum" && (!jenis || jenis === "biasa" || r.thHakiki);
+    const L = (hk ? [["Hakiki", "Lewat masuk hakiki"]] : []).concat([["Masuk", key === "elm" ? "Lewat masuk OT" : "Lewat masuk EH"], ["Keluar", "Keluar awal"]]);
+    h += L.map(([sb, lbl]) => {
+      const k = "th" + sb, on = !!r[k], v = r[k + "Min"] || "";
+      const ops = [["", sb === "Keluar" ? "Berapa minit awal?" : "Berapa minit lewat?"]].concat(THUMB_MIN.map(o => [o[0], o[0] === "60" ? "≤ 1 jam" : "≤ " + o[0] + " minit"]), sb === "Hakiki" ? [["lebih", "Selepas 9.00 pagi"]] : []);
+      return '<div class="th-r">' + ck(k, lbl) + (on ? '<select data-k="' + k + 'Min" aria-label="' + esc(lbl + " " + day) + '">' +
+        ops.map(o => '<option value="' + o[0] + '"' + (v === o[0] ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select>" : "") + "</div>";
+    }).join("");
+  }
   return '<div class="th-isu-w">' + h + '<small class="th-tolak" data-show="tolak">' + esc(tolakTxt(x)) + "</small></div>";
 }
 function sheetCheck(r,k,label,enabled) {
@@ -2505,12 +2534,11 @@ function onModuleInput(e) {
       return;
     }
     r[t.dataset.k]=t.type==="checkbox" ? t.checked : t.value;
-    if (t.dataset.k==="thumbIsu") r.thumbMin="";
     if (isEh(key) && ["mula","tamat"].includes(t.dataset.k)) r.autoMasa=false;
     if (isEh(key) && (key==="lokum" ? ["lokasi","am"] : ["lokasi","jenis"]).includes(t.dataset.k) && e.type==="change") autoFillEh(r,d,key);
     if (t.dataset.k==="ganti" && t.checked) extraDay=d;
     save();
-    const redrawKeys=["ganti","dipanggil","lokasi","am","jenis","bayar","kerja","thumbIsu","thumbMin"];
+    const redrawKeys=["ganti","dipanggil","lokasi","am","jenis","bayar","kerja","thHakikiMin","thMasukMin","thKeluarMin"];
     if ((redrawKeys.includes(t.dataset.k) || t.type==="checkbox") && e.type==="change") redrawSheet();
     else refresh();
   } else if (t.dataset.mk) {
