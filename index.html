@@ -412,6 +412,18 @@ button { font: inherit; font-weight: 600; font-size: 0.92rem; border-radius: 8px
 .ot-sheet .datecell small { color: var(--muted); font-size: 0.72rem; }
 .ot-sheet .datecell .cuti { font-size: 0.68rem; color: var(--cu); max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
 .ot-sheet .doc-cell { width: 68px; text-align: center; }
+.ot-sheet td.col-thumb { min-width: 168px; }
+.th-isu-w { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; text-align: left; }
+.th-ck { display: flex; align-items: center; gap: 6px; font-size: 0.76rem; line-height: 1.2; cursor: pointer; padding: 2px 0; }
+.th-ck input { width: 16px; height: 16px; min-height: 0; margin: 0; padding: 0; accent-color: var(--accent); flex: none; cursor: pointer; }
+.th-utama { font-weight: 600; }
+.th-r { display: flex; flex-direction: column; gap: 3px; padding-left: 22px; }
+.ot-sheet .th-isu-w select { min-width: 0; width: 100%; font-size: 0.76rem; }
+.th-tolak { font-size: 0.74rem; color: var(--warn); font-weight: 600; }
+.th-tolak:empty { display: none; }
+.clist .th-isu-w { grid-column: 1 / -1; margin: 0 0 6px 24px; }
+.clist .th-ck { font-size: 0.83rem; min-height: 30px; }
+.clist .th-isu-w select { width: 100%; }
 .ot-sheet .reason-cell { min-width: 155px; max-width: 230px; }
 .ot-sheet .time-cell { min-width: 192px; }
 .ot-sheet .issue-cell { min-width: 150px; max-width: 280px; }
@@ -848,7 +860,7 @@ tr.sasar > td { background-color: var(--warn-soft); }
         <div class="pilih2" role="radiogroup" aria-labelledby="kaliL"><button type="button" role="radio" data-kali="ya" aria-checked="false">Ya</button><button type="button" role="radio" data-kali="tidak" aria-checked="false">Tidak</button></div>
         <small class="hint">Jika ya, salinan kad pengenalan dan buku / penyata bank perlu dilampirkan.</small></div>
       <div class="field span2" id="gajiField" hidden><label for="gaji">Gaji pokok</label><div class="money"><span>RM</span><input id="gaji" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Taip ikut penyata gaji"></div><small class="hint" id="gajiHint"></small></div>
-      <details class="officer-more span2"><summary>Pilihan tambahan <span class="muted">· jika berkaitan sahaja</span></summary><label class="ck" id="tkField" hidden><input type="checkbox" id="tanggung"> Terima Elaun Penanggungan Kerja (EPK)</label><p class="hint">Tandakan jika menerima EPK melalui arahan rasmi. Potongan OT hari bekerja biasa dikira jika berkenaan.</p></details>
+      <details class="officer-more span2"><summary>Pilihan tambahan <span class="muted">· jika berkaitan sahaja</span></summary><label class="f" id="hkField" hidden><span>Waktu kerja hakiki <span class="muted">(untuk kiraan thumbprint lewat masuk)</span></span><select id="hakiki"><option value="07:30">7.30 pagi – 4.30 petang</option><option value="08:00">8.00 pagi – 5.00 petang</option><option value="08:30">8.30 pagi – 5.30 petang</option><option value="09:00">9.00 pagi – 6.00 petang</option></select></label><label class="ck" id="tkField" hidden><input type="checkbox" id="tanggung"> Terima Elaun Penanggungan Kerja (EPK)</label><p class="hint">Tandakan jika menerima EPK melalui arahan rasmi. Potongan OT hari bekerja biasa dikira jika berkenaan.</p></details>
     </div>
   </section>
 
@@ -1001,7 +1013,7 @@ function kurangElm(r, c, clash) {
   if (c.sama) out.push("Masa mula dan tamat sama");
   if (!(r.sebab || "").trim()) out.push("Sebab OT belum diisi");
   out.push(...kurangJadual(r, "OT"));
-  if (!r.thumb) out.push("Thumbprint tidak lengkap");
+  out.push(...kurangThumb("elm", r, c));
   if (c.gross > 480 && !r.surat8) out.push("Tiada surat pengesahan OT melebihi 8 jam");
   if (c.bawah1 && !c.incomplete && !c.sama) out.push("Kurang 1 jam selepas potongan, tidak boleh dituntut");
   if (clash) out.push("Masa bertindih dengan OT extended hours pada tarikh sama");
@@ -1026,7 +1038,7 @@ function kurangElmEh(r, c, clash) {
   else if (c.incomplete) out.push("Isi masa mula dan tamat");
   else if (c.sama) out.push("Masa mula dan tamat sama");
   out.push(...kurangJadual(r, "extended hours"));
-  if (!r.thumb) out.push("Thumbprint tidak lengkap");
+  out.push(...kurangThumb("elmeh", r, c));
   if (c.bawah1 && !c.incomplete && !c.sama) out.push("Kurang 1 jam selepas potongan, tidak boleh dituntut");
   if (clash) out.push("Masa bertindih dengan OT biasa pada tarikh sama");
   return out;
@@ -1102,7 +1114,7 @@ function kurangLokum(r, c, clash) {
   else if (c.sama) out.push("Masa mula dan tamat sama");
   else if (c.dalam === 0) out.push("Tiada jam dalam waktu operasi");
   out.push(...kurangJadual(r, "extended hours"));
-  if (!r.thumb) out.push("Thumbprint tidak lengkap");
+  out.push(...kurangThumb("lokum", r, c));
   if (clash) out.push("Bertindih dengan tuntutan ETAP pada tarikh sama");
   return out;
 }
@@ -1129,6 +1141,58 @@ function kurangBap(r, c) {
   out.push(...kurangJadual(r, "on-call"));
   if (r.dipanggil && !r.ketik) out.push("Tiada rekod ketik masuk dan keluar");
   return out;
+}
+// Thumbprint tidak lengkap tetapi ada rekod lewat / awal: OT ditolak ikut julat minit (masa dibundar ke 15 minit).
+// Staf tick "Ada lewat / keluar awal", kemudian tick satu atau lebih sebab:
+//  Hakiki = lewat masuk kerja hakiki: OT hanya bermula selepas staf cukupkan tempoh bekerja sehari (9 jam termasuk rehat);
+//           masuk selepas 9.00 pagi: waktu hakiki dikira tamat 6.00 petang (Soalan Lazim WBF, soalan 9 dan 11).
+//  Masuk  = lewat masuk OT / EH;  Keluar = keluar awal daripada OT / EH.
+const THUMB_SEBAB = [["Hakiki", "lewat masuk kerja hakiki"], ["Masuk", "lewat masuk OT / EH"], ["Keluar", "keluar awal"]];
+const THUMB_MIN = [["15", "Sehingga 15 minit"], ["30", "Sehingga 30 minit"], ["45", "Sehingga 45 minit"], ["60", "Sehingga 1 jam"]];
+const THUMB_MOD = { elm: true, elmeh: true, lokum: true };
+// Sebab yang ditanda: [{ s: "Hakiki" | "Masuk" | "Keluar", min: "15" | "30" | "45" | "60" | "lebih" | "" }]
+function thumbSebab(key, r) {
+  if (r.thumb || !THUMB_MOD[key] || !r.thumbLewat) return [];
+  return THUMB_SEBAB.filter(o => r["th" + o[0]] && !(o[0] === "Hakiki" && key === "lokum")).map(o => ({ s: o[0], min: r["th" + o[0] + "Min"] || "" }));
+}
+function thumbAda(r) { return !!r.thumb || (!!r.thumbLewat && THUMB_SEBAB.some(o => r["th" + o[0]] && r["th" + o[0] + "Min"])); }
+function kurangThumb(key, r, c) {
+  if (r.thumb) return [];
+  if (!THUMB_MOD[key] || !r.thumbLewat) return ["Thumbprint tidak lengkap"];
+  const L = thumbSebab(key, r);
+  if (!L.length) return ["Tandakan sebab thumbprint lewat / keluar awal"];
+  const out = [];
+  L.forEach(t => {
+    const nm = THUMB_SEBAB.find(o => o[0] === t.s)[1];
+    if (!t.min) out.push("Pilih berapa minit " + nm);
+    else if (t.s === "Hakiki" && c && c.jenis && c.jenis !== "biasa") out.push("Tiada kerja hakiki pada hari ini, buang tanda " + nm);
+  });
+  return out;
+}
+// Salinan baris dengan masa yang boleh dikira selepas tolakan thumbprint (data asal tidak diubah).
+function thumbAdj(key, r, wd, hakiki) {
+  const L = thumbSebab(key, r).filter(t => t.min);
+  if (!L.length) return r;
+  const a = tmin(r.mula), b = tmin(r.tamat);
+  if (a == null || b == null || a === b) return r;
+  let A = a, B = b < a ? b + 1440 : b, ubah = false;
+  L.forEach(t => {
+    const m = t.min === "lebih" ? 0 : num(t.min);
+    if (t.s === "Masuk") { A = Math.max(A, a + m); ubah = true; }
+    else if (t.s === "Keluar") { B -= m; ubah = true; }
+    else if ((r.jenis || autoJenis(wd)) === "biasa") {
+      const mulaH = tmin(hakiki) != null ? tmin(hakiki) : 480;
+      const tamatH = t.min === "lebih" ? 1080 : Math.min(mulaH + 540 + m, 1080);
+      // Hanya OT yang bermula sekitar / selepas tamat waktu hakiki terkesan.
+      if (a >= mulaH + 480 && a < tamatH) { A = Math.max(A, tamatH); ubah = true; }
+    }
+  });
+  if (!ubah) return r;
+  const v = Object.assign({}, r);
+  if (B <= A) { B = A; v._habis = true; }
+  const hm = x => { x = ((x % 1440) + 1440) % 1440; return String(Math.floor(x / 60)).padStart(2, "0") + ":" + String(x % 60).padStart(2, "0"); };
+  v.mula = hm(A); v.tamat = hm(B);
+  return v;
 }
 /*CALC-END*/
 
@@ -1286,7 +1350,7 @@ function otRaw(key) {
   let rm = 0, n = 0;
   for (let d = 1; d <= mo.n; d++) {
     const r0 = M.rows[d]; if (!r0 || !r0.on) continue;
-    const r = rowView(key, r0, d), wd = weekday(d); n++;
+    const wd = weekday(d), r = thumbAdj(key, rowView(key, r0, d), wd, state.hakiki); n++;
     rm += (key === "elm" ? calcElm(r, wd, g, st) : calcElmEh(r, wd, g, st, r.lokasi ? ehWinFor(key, r0, d) : null)).rm;
   }
   const dit = numOrNull(M.dituntut);
@@ -1305,11 +1369,21 @@ function evalModule(key) {
     const wd = weekday(d);
     const clash = !!(other[d] && other[d].on) && (!isOt(key) || bertindih(r, other[d]));
     let c, k, a = [];
-    if (key === "elm") { const st = { tolak215: !!state.tanggungKerja }; c = calcElm(r, wd, num(state.gaji), st); k = kurangElm(r, c, clash); a = amaranElm(c, st); }
-    else if (key === "elmeh") { const st = { tolak215: !!state.tanggungKerja }; c = calcElmEh(r, wd, num(state.gaji), st, r.lokasi ? ehWinFor(key, r0, d) : null); k = kurangElmEh(r, c, clash); a = amaranElmEh(c); }
+    const ra = thumbAdj(key, r, wd, state.hakiki); // masa yang dikira selepas tolakan thumbprint lewat / keluar awal
+    if (key === "elm") { const st = { tolak215: !!state.tanggungKerja }; c = calcElm(ra, wd, num(state.gaji), st); k = kurangElm(r, c, clash); a = amaranElm(c, st); }
+    else if (key === "elmeh") { const st = { tolak215: !!state.tanggungKerja }; c = calcElmEh(ra, wd, num(state.gaji), st, r.lokasi ? ehWinFor(key, r0, d) : null); k = kurangElmEh(r, c, clash); a = amaranElmEh(c); }
     else if (key === "etap") { c = calcEtap(r, wd, j.etap); k = kurangEtap(r, c, clash); }
-    else if (key === "lokum") { c = calcLokum(r, wd, set, j.lokum); k = kurangLokum(r, c, clash); a = amaranLokum(c, set); }
+    else if (key === "lokum") { c = calcLokum(ra, wd, set, j.lokum); k = kurangLokum(r, c, clash); a = amaranLokum(c, set); }
     else { c = calcBap(r, set); k = kurangBap(r, c); }
+    if (ra !== r) {
+      const st = { tolak215: !!state.tanggungKerja };
+      const c0 = key === "elm" ? calcElm(r, wd, num(state.gaji), st) : key === "elmeh" ? calcElmEh(r, wd, num(state.gaji), st, r.lokasi ? ehWinFor(key, r0, d) : null) : calcLokum(r, wd, set, j.lokum);
+      c.thumbMin = Math.max(0, key === "lokum" ? c0.bayar - c.bayar : (c0.cg ? c0.cgMin : c0.net) - (c.cg ? c.cgMin : c.net));
+      const sen = n => Math.round((n || 0) * 100) / 100; // ikut jumlah RM yang dipaparkan
+      c.thumbRm = Math.max(0, sen(c0.rm) - sen(c.rm));
+      c.thumbSebab = thumbSebab(key, r).filter(t => t.min); c.thumbKey = key;
+      if (ra._habis) k = k.map(t => t === "Masa mula dan tamat sama" ? "Tiada baki OT selepas tolakan thumbprint" : t);
+    }
     days.push({ d, wd, r, c, k, a });
   }
   const gagal = days.filter(x => x.k.length).length;
@@ -1407,6 +1481,7 @@ function fillTop() {
   $("bulan").value = state.bulan || thisMonth();
   $("gaji").value = state.gaji || "";
   $("tanggung").checked = !!state.tanggungKerja;
+  $("hakiki").value = state.hakiki || "08:00";
   document.querySelectorAll("[data-set]").forEach(el => {
     const k = el.dataset.set;
     if (el.type === "checkbox") el.checked = !!set[k]; else el.value = set[k] == null ? "" : set[k];
@@ -1418,6 +1493,7 @@ function renderTabs() {
   const adaOt = ms.some(isOt);
   $("gajiField").hidden = !ms.length;
   $("tkField").hidden = !adaOt;
+  $("hkField").hidden = !adaOt;
   $("kaliField").hidden = !(adaOt || ms.indexOf("etap") >= 0);
   document.querySelectorAll("[data-kali]").forEach(b => b.setAttribute("aria-checked", String(state.kaliPertama === b.dataset.kali)));
   $("step1").classList.toggle("nogaji", $("gajiField").hidden);
@@ -1464,6 +1540,9 @@ function ruleHtml(key) {
     "<p><b>Waktu operasi (Surat Edaran KKM 10 Dis 2025):</b> hari bekerja 5–9 malam, Sabtu 9 pagi–1 tengah hari. Ahad dan kelepasan am: KK Ampang (KK pasca projek rintis STAR) buka 9 pagi–1 tengah hari; KK Kajang tiada extended hours. Hanya jam dalam waktu operasi dikira.</p>" +
     "<p><b>Lulus bila ada:</b> surat arahan, nama dalam jadual extended hours (atau jika menggantikan anggota lain: jadual dengan nama anggota yang diganti dan borang penggantian), dan thumbprint lengkap.</p>";
   else body = "<p><b>Belum disahkan:</b> kadar dan syarat Elaun Bersedia Atas Panggilan di KK dan KD. Isi kadar dalam Tetapan bila dapat pengesahan Unit Kewangan.</p>";
+  if (THUMB_MOD[key]) body += "<p><b>Thumbprint lewat / keluar awal:</b> tick <i>Ada lewat / keluar awal</i>, kemudian tick sebab (boleh lebih daripada satu) dan julat minit; OT ditolak ikut julat itu (masa dibundar ke 15 minit). " +
+    (key === "lokum" ? "" : "Lewat masuk kerja hakiki: OT bermula selepas staf cukupkan tempoh bekerja sehari (waktu hakiki tamat + minit lewat); masuk selepas 9.00 pagi, OT bermula 6.00 petang (Soalan Lazim Waktu Bekerja Fleksi). ") +
+    "Thumbprint tanpa rekod langsung kekal belum lengkap.</p>";
   return '<details class="rule adv"><summary>Cara kira dan syarat lulus</summary>' + body + "</details>";
 }
 
@@ -1531,14 +1610,15 @@ function reqDocs(key, r, c) {
   return out;
 }
 
-function docsHtml(key, r) {
+function docsHtml(key, r, x) {
   const jl = key === "elm" ? "OT" : isEh(key) ? "extended hours" : "on-call";
   let h = chkF("ganti", "Bertugas menggantikan anggota lain", r, "q") +
     chkF("surat", "Surat arahan", r) + chkF("jadual", "Nama dalam jadual " + jl, r, "dep-noganti") +
     chkF("jadualGanti", "Jadual ada nama anggota yang diganti", r, "dep-ganti") + chkF("borang", "Borang penggantian", r, "dep-ganti");
-  if (key === "elm") h += chkF("thumb", "Thumbprint lengkap", r) + chkF("surat8", "Surat pengesahan OT melebihi 8 jam", r, "dep-8");
+  const thIsu = thumbIsuHtml(key, r, x && x.c && x.c.jenis, "", x);
+  if (key === "elm") h += chkF("thumb", "Thumbprint lengkap", r) + thIsu + chkF("surat8", "Surat pengesahan OT melebihi 8 jam", r, "dep-8");
   else if (key === "etap") h += chkF("tiadacuti", "Tidak bercuti, MC atau kuarantin", r) + chkF("thumb", "Bukti thumbprint", r);
-  else if (isEh(key)) h += chkF("thumb", "Thumbprint lengkap", r);
+  else if (isEh(key)) h += chkF("thumb", "Thumbprint lengkap", r) + thIsu;
   else h += chkF("ketik", "Ketik masuk dan keluar", r, "dep-panggil");
   h += '<label class="f wide dep-ganti"><span>Nama anggota yang diganti</span><input type="text" data-k="gantiNama" value="' + esc(r.gantiNama || "") + '" placeholder="Nama penuh anggota yang diganti"></label>';
   return '<div class="sec"><div class="sec-h">Dokumen <span class="docn" data-docn></span><button type="button" class="link" data-act="tickall">Tick semua</button></div><div class="clist">' + h + "</div></div>";
@@ -1630,8 +1710,39 @@ function sheetAmount(key,x) {
 function sheetIssue(x) {
   if (!x) return "";
   const problems = x.k.concat(x.a);
-  if (!problems.length) return "Tiada isu dikesan";
+  if (!problems.length) return tolakTxt(x) ? "Thumbprint: " + tolakTxt(x).replace(/^Ditolak/, "ditolak") : "Tiada isu dikesan";
   return problems[0] + (problems.length > 1 ? " (+" + (problems.length - 1) + " lagi)" : "");
+}
+function tolakTxt(x) {
+  const c = x && x.c; if (!c || !(c.thumbMin > 0)) return "";
+  return "Ditolak " + fmtJ(c.thumbMin) + (c.thumbRm > 0.005 ? " · " + rmFmt(c.thumbRm) : "");
+}
+function tolakNota(x) {
+  const c = x && x.c; if (!c || !(c.thumbMin > 0)) return [];
+  const bah = (c.thumbSebab || []).map(t => {
+    const nm = t.s === "Masuk" ? (c.thumbKey === "elm" ? "lewat masuk OT" : "lewat masuk EH") : THUMB_SEBAB.find(o => o[0] === t.s)[1];
+    const j = t.min === "lebih" ? "masuk selepas 9.00 pagi" : ((THUMB_MIN.find(o => o[0] === t.min) || [])[1] || "").toLowerCase();
+    return nm + (j ? " (" + j + ")" : "");
+  });
+  return ["Thumbprint " + bah.join(", ") + ": ditolak " + fmtJ(c.thumbMin) + (c.thumbRm > 0.005 ? " (" + rmFmt(c.thumbRm) + ")" : "")];
+}
+// Bila thumbprint tidak lengkap: satu kotak "Ada lewat / keluar awal". Bila ditick sahaja, sebab (boleh lebih daripada satu)
+// dan julat minit dipaparkan. Tidak ditick = tiada rekod, kekal belum lengkap.
+function thumbIsuHtml(key, r, jenis, day, x) {
+  if (r.thumb || !THUMB_MOD[key]) return "";
+  const ck = (k, label, cls) => '<label class="th-ck' + (cls ? " " + cls : "") + '"><input type="checkbox" data-k="' + k + '"' + (r[k] ? " checked" : "") + ' aria-label="' + esc(label + (day ? " " + day : "")) + '"> ' + esc(label) + "</label>";
+  let h = ck("thumbLewat", "Ada lewat / keluar awal", "th-utama");
+  if (r.thumbLewat) {
+    const hk = key !== "lokum" && (!jenis || jenis === "biasa" || r.thHakiki);
+    const L = (hk ? [["Hakiki", "Lewat masuk hakiki"]] : []).concat([["Masuk", key === "elm" ? "Lewat masuk OT" : "Lewat masuk EH"], ["Keluar", "Keluar awal"]]);
+    h += L.map(([sb, lbl]) => {
+      const k = "th" + sb, on = !!r[k], v = r[k + "Min"] || "";
+      const ops = [["", sb === "Keluar" ? "Berapa minit awal?" : "Berapa minit lewat?"]].concat(THUMB_MIN.map(o => [o[0], o[0] === "60" ? "≤ 1 jam" : "≤ " + o[0] + " minit"]), sb === "Hakiki" ? [["lebih", "Selepas 9.00 pagi"]] : []);
+      return '<div class="th-r">' + ck(k, lbl) + (on ? '<select data-k="' + k + 'Min" aria-label="' + esc(lbl + " " + day) + '">' +
+        ops.map(o => '<option value="' + o[0] + '"' + (v === o[0] ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select>" : "") + "</div>";
+    }).join("");
+  }
+  return '<div class="th-isu-w">' + h + '<small class="th-tolak" data-show="tolak">' + esc(tolakTxt(x)) + "</small></div>";
 }
 function sheetCheck(r,k,label,enabled) {
   if (enabled === false) return '<span class="sheet-dash" title="Tidak berkenaan">–</span>';
@@ -1667,11 +1778,13 @@ function sheetCell(key,col,r,d,x) {
   if (col === "jadual") return sheetCheck(r,r.ganti ? "jadualGanti" : "jadual",(r.ganti ? "Jadual ada nama anggota diganti " : "Nama dalam jadual ") + day);
   if (col === "dipanggil") return sheetCheck(r,"dipanggil","Dipanggil masuk " + day);
   if (col === "ketik") return sheetCheck(r,"ketik","Rekod ketik masuk dan keluar " + day,!!r.dipanggil);
+  if (col === "thumb" && THUMB_MOD[key]) return sheetCheck(r,"thumb","Thumbprint lengkap " + day) + thumbIsuHtml(key, r, x && x.c && x.c.jenis, day, x);
   const labels = { surat:"Surat arahan",thumb:"Thumbprint lengkap",tiadacuti:"Pengesahan tidak bercuti / MC" };
   return sheetCheck(r,col,(labels[col] || col) + " " + day);
 }
 function isuHtml(x) {
-  return x && (x.k.length || x.a.length) ? '<div class="issues">' + x.k.map(y => '<span class="k">• ' + esc(y) + "</span>").join("") + x.a.map(y => '<span class="a">• ' + esc(y) + "</span>").join("") + "</div>" : '<span class="hint">Tiada masalah pada tarikh ini dikesan oleh sistem.</span>';
+  const nota = tolakNota(x).map(y => '<span class="a">• ' + esc(y) + "</span>").join("");
+  return x && (x.k.length || x.a.length) ? '<div class="issues">' + x.k.map(y => '<span class="k">• ' + esc(y) + "</span>").join("") + x.a.map(y => '<span class="a">• ' + esc(y) + "</span>").join("") + nota + "</div>" : nota ? '<div class="issues">' + nota + "</div>" : '<span class="hint">Tiada masalah pada tarikh ini dikesan oleh sistem.</span>';
 }
 function sheetExtraHtml(key,d,r,x,colSpan) {
   let fields = "";
@@ -1688,9 +1801,9 @@ function sheetExtraHtml(key,d,r,x,colSpan) {
   if (key === "elm") primary = '<label class="f wide"><span>Sebab OT</span><input type="text" data-k="sebab" placeholder="Contoh: program kesihatan" value="' + esc(r.sebab || "") + '"></label>';
   if (isEh(key)) primary = selF("lokasi","Lokasi extended hours",[["","Pilih KK"],["ampang","KK Ampang"],["kajang","KK Kajang"]],r.lokasi || "");
   if (key === "etap" || key === "bap") primary = chkF("dipanggil","Dipanggil masuk ke klinik",r) + (r.dipanggil ? timeF("masuk","Masa masuk",r) + timeF("keluar","Masa keluar",r) : "");
-  const docs = '<div class="sheet-mobile-docs"><strong>Butiran utama</strong><div class="g2">' + primary + '</div><strong>Semakan dokumen</strong>' + docsHtml(key,r) + '</div>';
+  const docs = '<div class="sheet-mobile-docs"><strong>Butiran utama</strong><div class="g2">' + primary + '</div><strong>Semakan dokumen</strong>' + docsHtml(key,r,x) + '</div>';
   const issues = '<div class="isu-w">' + isuHtml(x) + "</div>";
-  const req = reqDocs(key, r, x && x.c), have = req.filter(k => r[k]).length, cukup = have === req.length;
+  const req = reqDocs(key, r, x && x.c), have = req.filter(k => k === "thumb" ? thumbAda(r) : r[k]).length, cukup = have === req.length;
   const cls = (r.ganti ? " has-ganti" : "") + (key === "elm" && x && x.c && x.c.gross > 480 ? " need8" : "") + (r.dipanggil ? " panggil" : "");
   return ('<tr class="sheet-extra' + cls + '" data-d="' + d + '"><td colspan="' + colSpan + '"><div class="sheet-extra-inner"><strong>Butiran tambahan · ' + d + " " + BULAN[monthInfo().m - 1] + '</strong><div class="g2">' + docs + fields + '</div>' + issues + "</div></td></tr>").replace('<span class="docn" data-docn></span>', '<span class="docn ' + (cukup ? "ok" : "bad") + '" data-docn>' + have + "/" + req.length + (cukup ? " lengkap" : "") + "</span>").replace('data-act="tickall">Tick semua', 'data-act="tickall">' + (cukup ? "Buang semua" : "Tick semua"));
 }
@@ -1797,6 +1910,7 @@ function updateSheet(key,ev) {
     const jam=row.querySelector('[data-show="jam"]'); if (jam) jam.textContent=sheetHours(key,x);
     const val=row.querySelector('[data-show="nilai"]'); if (val) val.textContent=sheetAmount(key,x);
   });
+  document.querySelectorAll('tr[data-d] [data-show="tolak"]').forEach(el => { el.textContent = tolakTxt(byDay[+el.closest("tr").dataset.d] || null); });
 }
 function redrawSheet() {
   const old=$("sheetScroll"), top=old ? old.scrollTop : 0, left=old ? old.scrollLeft : 0;
@@ -1908,7 +2022,7 @@ function updateItem(key, x) {
   el.classList.toggle("panggil", !!r.dipanggil);
   el.querySelector("[data-calc]").innerHTML = calcText(key, x);
   el.querySelector("[data-sum]").textContent = sumText(key, x);
-  const req = reqDocs(key, r, c), have = req.filter(k => r[k]).length;
+  const req = reqDocs(key, r, c), have = req.filter(k => k === "thumb" ? thumbAda(r) : r[k]).length;
   const dn = el.querySelector("[data-docn]");
   dn.textContent = have + "/" + req.length + (have === req.length ? " lengkap" : "");
   dn.className = "docn " + (have === req.length ? "ok" : "bad");
@@ -2025,7 +2139,7 @@ function kaliDoc(it) {
 function tandaS(tk) { return tandaOn(tk) ? ["ok", "Sedia (ditanda)", "✓ Sedia"] : ["man", "Belum ditanda", "Tanda"]; }
 const docJadual = (C, sh, t, d) => ({ t, sh, d, s: C.has ? C.st(C.cnt(r => r.ganti ? r.jadualGanti : r.jadual), C.n) : null, lj: C.lompat(r => !(r.ganti ? r.jadualGanti : r.jadual), r => r.ganti ? "jadualGanti" : "jadual") });
 const docSurat = (C, sh, t, d, c) => ({ t, sh, c, d, s: C.has ? C.st(C.cnt(r => r.surat), C.n) : null, lj: C.lompat(r => !r.surat, () => "surat") });
-const docHadir = (C, sh, t, d) => ({ t, sh, d, s: C.has ? C.st(C.cnt(r => r.thumb), C.n) : null, lj: C.lompat(r => !r.thumb, () => "thumb") });
+const docHadir = (C, sh, t, d) => ({ t, sh, d, s: C.has ? C.st(C.cnt(r => thumbAda(r)), C.n) : null, lj: C.lompat(r => !thumbAda(r), () => "thumb") });
 const docGanti = C => { const g = C.cnt(r => r.ganti); return { t: "Borang penggantian tugas", sh: "Borang penggantian", c: "jika ganti anggota lain", d: "Bagi tarikh menggantikan anggota lain, dengan nama anggota yang diganti.", app: C.has ? g > 0 : null, s: C.has && g ? C.st(C.cnt(r => r.ganti && r.borang), g) : null, lj: C.lompat(r => r.ganti && !r.borang, () => "borang") }; };
 // Pautan borang / laman rasmi untuk dimuat turun. Semak semula bila pekeliling baharu keluar.
 const BORANG = {
@@ -2286,6 +2400,7 @@ $("nama").addEventListener("input", e => { state.nama = e.target.value; save(); 
 $("nama").addEventListener("blur", () => { refreshNameLock(); refresh(); });
 $("gaji").addEventListener("input", e => { state.gaji = e.target.value; save(); refresh(); });
 $("tanggung").addEventListener("change", e => { state.tanggungKerja = e.target.checked; save(); refresh(); });
+$("hakiki").addEventListener("change", e => { state.hakiki = e.target.value; save(); redrawSheet(); });
 $("jawatan").addEventListener("change", e => { state.jawatan = e.target.value; state.tab = ""; openDay = null; save(); renderTabs(); renderModule(); refresh(); });
 $("fasiliti").addEventListener("change", e => { state.fasiliti = e.target.value; save(); refresh(); });
 $("bulan").addEventListener("change", e => { if (!e.target.value) return; state.bulan = e.target.value; openDay = null; save(); renderModule(); refresh(); });
@@ -2426,7 +2541,7 @@ function onModuleInput(e) {
     if (isEh(key) && (key==="lokum" ? ["lokasi","am"] : ["lokasi","jenis"]).includes(t.dataset.k) && e.type==="change") autoFillEh(r,d,key);
     if (t.dataset.k==="ganti" && t.checked) extraDay=d;
     save();
-    const redrawKeys=["ganti","dipanggil","lokasi","am","jenis","bayar","kerja"];
+    const redrawKeys=["ganti","dipanggil","lokasi","am","jenis","bayar","kerja","thHakikiMin","thMasukMin","thKeluarMin"];
     if ((redrawKeys.includes(t.dataset.k) || t.type==="checkbox") && e.type==="change") redrawSheet();
     else refresh();
   } else if (t.dataset.mk) {
@@ -2523,7 +2638,7 @@ document.querySelectorAll("[data-kali]").forEach(b => b.addEventListener("click"
 }));
 $("refStaff").addEventListener("click", () => {
   if (!window.confirm("Kosongkan maklumat pegawai (nama, jawatan, klinik, gaji dan EPK)? Tarikh tuntutan tidak dipadam.\n\nUntuk staf lain, guna Refresh semua di bawah.")) return;
-  Object.assign(state, { nama: "", jawatan: "", fasiliti: "", gaji: "", kaliPertama: null, tanggungKerja: false, tab: "" });
+  Object.assign(state, { nama: "", jawatan: "", fasiliti: "", gaji: "", kaliPertama: null, tanggungKerja: false, hakiki: "", tab: "" });
   nameEditUnlocked = false; save(); renderAll();
   $("msg").textContent = "Maklumat pegawai dikosongkan. Tarikh tuntutan kekal.";
 });
@@ -2635,7 +2750,7 @@ function pdfModule(doc, key, y, no) {
   y = pdfVerdict(doc, y, "KEPUTUSAN", ev.v);
 
   const st = x => x.k.length ? "BELUM LENGKAP" : x.a.length ? "PERLU SEMAK" : "LENGKAP";
-  const issues = x => x.k.concat(x.a).join("; ");
+  const issues = x => x.k.concat(x.a, tolakNota(x)).join("; ");
   let head, body, cs;
   if (key === "elm") {
     head = ["Tarikh", "Jenis hari", "Masa", "Jenis kerja", "Siang", "Malam", "Tuntut", "RM / CG", "Sebab OT", "Status", "Kekurangan / amaran"];
