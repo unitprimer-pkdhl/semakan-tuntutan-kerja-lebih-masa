@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aliran Pesakit KK Bangi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Klinik moden: latar cerah, kad putih, jalur hero hijau-teal, satu aksen teal; warna status berasingan. Ringkasan dulu, butiran kemudian. */
+  --bg: #f2f6f5;
+  --panel: #ffffff;
+  --panel-2: #edf3f1;
+  --line: #dbe5e2;
+  --ink: #0f2a2e;
+  --muted: #5a6f73;
+  --accent: #0f766e;
+  --on-accent: #ffffff;
+  --ok: #15803d;
+  --warn: #b45309;
+  --crit: #dc2626;
+  --hero-a: #0a3b3d;
+  --hero-b: #11827a;
+  --hero-hi: #a7f3d0;
+  --shadow: 0 1px 2px rgba(15, 42, 46, .05), 0 10px 28px -16px rgba(15, 42, 46, .25);
+  --c-daftar: #3b6fe0;
+  --c-triaj: #7c5ce0;
+  --c-doktor: #0f766e;
+  --c-makmal: #c9369c;
+  --c-xray: #0891b2;
+  --c-rawatan: #5b9a0c;
+  --c-pendidik: #a16207;
+  --c-farmasi: #e2700f;
+  --font-display: "Outfit", "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", "Segoe UI", Roboto, system-ui, sans-serif;
+  --r: 16px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a1416; --panel: #101e21; --panel-2: #172a2e; --line: #26403f; --ink: #e8f2f0; --muted: #94aaa8;
+    --accent: #2dd4bf; --on-accent: #062521; --ok: #34d399; --warn: #fbbf24; --crit: #f87171;
+    --hero-a: #0c2b2d; --hero-b: #115e59; --hero-hi: #a7f3d0; --shadow: none;
+    --c-daftar: #7aa2ff; --c-triaj: #b99cff; --c-doktor: #2dd4bf; --c-makmal: #f2a7e6; --c-xray: #67e8f9; --c-rawatan: #a3e635; --c-pendidik: #e7c79a; --c-farmasi: #ffb86b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1416; --panel: #101e21; --panel-2: #172a2e; --line: #26403f; --ink: #e8f2f0; --muted: #94aaa8;
+  --accent: #2dd4bf; --on-accent: #062521; --ok: #34d399; --warn: #fbbf24; --crit: #f87171;
+  --hero-a: #0c2b2d; --hero-b: #115e59; --hero-hi: #a7f3d0; --shadow: none;
+  --c-daftar: #7aa2ff; --c-triaj: #b99cff; --c-doktor: #2dd4bf; --c-makmal: #f2a7e6; --c-xray: #67e8f9; --c-rawatan: #a3e635; --c-pendidik: #e7c79a; --c-farmasi: #ffb86b;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+.num { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+
+/* Hero */
+.hero { background: linear-gradient(120deg, var(--hero-a), var(--hero-b)); color: #fff; border-radius: 0 0 24px 24px; }
+.hdr { display: flex; flex-wrap: wrap; gap: 14px 24px; justify-content: space-between; align-items: flex-end; padding: 22px 0 20px; }
+.eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--hero-hi); font-weight: 700; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: 34px; line-height: 1.05; margin: 6px 0 6px; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 13px; }
+.hero .sub { color: rgba(255, 255, 255, .78); max-width: 60ch; }
+.hdr-side { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hs { display: flex; flex-direction: column; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .18); border-radius: 12px; padding: 6px 12px; }
+.hs span { font-size: 10px; color: rgba(255, 255, 255, .75); text-transform: uppercase; letter-spacing: .08em; }
+.hs b { font-family: var(--font-display); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.15; color: #fff; }
+.pill { display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .08em; background: var(--panel); }
+.pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.pill.ok { color: var(--ok); } .pill.warn { color: var(--warn); } .pill.crit { color: var(--crit); } .pill.idle { color: var(--muted); }
+.pill.crit::before { animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+
+/* Sticky tabs + time bar */
+.sticky { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.tabs { display: flex; gap: 4px; background: var(--panel-2); border-radius: 999px; padding: 4px; margin-top: 10px; }
+.tabs a { flex: 1; text-align: center; padding: 9px 4px; border-radius: 999px; color: var(--muted); text-decoration: none; font-weight: 600; font-size: 14px; }
+.tabs a[aria-current="page"] { background: var(--accent); color: var(--on-accent); box-shadow: 0 4px 12px -6px var(--accent); }
+.timebar { padding: 10px 0 12px; display: flex; flex-direction: column; gap: 8px; }
+.tb-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.play { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; flex: none; box-shadow: 0 6px 14px -6px var(--accent); }
+.play svg { width: 18px; height: 18px; fill: currentColor; }
+.tnow { display: flex; flex-direction: column; line-height: 1.05; }
+.tnow span { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.tnow b { font-family: var(--font-display); font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.spacer { flex: 1; }
+.seg { display: inline-flex; flex-wrap: wrap; background: var(--panel-2); border-radius: 12px; padding: 3px; gap: 2px; }
+.seg button { border: 0; background: transparent; padding: 6px 11px; border-radius: 9px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.seg button[aria-pressed="true"] { background: var(--panel); color: var(--accent); box-shadow: 0 1px 3px rgba(15, 42, 46, .15); }
+.ghost { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 8px 13px; font-size: 13px; font-weight: 600; color: var(--ink); }
+.ghost:hover { border-color: var(--accent); color: var(--accent); }
+input[type="range"] { width: 100%; accent-color: var(--accent); height: 22px; margin: 0; }
+
+/* Panels */
+main { padding: 18px 0 32px; }
+.panel { display: none; flex-direction: column; gap: 16px; }
+.panel.on { display: flex; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; min-width: 0; box-shadow: var(--shadow); }
+.card h2 { font-family: var(--font-display); font-size: 18px; margin: 0 0 2px; font-weight: 600; text-wrap: balance; }
+.hint { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+.grid2 { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 900px) { .grid2 { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); } }
+
+/* KPI */
+.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 900px) { .kpis { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.kpi { --tone: var(--accent); position: relative; background: color-mix(in srgb, var(--tone) 9%, var(--panel)); border: 1px solid color-mix(in srgb, var(--tone) 24%, var(--line)); border-radius: var(--r); padding: 14px; min-width: 0; }
+.kpi::before { content: ""; position: absolute; right: 12px; top: 14px; width: 9px; height: 9px; border-radius: 50%; background: var(--tone); }
+.kpi.ok { --tone: var(--ok); } .kpi.warn { --tone: var(--warn); } .kpi.crit { --tone: var(--crit); }
+.kpi .l { font-size: 12px; color: var(--muted); font-weight: 600; padding-right: 16px; }
+.kpi .v { font-family: var(--font-display); font-size: 32px; font-weight: 700; line-height: 1.15; font-variant-numeric: tabular-nums; margin: 4px 0 2px; overflow-wrap: anywhere; }
+.kpi .v small { font-size: 16px; color: var(--muted); font-weight: 500; }
+.kpi .d { font-size: 12px; color: var(--muted); }
+
+/* Alert */
+.alert { border-radius: var(--r); border: 1px solid var(--line); background: var(--panel); padding: 18px; display: grid; gap: 10px; box-shadow: var(--shadow); }
+.alert.crit { border-color: color-mix(in srgb, var(--crit) 45%, var(--line)); background: color-mix(in srgb, var(--crit) 6%, var(--panel)); }
+.alert.warn { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)); background: color-mix(in srgb, var(--warn) 7%, var(--panel)); }
+.alert .tag { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.alert h3 { font-family: var(--font-display); margin: 0; font-size: 20px; text-wrap: balance; }
+.alert.crit h3 { color: var(--crit); } .alert.warn h3 { color: var(--warn); }
+.alert p { margin: 0; color: var(--muted); }
+.rec { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 8px; }
+.rec b { color: var(--ink); }
+.rec .save { color: var(--ok); font-weight: 700; }
+.btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border: 0; background: var(--accent); color: var(--on-accent); font-weight: 600; border-radius: 12px; padding: 10px 16px; font-size: 14px; }
+.btn:disabled { opacity: .35; cursor: default; }
+
+/* Stage list */
+.stages { display: grid; gap: 14px; }
+.stage { display: grid; gap: 6px; }
+.stage-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.stage-name { font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.stage-name i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); flex: none; }
+.stage-val { font-family: var(--font-display); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stage-val small { color: var(--muted); font-size: 14px; font-weight: 500; }
+.bar { position: relative; height: 10px; border-radius: 6px; background: var(--panel-2); }
+.bar span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; background: var(--ok); }
+.bar.warn span { background: var(--warn); } .bar.crit span { background: var(--crit); }
+.bar em { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; background: var(--ink); opacity: .6; }
+.stage-meta { font-size: 12px; color: var(--muted); display: flex; gap: 6px 12px; flex-wrap: wrap; }
+.chip { font-size: 10px; font-weight: 700; letter-spacing: .06em; padding: 3px 8px; border-radius: 999px; text-transform: uppercase; }
+.chip.ok { color: var(--ok); background: color-mix(in srgb, var(--ok) 13%, transparent); }
+.chip.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); }
+.chip.crit { color: var(--crit); background: color-mix(in srgb, var(--crit) 12%, transparent); }
+
+/* Chart + map */
+#qChart svg, #mapBox svg { display: block; width: 100%; height: auto; }
+#qChart { cursor: crosshair; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 12px; height: 3px; border-radius: 2px; background: var(--c); display: inline-block; }
+.legend i.sq { width: 11px; height: 11px; border-radius: 3px; }
+.legend i.sq.idle { background: transparent; border: 1.5px solid var(--muted); }
+.legend i.sq.rehat { background: var(--line); }
+.legend i.sq.extra { background: transparent; border: 1.5px dashed var(--ink); }
+.legend i.dot { width: 9px; height: 9px; border-radius: 50%; }
+.mapchips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.mapchips div { background: var(--panel-2); border-radius: 12px; padding: 6px 12px; font-size: 13px; color: var(--muted); }
+.mapchips b { color: var(--ink); font-family: var(--font-display); font-size: 20px; font-weight: 600; margin-right: 4px; font-variant-numeric: tabular-nums; }
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.flow span { background: var(--panel-2); border-radius: 999px; padding: 4px 10px; color: var(--ink); font-weight: 600; }
+
+/* Simulator form */
+.form { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .form { grid-template-columns: 1fr 1fr; } }
+.fld { display: grid; gap: 6px; }
+.fld > span { font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.fld > span b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.fld input[type="text"], .fld input[type="number"] { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; width: 100%; }
+.stns { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .stns { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .stns { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.stn { background: var(--panel-2); border-radius: 12px; padding: 12px; display: grid; gap: 12px; border-top: 3px solid var(--c); align-content: start; }
+.stn-h { font-weight: 600; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel); flex: none; }
+.stepper button { width: 36px; height: 36px; border: 0; background: var(--panel); font-size: 18px; font-weight: 600; color: var(--accent); }
+.stepper b { min-width: 36px; text-align: center; font-family: var(--font-display); font-size: 20px; font-variant-numeric: tabular-nums; }
+.inrow { display: flex; align-items: center; gap: 8px; }
+.inrow input { max-width: 90px; }
+.inrow small { color: var(--muted); }
+.toggles { display: grid; gap: 10px; }
+.tg { display: flex; gap: 12px; align-items: flex-start; background: var(--panel-2); border-radius: 12px; padding: 10px 12px; }
+.tg input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--accent); flex: none; }
+.tg b { display: block; font-weight: 600; }
+.tg small { color: var(--muted); font-size: 12px; }
+.assume { font-size: 13px; color: var(--muted); background: var(--panel-2); border-radius: 12px; padding: 10px 12px; margin: 0 0 14px; }
+
+/* Tables */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { padding: 9px 8px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; }
+th { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+td.good { color: var(--ok); font-weight: 700; } td.bad { color: var(--crit); font-weight: 700; }
+.mixtbl input { width: 64px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 5px 6px; text-align: right; }
+.mixtbl td, .mixtbl th { padding: 6px; }
+.mixtbl td:last-child { white-space: normal; color: var(--muted); font-size: 12px; text-align: left; min-width: 120px; }
+.mixtbl th:last-child { text-align: left; }
+.mixnote { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+
+/* Doctor-time bars */
+.drlist { display: grid; gap: 12px; }
+.dr-row { display: grid; gap: 4px; }
+.dr-top { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.dr-top span:last-child { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dbar { height: 7px; border-radius: 4px; background: var(--panel-2); position: relative; }
+.dbar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; }
+.dbar.pt i { background: var(--muted); opacity: .5; }
+.dbar.mn i { background: var(--accent); }
+
+/* Recommendations + log */
+.reclist { display: grid; gap: 10px; }
+.recrow { background: var(--panel-2); border-radius: 12px; padding: 12px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; }
+.recrow.low { opacity: .6; }
+.recrow .t { font-weight: 600; }
+.recrow .w { font-size: 13px; color: var(--muted); }
+.recrow .m { font-size: 13px; color: var(--muted); grid-column: 1 / -1; }
+.recrow .m b { color: var(--ok); }
+.rank { font-family: var(--font-display); font-size: 13px; color: var(--accent); font-weight: 700; margin-right: 6px; }
+.empty { color: var(--muted); font-size: 14px; margin: 0; }
+.loglist { display: grid; gap: 8px; margin-bottom: 12px; }
+.logrow { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--panel-2); border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+.logrow .lt { font-family: var(--font-display); font-size: 18px; color: var(--accent); margin-right: 8px; font-variant-numeric: tabular-nums; }
+.note { color: var(--muted); font-size: 13px; max-width: 70ch; }
+footer { border-top: 1px solid var(--line); padding: 16px 0 28px; color: var(--muted); font-size: 12px; }
+footer p { margin: 0; max-width: 80ch; }
+
+@media (max-width: 520px) {
+  h1 { font-size: 30px; }
+  .tabs a { font-size: 13px; }
+  .tnow b { font-size: 24px; }
+  .seg button { padding: 6px 9px; }
+  .kpi .v { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { .pill.crit::before { animation: none; } }
+</style>
+
+</head>
+<body>
+<div class="hero"><div class="wrap">
+  <header class="hdr">
+    <div>
+      <div class="eyebrow">Aliran Pesakit OPD · Digital Twin</div>
+      <h1 id="hName">KK Bangi</h1>
+      <div class="sub">Simulasi berdasarkan data OPD PKDHL Jun 2026 dan case-mix anggaran. Bukan data pesakit sebenar.</div>
+    </div>
+    <div class="hdr-side">
+      <span id="hStatus" class="pill idle">MEMUAT</span>
+      <div class="hs"><span>Dalam klinik</span><b id="hIn">0</b></div>
+      <div class="hs"><span>Jam sebenar</span><b id="hClock">--:--:--</b></div>
+    </div>
+  </header>
+</div></div>
+
+<div class="sticky">
+  <div class="wrap">
+    <nav class="tabs" aria-label="Bahagian">
+      <a href="#dashboard" data-tab="dashboard">Dashboard</a>
+      <a href="#simulator" data-tab="simulator">Simulator</a>
+      <a href="#peta" data-tab="peta">Peta</a>
+      <a href="#tindakan" data-tab="tindakan">Tindakan</a>
+    </nav>
+    <div class="timebar">
+      <div class="tb-row">
+        <button id="btnPlay" class="play" aria-label="Main simulasi"></button>
+        <div class="tnow"><span>Masa simulasi</span><b id="tNow">10:30</b></div>
+        <div class="spacer"></div>
+        <div class="seg" id="segSpeed" role="group" aria-label="Kelajuan">
+          <button data-v="0.0167" title="Sama dengan jam sebenar">Nyata</button>
+          <button data-v="1" title="1 saat = 1 minit">1×</button>
+          <button data-v="5" title="1 saat = 5 minit">5×</button>
+          <button data-v="15" title="1 saat = 15 minit">15×</button>
+        </div>
+      </div>
+      <div class="tb-row">
+        <input type="range" id="tRange" min="450" max="1110" step="1" value="630" aria-label="Masa simulasi" style="flex:1;width:auto">
+        <button id="btnNow" class="ghost" title="Lompat ke masa sekarang dan ikut jam sebenar">Sekarang</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <!-- DASHBOARD -->
+  <section class="panel" id="p-dashboard">
+    <div class="kpis" id="kpis"></div>
+    <div class="alert" id="alertBox"></div>
+    <div class="grid2">
+      <div class="card">
+        <h2>Masa menunggu setiap stesen</h2>
+        <p class="hint">Purata 30 minit terakhir. Garis di tengah bar ialah sasaran.</p>
+        <div class="stages" id="stageList"></div>
+      </div>
+      <div class="card">
+        <h2>Bilangan pesakit dalam giliran</h2>
+        <p class="hint">Sepanjang hari. Ketik graf untuk lompat ke masa itu.</p>
+        <div id="qChart"></div>
+        <div class="legend" id="qLegend"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2 id="drTitle">Ke mana masa doktor pergi</h2>
+      <p class="hint">Sepanjang hari. Bar kelabu ialah bahagian pesakit, bar teal ialah bahagian minit doktor.</p>
+      <div class="drlist" id="drList"></div>
+    </div>
+  </section>
+
+  <!-- SIMULATOR -->
+  <section class="panel" id="p-simulator">
+    <div class="card">
+      <h2>Profil klinik</h2>
+      <p class="assume" id="assumeNote">Andaian KK Bangi: kedatangan OPD 625 sehari (kadar Jun 2026; purata Jan–Jun 550), 1 mesin X-ray (data PKDHL), makmal FBC ada (belum disahkan), 15 bilik doktor OPD, 6 kaunter pendaftaran, 7 staf triaj dan 5 kaunter farmasi. Ubah ikut keadaan sebenar.</p>
+      <div class="form">
+        <div class="fld"><label for="inName"><span class="sub">Nama klinik</span></label><input id="inName" type="text" maxlength="60"></div>
+        <div class="fld"><span><label for="inPes">Kedatangan OPD sehari</label><b id="vPes"></b></span><input id="inPes" type="range" min="200" max="1200" step="25"></div>
+        <div class="fld"><span>Corak ketibaan</span>
+          <div class="seg" id="segCorak" role="group" aria-label="Corak ketibaan">
+            <button data-v="pagi">Puncak pagi</button>
+            <button data-v="sekata">Temujanji berperingkat</button>
+          </div>
+        </div>
+        <div class="fld"><span><label for="inPel">Pelaras tuntutan kawasan (kes akut)</label><b id="vPel"></b></span><input id="inPel" type="range" min="1" max="1.4" step="0.05"></div>
+      </div>
+      <div class="toggles" style="margin-top:16px">
+        <label class="tg" for="inMak"><input id="inMak" type="checkbox"><span><b>Makmal FBC dan UFEME di KK</b><small>Jika tiada, sampel dihantar keluar dan pesakit perlu datang semula</small></span></label>
+        <label class="tg" for="inXr"><input id="inXr" type="checkbox"><span><b>X-ray di KK</b><small>Jika tiada, pesakit dirujuk ke tempat lain untuk X-ray</small></span></label>
+        <label class="tg" for="inRehat"><input id="inRehat" type="checkbox"><span><b>Rehat 13:00–14:00</b><small>Separuh staf setiap stesen bergilir rehat</small></span></label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Inisiatif proses</h2>
+      <p class="hint">Berkuat kuasa dari awal hari. Inisiatif yang dilaksana dari tab Tindakan bermula pada masa ia dilaksana.</p>
+      <div class="toggles">
+        <label class="tg" for="inFt"><input id="inFt" type="checkbox"><span><b>Laluan pantas demam</b><small>FBC dan combo denggi dimulakan di triaj, supaya keputusan siap sebelum pesakit jumpa doktor</small></span></label>
+        <label class="tg" for="inDe"><input id="inDe" type="checkbox"><span><b>Pendidik diabetes ambil alih kaunseling DM kompleks</b><small>Masa doktor untuk DM kompleks turun 7 minit. Pesakit berjumpa pendidik selama ~15 minit</small></span></label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Case-mix dan masa doktor</h2>
+      <p class="hint">Peratus pesakit dan purata masa konsultasi pertama bagi setiap diagnosis. Masa kes akut didarab dengan pelaras kawasan.</p>
+      <div class="seg" id="segMusim" role="group" aria-label="Musim" style="margin-bottom:12px">
+        <button data-v="denggi">Musim denggi</button>
+        <button data-v="biasa">Musim biasa</button>
+        <button data-v="jerebu">Jerebu</button>
+      </div>
+      <div class="tbl-wrap"><table class="mixtbl" id="mixTbl"></table></div>
+      <p class="mixnote" id="mixNote"></p>
+    </div>
+    <div class="card">
+      <h2>Stesen</h2>
+      <p class="hint">Bilangan staf atau mesin dari awal hari, purata masa servis, dan sasaran masa menunggu.</p>
+      <div class="stns" id="stnForm"></div>
+    </div>
+    <div class="card">
+      <h2>Sasaran keseluruhan</h2>
+      <div class="form" style="margin-top:12px">
+        <div class="fld"><label for="inTJ"><span class="sub">Purata masa dalam klinik (minit)</span></label><input id="inTJ" type="number" min="10" max="300"></div>
+        <div class="fld"><label for="inTD"><span class="sub">Jumpa doktor dalam tempoh (minit)</span></label><input id="inTD" type="number" min="10" max="300"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Asas berbanding senario semasa</h2>
+      <p class="hint">Keputusan untuk sepanjang hari, termasuk tindakan yang sudah dilaksana.</p>
+      <div class="tbl-wrap" id="cmp"></div>
+      <div class="btns" style="margin-top:14px">
+        <button class="btn" id="btnAsas">Jadikan senario ini asas</button>
+        <button class="ghost" id="btnReset">Kembali ke tetapan asal</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PETA -->
+  <section class="panel" id="p-peta">
+    <div class="card">
+      <h2>Peta aliran klinik</h2>
+      <p class="hint">Setiap titik ialah seorang pesakit yang sedang menunggu. Warna titik ikut berapa lama dia sudah menunggu.</p>
+      <div class="flow"><span>Daftar</span>→<span>Triaj</span>→<span>Doktor</span>→<span>Ujian atau rawatan</span>→<span>Ulasan doktor</span>→<span>Farmasi</span></div>
+      <div class="mapchips" id="mapChips"></div>
+      <div id="mapBox"></div>
+      <div class="legend">
+        <span><i class="sq" style="background:var(--accent)"></i>Sedang melayan</span>
+        <span><i class="sq idle"></i>Kosong</span>
+        <span><i class="sq rehat"></i>Rehat</span>
+        <span><i class="sq extra"></i>Staf tambahan</span>
+        <span><i class="dot" style="background:var(--ok)"></i>Baru menunggu</span>
+        <span><i class="dot" style="background:var(--warn)"></i>Hampir sasaran</span>
+        <span><i class="dot" style="background:var(--crit)"></i>Lebih sasaran</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TINDAKAN -->
+  <section class="panel" id="p-tindakan">
+    <div class="card">
+      <h2>Cadangan pada <span id="recT" class="num"></span></h2>
+      <p class="hint">Setiap pilihan diuji dalam simulasi untuk baki hari ini. Anggaran jimat ialah purata masa dalam klinik bagi pesakit yang masih ada atau belum tiba.</p>
+      <div class="reclist" id="recList"></div>
+    </div>
+    <div class="card">
+      <h2>Log tindakan</h2>
+      <p class="hint">Tindakan berkuat kuasa dari masa ia dilaksana. Sejarah sebelum masa itu kekal sama.</p>
+      <div class="loglist" id="logList"></div>
+      <button class="ghost" id="btnClearAct">Batal semua tindakan</button>
+    </div>
+    <p class="note">Cadangan ini dikira dengan menguji setiap pilihan dalam simulasi, bukan model AI. Semak kelayakan staf dan keperluan unit lain sebelum memindahkan sesiapa.</p>
+  </section>
+</main>
+
+<div class="wrap">
+  <footer>
+    <p>Semua angka dijana oleh simulasi: pesakit tiba ikut corak harian, setiap pesakit diberi diagnosis ikut case-mix, dan setiap stesen melayan ikut giliran. Pesakit ulasan semula didahulukan di bilik doktor. Ini bukan data CCMS atau data pesakit sebenar.</p>
+  </footer>
+</div>
+
+<script>
+// Enjin simulasi peristiwa diskret (DES) aliran pesakit KK, dengan case-mix diagnosis
+const OPEN = 480, BREAK_S = 780, BREAK_E = 840, DAY_START = 450;
+const STN = ['daftar', 'triaj', 'doktor', 'makmal', 'xray', 'rawatan', 'pendidik', 'farmasi'];
+const NO_BREAK = { rawatan: true, xray: true };
+
+const PATTERNS = {
+  pagi:   [[450,480,.08],[480,540,.20],[540,600,.18],[600,660,.14],[660,720,.11],[720,780,.07],[780,840,.03],[840,900,.09],[900,960,.07],[960,990,.03]],
+  sekata: [[450,480,.03],[480,540,.13],[540,600,.13],[600,660,.13],[660,720,.12],[720,780,.10],[780,840,.04],[840,900,.12],[900,960,.11],[960,990,.09]]
+};
+
+// Case-mix lalai (musim denggi 2026) — masa doktor ikut analisis case-mix KK Hulu Langat
+const DIAG = [
+  { key: 'hpt', nama: 'Susulan HPT / dislipidemia', pct: 14, dr: 6, acute: false, pm: 1.3, rx: 1, refer: 0.01, referMin: 8, tests: [] },
+  { key: 'dm', nama: 'Susulan DM', pct: 18, dr: 15, acute: false, pm: 1.5, rx: 1, refer: 0.05, referMin: 8, review: 3, tests: [{ jenis: 'lab', p: 0.25, tat: 75 }] },
+  { key: 'dmk', nama: 'DM kompleks / poor insight', pct: 6, dr: 25, acute: false, pm: 1.8, rx: 1, refer: 0.15, referMin: 10, review: 5, tests: [{ jenis: 'lab', p: 0.6, tat: 75 }] },
+  { key: 'urti', nama: 'URTI / ILI', pct: 16, dr: 5, acute: true, pm: 0.7, rx: 0.95, refer: 0, referMin: 0, tests: [] },
+  { key: 'demam', nama: 'Demam / denggi disyaki', pct: 7, dr: 8, acute: true, pm: 0.6, rx: 0.9, refer: 0.10, referMin: 15, emergency: true, review: 4, tests: [{ jenis: 'lab', p: 1, tat: 45 }] },
+  { key: 'age', nama: 'Gastroenteritis akut', pct: 4, dr: 6, acute: true, pm: 0.8, rx: 0.9, refer: 0.03, referMin: 10, emergency: true, review: 2, tests: [{ jenis: 'rawatan', p: 0.2, dur: 30 }] },
+  { key: 'asma', nama: 'Asma / COPD stabil', pct: 2.5, dr: 8, acute: false, pm: 1.2, rx: 1, refer: 0, referMin: 0, tests: [] },
+  { key: 'asmaex', nama: 'Eksaserbasi asma / COPD', pct: 1.5, dr: 8, acute: true, pm: 1, rx: 1, refer: 0.15, referMin: 12, emergency: true, review: 4, tests: [{ jenis: 'rawatan', p: 1, dur: 35 }] },
+  { key: 'msk', nama: 'Sakit otot dan sendi', pct: 6, dr: 7, acute: true, pm: 0.8, rx: 0.9, refer: 0.03, referMin: 6, review: 3, tests: [{ jenis: 'xray', p: 0.2 }] },
+  { key: 'kulit', nama: 'Penyakit kulit', pct: 5, dr: 5, acute: true, pm: 0.8, rx: 0.9, refer: 0.01, referMin: 6, tests: [] },
+  { key: 'dispepsia', nama: 'Dispepsia / gastritis', pct: 3, dr: 6, acute: true, pm: 0.8, rx: 0.95, refer: 0.03, referMin: 6, tests: [] },
+  { key: 'uti', nama: 'UTI', pct: 2, dr: 6, acute: true, pm: 0.8, rx: 1, refer: 0.01, referMin: 6, review: 3, tests: [{ jenis: 'lab', p: 0.5, tat: 45 }] },
+  { key: 'mental', nama: 'Kesihatan mental', pct: 2, dr: 22, acute: false, pm: 1, rx: 0.8, refer: 0.10, referMin: 8, tests: [] },
+  { key: 'dada', nama: 'Sakit dada / kecemasan', pct: 1, dr: 10, acute: true, pm: 0.8, rx: 0.5, refer: 0.25, referMin: 30, emergency: true, review: 5, tests: [{ jenis: 'rawatan', p: 1, dur: 10 }] },
+  { key: 'tb', nama: 'Batuk kronik / suspek TB', pct: 1, dr: 10, acute: true, pm: 0.8, rx: 0.7, refer: 0.3, referMin: 8, review: 3, tests: [{ jenis: 'xray', p: 1 }] },
+  { key: 'prosedur', nama: 'Luka dan prosedur', pct: 3, dr: 15, acute: true, pm: 0.6, rx: 0.6, refer: 0.02, referMin: 8, tests: [] },
+  { key: 'saringan', nama: 'Saringan dan pentadbiran', pct: 5, dr: 8, acute: false, pm: 0.5, rx: 0.2, refer: 0, referMin: 0, review: 2, tests: [{ jenis: 'lab', p: 0.3, tat: 45 }, { jenis: 'xray', p: 0.2 }] },
+  { key: 'lain', nama: 'Lain-lain (mata, ENT, vertigo)', pct: 3, dr: 7, acute: true, pm: 0.8, rx: 0.8, refer: 0.03, referMin: 6, tests: [] }
+];
+
+function rng(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function gauss(r) { let u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+const SIGMA = 0.45;
+function ln(z) { return Math.max(0.3, Math.exp(SIGMA * z - SIGMA * SIGMA / 2)); }
+
+function genPatients(n, pattern, seed) {
+  const r = rng(seed);
+  const pat = PATTERNS[pattern] || PATTERNS.pagi;
+  const raw = pat.map(p => p[2] * n);
+  const counts = raw.map(Math.floor);
+  const rem = n - counts.reduce((a, b) => a + b, 0);
+  raw.map((v, i) => [v - Math.floor(v), i]).sort((a, b) => b[0] - a[0]).slice(0, rem).forEach(o => counts[o[1]]++);
+  const times = [];
+  pat.forEach((p, i) => { for (let k = 0; k < counts[i]; k++) times.push(p[0] + r() * (p[1] - p[0])); });
+  times.sort((a, b) => a - b);
+  const r2 = rng(seed * 7919 + 13);
+  return times.map((t, i) => {
+    const u = [], z = [];
+    for (let k = 0; k < 6; k++) u.push(r2());
+    for (let k = 0; k < 12; k++) z.push(gauss(r2));
+    return { id: i + 1, arrive: t, uDiag: r2(), u, z };
+  });
+}
+
+function pickDiag(u, mix) {
+  const tot = mix.reduce((a, d) => a + Math.max(0, d.pct), 0) || 1;
+  let acc = 0;
+  for (const d of mix) { acc += Math.max(0, d.pct) / tot; if (u < acc) return d; }
+  return mix[mix.length - 1];
+}
+
+function leverAt(P, key) {
+  let t = P.levers && P.levers[key] ? 0 : Infinity;
+  for (const a of (P.tindakan || [])) if (a.lever === key && a.masa < t) t = a.masa;
+  return t;
+}
+
+function planPatient(pat, P, d) {
+  const z = pat.z, u = pat.u, M = P.masa;
+  const mult = d.acute ? P.pelaras : 1;
+  const tasks = [];
+  const plan = { diag: d.key, tasks, ulangan: 0, refer: false, hosp: false, ft: false, de: false };
+  tasks.push({ st: 'daftar', dur: M.daftar * ln(z[0]) });
+  tasks.push({ st: 'triaj', dur: M.triaj * ln(z[1]) });
+  const ft = d.key === 'demam' && P.makmal && pat.arrive >= leverAt(P, 'ftDemam');
+  if (ft) { tasks.push({ st: 'makmal', dur: M.makmal * ln(z[2]), result: d.tests[0].tat * ln(z[3]) }); plan.ft = true; }
+  let drFirst = d.dr * mult * ln(z[4]);
+  const de = d.key === 'dmk' && P.staf.pendidik > 0 && pat.arrive >= leverAt(P, 'pendidik');
+  if (de) { drFirst = Math.max(4, drFirst - 7); plan.de = true; }
+  const post = [];
+  let sameDay = false;
+  (d.tests || []).forEach((t, i) => {
+    if (u[1 + i] >= t.p) return;
+    if (t.jenis === 'lab') {
+      if (ft) return;
+      if (P.makmal) { post.push({ st: 'makmal', dur: M.makmal * ln(z[5 + i]), wait: t.tat * ln(z[8 + i]) }); sameDay = true; }
+      else { plan.ulangan++; drFirst += 3; }
+    } else if (t.jenis === 'xray') {
+      if (P.xray) { post.push({ st: 'xray', dur: M.xray * ln(z[5 + i]), wait: 5 }); sameDay = true; }
+      else { plan.ulangan++; drFirst += 2; }
+    } else if (t.jenis === 'rawatan') {
+      post.push({ st: 'rawatan', dur: t.dur * ln(z[5 + i]), wait: 0 }); sameDay = true;
+    }
+  });
+  tasks.push({ st: 'doktor', dur: drFirst, prio: 0, first: true, ftPending: ft });
+  post.forEach(x => tasks.push(x));
+  const rv = (d.review || 3) * ln(z[11]);
+  if (sameDay) tasks.push({ st: 'doktor', dur: rv, prio: 1, review: true });
+  else if (ft) tasks.push({ st: 'doktor', dur: rv, prio: 1, review: true, ftReview: true });
+  if (u[0] < d.refer) {
+    plan.refer = true;
+    for (let i = tasks.length - 1; i >= 0; i--) if (tasks[i].st === 'doktor') { tasks[i].dur += d.referMin; break; }
+    if (d.emergency) plan.hosp = true;
+  }
+  if (de) tasks.push({ st: 'pendidik', dur: 15 * ln(z[9]) });
+  if (!plan.hosp && u[4] < d.rx) tasks.push({ st: 'farmasi', dur: M.farmasi * d.pm * ln(z[10]) });
+  return plan;
+}
+
+function buildServers(s, n, actions, rehat) {
+  const sv = [];
+  const half = Math.ceil(n / 2);
+  for (let k = 0; k < n; k++) sv.push({ id: k + 1, busy: false, from: 0, until: Infinity, brk: rehat && !NO_BREAK[s] && n > 1 && k >= half, extra: false });
+  actions.filter(a => a.stesen === s).sort((a, b) => a.masa - b.masa).forEach(a => {
+    if (a.delta > 0) {
+      for (let k = 0; k < a.delta; k++) sv.push({ id: sv.length + 1, busy: false, from: a.masa, until: Infinity, brk: false, extra: true });
+    } else {
+      for (let k = 0; k < -a.delta; k++) {
+        const active = sv.filter(x => x.until === Infinity);
+        if (active.length <= 1) break;
+        active[active.length - 1].until = a.masa;
+      }
+    }
+  });
+  return sv;
+}
+
+function Heap() { this.a = []; }
+Heap.prototype.less = function (x, y) { return x.t < y.t || (x.t === y.t && x.s < y.s); };
+Heap.prototype.push = function (x) { const a = this.a; a.push(x); let i = a.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (this.less(a[i], a[p])) { [a[i], a[p]] = [a[p], a[i]]; i = p; } else break; } };
+Heap.prototype.pop = function () {
+  const a = this.a, top0 = a[0], last = a.pop();
+  if (a.length) { a[0] = last; let i = 0; for (;;) { const l = 2 * i + 1, r = l + 1; let m = i; if (l < a.length && this.less(a[l], a[m])) m = l; if (r < a.length && this.less(a[r], a[m])) m = r; if (m === i) break; [a[i], a[m]] = [a[m], a[i]]; i = m; } }
+  return top0;
+};
+
+function simulate(P, pats) {
+  const acts = (P.tindakan || []).filter(a => a.stesen);
+  const mix = P.mix;
+  const servers = {}, queues = {};
+  STN.forEach(s => { servers[s] = buildServers(s, P.staf[s] || 0, acts, P.rehat); queues[s] = [[], []]; });
+  const ps = pats.map(pat => {
+    const d = pickDiag(pat.uDiag, mix);
+    const plan = planPatient(pat, P, d);
+    return { id: pat.id, arrive: pat.arrive, diag: d.key, plan, ti: 0, recs: [], waitRes: [], leave: null, resultAt: null, ftDone: false };
+  });
+  const ev = new Heap();
+  let seq = 0;
+  const push = (t, type, p, x) => ev.push({ t, s: seq++, type, p, x });
+  STN.forEach(s => {
+    push(OPEN, 'wake', null, s);
+    if (P.rehat) push(BREAK_E, 'wake', null, s);
+    servers[s].forEach(v => { if (v.from > 0) push(v.from, 'wake', null, s); });
+  });
+  ps.forEach(p => push(p.arrive, 'join', p));
+
+  function avail(v, t) {
+    return !v.busy && t >= v.from && t < v.until && t >= OPEN && !(P.rehat && v.brk && t >= BREAK_S && t < BREAK_E);
+  }
+  function tryStart(s, t) {
+    const q = queues[s];
+    for (;;) {
+      if (!q[0].length && !q[1].length) return;
+      const v = servers[s].find(x => avail(x, t));
+      if (!v) return;
+      const p = q[1].length ? q[1].shift() : q[0].shift();
+      const task = p.plan.tasks[p.ti];
+      let dur = task.dur;
+      if (task.ftPending && p.resultAt != null && p.resultAt <= t) { dur += 2; p.ftDone = true; }
+      const rec = p.recs[p.recs.length - 1];
+      rec.s = t; rec.sv = v.id; rec.e = t + dur;
+      v.busy = true;
+      push(t + dur, 'end', p, v);
+    }
+  }
+  while (ev.a.length) {
+    const e = ev.pop();
+    const t = e.t;
+    if (e.type === 'wake') { tryStart(e.x, t); continue; }
+    const p = e.p;
+    if (e.type === 'join') {
+      let task = p.plan.tasks[p.ti];
+      if (task.ftReview) {
+        if (p.ftDone) { p.ti++; if (p.ti >= p.plan.tasks.length) { p.leave = t; continue; } task = p.plan.tasks[p.ti]; }
+        else if (p.resultAt != null && p.resultAt > t) { p.waitRes.push([t, p.resultAt]); push(p.resultAt, 'join', p); task.ftReview = false; continue; }
+      }
+      p.recs.push({ st: task.st, q: t, s: null, e: null, sv: null, prio: task.prio || 0 });
+      queues[task.st][task.prio ? 1 : 0].push(p);
+      tryStart(task.st, t);
+    } else if (e.type === 'end') {
+      const v = e.x;
+      v.busy = false;
+      const task = p.plan.tasks[p.ti];
+      if (task.result) p.resultAt = t + task.result;
+      p.ti++;
+      if (p.ti >= p.plan.tasks.length) p.leave = t;
+      else {
+        const w = task.wait || 0;
+        if (w > 0) p.waitRes.push([t, t + w]);
+        push(t + w, 'join', p);
+      }
+      tryStart(p.recs[p.recs.length - 1].st, t);
+    }
+  }
+  // pulihkan bendera ftReview untuk kegunaan semula plan (plan dijana semula setiap simulate)
+  const lastLeave = Math.max(...ps.map(p => p.leave || 0));
+  return { recs: ps, servers, lastLeave };
+}
+
+function stationNow(res, P, s, T) {
+  let queue = 0, qRev = 0, busy = 0, waitingSum = 0, rollSum = 0, rollN = 0;
+  const waiting = [];
+  const busyIds = new Set();
+  for (const p of res.recs) {
+    for (const r of p.recs) {
+      if (r.st !== s || r.s == null) continue;
+      if (r.q <= T && r.s > T) { queue++; if (r.prio) qRev++; waitingSum += T - r.q; waiting.push(T - r.q); }
+      if (r.s <= T && r.e > T) { busy++; busyIds.add(r.sv); }
+      if (r.s <= T && r.s > T - 30 && !r.prio) { rollSum += r.s - r.q; rollN++; }
+    }
+  }
+  let wait = rollN ? rollSum / rollN : 0;
+  if (queue) wait = Math.max(wait, waitingSum / queue);
+  const sv = res.servers[s].map(x => {
+    const active = T >= x.from && T < x.until;
+    let state = 'idle';
+    if (busyIds.has(x.id)) state = 'busy';
+    else if (!active) state = 'off';
+    else if (P.rehat && x.brk && T >= BREAK_S && T < BREAK_E) state = 'rehat';
+    return { id: x.id, state, extra: x.extra };
+  });
+  const activeN = sv.filter(x => x.state !== 'off' && x.state !== 'rehat').length;
+  return { queue, qRev, busy, wait, waiting, sv, activeN, target: P.sasaran[s] || 30 };
+}
+
+function resultWaitingNow(res, T) {
+  let n = 0;
+  for (const p of res.recs) for (const w of p.waitRes) if (w[0] <= T && w[1] > T) { n++; break; }
+  return n;
+}
+
+function dayStats(res, P) {
+  const recs = res.recs;
+  const avgJ = recs.reduce((a, p) => a + p.leave - p.arrive, 0) / recs.length;
+  let drOk = 0;
+  const drMin = {}, cnt = {};
+  let ulangan = 0, refer = 0, hosp = 0;
+  for (const p of recs) {
+    const f = p.recs.find(r => r.st === 'doktor');
+    if (f && f.s - p.arrive <= P.sasaran.jumpaDr) drOk++;
+    cnt[p.diag] = (cnt[p.diag] || 0) + 1;
+    for (const r of p.recs) if (r.st === 'doktor') drMin[p.diag] = (drMin[p.diag] || 0) + (r.e - r.s);
+    ulangan += p.plan.ulangan; if (p.plan.refer) refer++; if (p.plan.hosp) hosp++;
+  }
+  const st = {};
+  STN.forEach(s => {
+    const w = [];
+    for (const p of recs) for (const r of p.recs) if (r.st === s && !r.prio) w.push(r.s - r.q);
+    w.sort((a, b) => a - b);
+    st[s] = { n: w.length, avg: w.length ? w.reduce((a, b) => a + b, 0) / w.length : 0, max: w.length ? w[w.length - 1] : 0 };
+  });
+  const drTot = Object.values(drMin).reduce((a, b) => a + b, 0);
+  return { avgJ, dr: drOk / recs.length * 100, st, lastLeave: res.lastLeave, cnt, drMin, drTot, ulangan, refer, hosp, n: recs.length };
+}
+
+
+
+(function () {
+  const NAMA = { daftar: 'Pendaftaran', triaj: 'Triaj', doktor: 'Konsultasi Doktor', makmal: 'Makmal (ambil sampel)', xray: 'X-ray', rawatan: 'Bilik Rawatan', pendidik: 'Pendidik Diabetes', farmasi: 'Farmasi', tunggu: 'Menunggu keputusan' };
+  const PENDEK = { daftar: 'Daftar', triaj: 'Triaj', doktor: 'Doktor', makmal: 'Makmal', xray: 'X-ray', rawatan: 'Rawatan', pendidik: 'Pendidik', farmasi: 'Farmasi', tunggu: 'Tunggu keputusan' };
+  const UNIT = { daftar: 'kaunter', triaj: 'staf', doktor: 'bilik', makmal: 'staf', xray: 'mesin', rawatan: 'kerusi', pendidik: 'staf', farmasi: 'kaunter' };
+  const SVC = { daftar: 'Purata masa mendaftar seorang pesakit', triaj: 'Purata masa triaj seorang pesakit', makmal: 'Purata masa ambil sampel', xray: 'Purata masa satu imbasan', farmasi: 'Purata masa membekal ubat (asas)' };
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const DEFAULT = {
+    klinik: 'KK Bangi', pesakit: 625, corak: 'pagi', rehat: true, seed: 7, pelaras: 1.2, makmal: true, xray: true,
+    levers: { ftDemam: false, pendidik: false }, musim: 'denggi',
+    staf: { daftar: 6, triaj: 7, doktor: 15, makmal: 2, xray: 1, rawatan: 4, pendidik: 1, farmasi: 5 },
+    masa: { daftar: 2.5, triaj: 3.5, makmal: 3, xray: 10, farmasi: 4 },
+    sasaran: { daftar: 10, triaj: 10, doktor: 30, makmal: 15, xray: 30, rawatan: 15, pendidik: 30, farmasi: 30, jumlah: 90, jumpaDr: 60 },
+    mix: clone(DIAG), tindakan: [], log: []
+  };
+  const BASE_PCT = {}; DIAG.forEach(d => BASE_PCT[d.key] = d.pct);
+  const PRESET = { denggi: {}, biasa: { demam: 3, urti: 16, asmaex: 1 }, jerebu: { demam: 5, urti: 19, asmaex: 3, asma: 3, lain: 4 } };
+  const CAND = [
+    { key: 'farmasi+', label: 'Buka 1 kaunter farmasi tambahan', siapa: 'PPF dari stor atau bekalan farmasi', acts: [{ stesen: 'farmasi', delta: 1 }] },
+    { key: 'doktor+', label: 'Buka 1 bilik konsultasi tambahan', siapa: 'MO atau PPP dari unit lain', acts: [{ stesen: 'doktor', delta: 1 }] },
+    { key: 'triaj+', label: 'Tambah 1 staf di triaj', siapa: 'JM atau JK dari unit lain', acts: [{ stesen: 'triaj', delta: 1 }] },
+    { key: 'daftar+', label: 'Buka 1 kaunter pendaftaran tambahan', siapa: 'PT atau staf rekod', acts: [{ stesen: 'daftar', delta: 1 }] },
+    { key: 'makmal+', label: 'Tambah 1 staf pengambilan sampel', siapa: 'JTMP atau JM', acts: [{ stesen: 'makmal', delta: 1 }], need: 'makmal' },
+    { key: 'rawatan+', label: 'Tambah 1 kerusi nebulisasi', siapa: 'Dipantau oleh JM', acts: [{ stesen: 'rawatan', delta: 1 }] },
+    { key: 'pendidik+', label: 'Tambah 1 pendidik diabetes', siapa: 'Pendidik diabetes atau pegawai farmasi DMTAC', acts: [{ stesen: 'pendidik', delta: 1 }], need: 'deOn' },
+    { key: 'triaj>daftar', label: 'Pindah 1 staf triaj ke pendaftaran', siapa: 'Tanpa tambah staf', acts: [{ stesen: 'triaj', delta: -1 }, { stesen: 'daftar', delta: 1 }] },
+    { key: 'ft', label: 'Mulakan laluan pantas demam: FBC dan combo di triaj', siapa: 'Protokol triaj, tanpa tambah staf', acts: [{ lever: 'ftDemam' }], need: 'ftOff' },
+    { key: 'de', label: 'Pendidik diabetes ambil alih kaunseling DM kompleks', siapa: 'Pendidik diabetes atau DMTAC', acts: [{ lever: 'pendidik' }], need: 'deOff' }
+  ];
+  const STORE = 'aliranPesakit.bangi.v2';
+
+  const $ = s => document.querySelector(s);
+  const fmt = m => { m = Math.max(0, Math.round(m)); return String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+  const r0 = x => Math.round(x);
+  const lvl = (v, t) => v >= t ? 'crit' : v >= 0.75 * t ? 'warn' : 'ok';
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  let P = clone(DEFAULT), ASAS = clone(DEFAULT);
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE) || 'null');
+    if (saved && saved.P && saved.P.staf && saved.P.mix) { P = Object.assign(clone(DEFAULT), saved.P); ASAS = Object.assign(clone(DEFAULT), saved.ASAS || {}); }
+  } catch (e) {}
+  function save() { try { localStorage.setItem(STORE, JSON.stringify({ P, ASAS })); } catch (e) {} }
+
+  let T = 630, playing = false, speed = 1, timer = null, abai = new Set();
+  let pats, res, endT, series, asasStats, day, recCache = { k: '', v: [] };
+
+  function visible() {
+    return STN.filter(s => {
+      if (s === 'makmal' && !P.makmal) return false;
+      if (s === 'xray' && !P.xray) return false;
+      if (s === 'pendidik') return day && day.st.pendidik.n > 0;
+      return true;
+    });
+  }
+
+  function rebuild() {
+    pats = genPatients(P.pesakit, P.corak, P.seed);
+    res = simulate(P, pats);
+    day = dayStats(res, P);
+    endT = Math.max(1050, Math.ceil((res.lastLeave + 15) / 30) * 30);
+    $('#tRange').max = endT;
+    if (T > endT) T = endT;
+    series = {};
+    for (const s of STN) {
+      const pts = [];
+      for (let t = DAY_START; t <= endT; t += 5) {
+        let n = 0;
+        for (const p of res.recs) for (const r of p.recs) if (r.st === s && r.q <= t && r.s > t) n++;
+        pts.push([t, n]);
+      }
+      series[s] = pts;
+    }
+    const ap = genPatients(ASAS.pesakit, ASAS.corak, ASAS.seed);
+    asasStats = dayStats(simulate(ASAS, ap), ASAS);
+    recCache.k = '';
+  }
+
+  function snapshotAll() {
+    const st = {};
+    for (const s of STN) st[s] = stationNow(res, P, s, T);
+    let inC = 0, arrived = 0, done = 0, jSum = 0, drN = 0, drOk = 0;
+    const tunggu = [];
+    for (const p of res.recs) {
+      if (p.arrive <= T) arrived++;
+      if (p.arrive <= T && p.leave > T) inC++;
+      if (p.leave <= T) { done++; jSum += p.leave - p.arrive; }
+      const f = p.recs.find(r => r.st === 'doktor');
+      if (f && f.s <= T) { drN++; if (f.s - p.arrive <= P.sasaran.jumpaDr) drOk++; }
+      for (const w of p.waitRes) if (w[0] <= T && w[1] > T) { tunggu.push(T - w[0]); break; }
+    }
+    let worst = null, wr = 0;
+    for (const s of visible()) { const x = st[s]; const ratio = x.wait / x.target; if ((x.queue > 0 || x.wait > 0) && ratio > wr) { wr = ratio; worst = s; } }
+    return { st, inC, arrived, done, avgJ: done ? jSum / done : null, drN, drPct: drN ? drOk / drN * 100 : null, worst, wr, tunggu };
+  }
+
+  function activeAt(s, t) { return res.servers[s].filter(x => x.from <= t && t < x.until).length; }
+
+  function candOk(c, t) {
+    if (c.need === 'makmal' && !P.makmal) return false;
+    if (c.need === 'ftOff' && (!P.makmal || leverAt(P, 'ftDemam') <= t)) return false;
+    if (c.need === 'deOff' && (leverAt(P, 'pendidik') <= t || P.staf.pendidik < 1)) return false;
+    if (c.need === 'deOn' && leverAt(P, 'pendidik') > t) return false;
+    return c.acts.every(a => !a.stesen || a.delta > 0 || activeAt(a.stesen, t) > 1);
+  }
+
+  function recommend() {
+    const t = playing ? Math.floor(T / 15) * 15 : r0(T);
+    const key = t + '|' + JSON.stringify([P.tindakan, P.pesakit, P.corak, P.staf, P.masa, P.rehat, P.mix, P.pelaras, P.makmal, P.xray, P.levers]);
+    if (recCache.k === key) return recCache.v;
+    const aff = [];
+    res.recs.forEach((p, i) => { if (p.leave > t) aff.push(i); });
+    let out = [];
+    if (aff.length) {
+      const avgOf = rs => aff.reduce((a, i) => a + rs.recs[i].leave - rs.recs[i].arrive, 0) / aff.length;
+      const base = avgOf(res);
+      for (const c of CAND) {
+        if (!candOk(c, t)) continue;
+        const P2 = Object.assign({}, P, { tindakan: P.tindakan.concat(c.acts.map(a => Object.assign({ masa: t }, a))) });
+        const r2 = simulate(P2, pats);
+        const a2 = avgOf(r2);
+        out.push(Object.assign({}, c, { jimat: base - a2, sebelum: base, selepas: a2, n: aff.length, lastB: res.lastLeave, lastA: r2.lastLeave }));
+      }
+      out.sort((a, b) => b.jimat - a.jimat);
+    }
+    recCache = { k: key, v: out };
+    return out;
+  }
+
+  function laksana(c) {
+    const t = r0(T);
+    const grp = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    c.acts.forEach(a => P.tindakan.push(Object.assign({ masa: t, grp }, a)));
+    P.log.push({ grp, masa: t, label: c.label, siapa: c.siapa, jimat: c.jimat });
+    save(); rebuild(); render();
+  }
+
+  /* ---------- Render ---------- */
+  function renderHeader(sn) {
+    $('#hName').textContent = P.klinik || 'Klinik Kesihatan';
+    document.title = 'Aliran Pesakit ' + (P.klinik || 'KK');
+    $('#hIn').textContent = sn.inC;
+    $('#tNow').textContent = fmt(T);
+    $('#tRange').value = T;
+    const pill = $('#hStatus');
+    let cls = 'ok', txt = 'LANCAR';
+    if (T < OPEN) { cls = 'idle'; txt = 'BELUM BUKA'; }
+    else if (T >= res.lastLeave) { cls = 'idle'; txt = 'TAMAT'; }
+    else {
+      const levels = visible().map(s => lvl(sn.st[s].wait, sn.st[s].target));
+      if (levels.includes('crit')) { cls = 'crit'; txt = 'KRITIKAL'; }
+      else if (levels.includes('warn')) { cls = 'warn'; txt = 'SIBUK'; }
+    }
+    pill.className = 'pill ' + cls; pill.textContent = txt;
+  }
+
+  function kpi(label, val, desc, cls) {
+    return '<div class="kpi ' + (cls || '') + '"><div class="l">' + label + '</div><div class="v">' + val + '</div><div class="d">' + desc + '</div></div>';
+  }
+
+  function renderKPIs(sn) {
+    const S = P.sasaran, dr = sn.st.doktor;
+    const k1 = sn.avgJ == null ? kpi('Purata masa dalam klinik', '—', 'Belum ada pesakit selesai', '')
+      : kpi('Purata masa dalam klinik', r0(sn.avgJ) + '<small> min</small>', 'Sasaran ≤ ' + S.jumlah + ' min · ' + sn.done + ' selesai', lvl(sn.avgJ, S.jumlah));
+    const k2 = kpi('Pesakit OPD hari ini', sn.arrived + '<small> / ' + P.pesakit + '</small>', 'Sudah tiba · 08:00–17:00', '');
+    let k3;
+    if (sn.worst && sn.wr >= 0.75) {
+      const w = sn.st[sn.worst];
+      k3 = kpi('Kesesakan utama', PENDEK[sn.worst], r0(w.wait) + ' min tunggu · sasaran ' + w.target + ' min', lvl(w.wait, w.target));
+    } else k3 = kpi('Kesesakan utama', 'Tiada', 'Semua stesen dalam sasaran', 'ok');
+    const util = dr.activeN ? Math.min(100, dr.busy / dr.activeN * 100) : 0;
+    const k4 = kpi('Bilik doktor', dr.busy + '<small> / ' + dr.activeN + '</small>', 'Sedang melayan · ' + r0(util) + '%', lvl(dr.wait, dr.target));
+    const k5 = sn.drPct == null ? kpi('Jumpa doktor ≤ ' + S.jumpaDr + ' min', '—', 'Belum ada pesakit jumpa doktor', '')
+      : kpi('Jumpa doktor ≤ ' + S.jumpaDr + ' min', r0(sn.drPct) + '<small>%</small>', 'Daripada ' + sn.drN + ' pesakit', sn.drPct >= 80 ? 'ok' : sn.drPct >= 60 ? 'warn' : 'crit');
+    const k6 = kpi('Menunggu keputusan', sn.tunggu.length + '', (P.makmal || P.xray ? 'Makmal atau X-ray' : 'Tiada ujian di KK') + (day.ulangan ? ' · ' + day.ulangan + ' lawatan ulangan' : ''), day.ulangan ? 'warn' : '');
+    $('#kpis').innerHTML = k1 + k2 + k3 + k4 + k5 + k6;
+  }
+
+  function renderAlert(sn) {
+    const box = $('#alertBox');
+    const tag = '<div class="tag">Digital Twin · Cadangan</div>';
+    if (T < OPEN) { box.className = 'alert'; box.innerHTML = tag + '<h3>Klinik belum dibuka</h3><p>' + sn.st.daftar.queue + ' pesakit sedang beratur di pendaftaran. Kaunter dibuka pada 08:00.</p>'; return; }
+    if (T >= res.lastLeave) { box.className = 'alert'; box.innerHTML = tag + '<h3>Semua pesakit sudah selesai</h3><p>Pesakit terakhir keluar pada ' + fmt(res.lastLeave) + '. Buka tab Simulator untuk cuba senario lain.</p>'; return; }
+    const w = sn.worst ? sn.st[sn.worst] : null;
+    const L = w ? lvl(w.wait, w.target) : 'ok';
+    if (!w || L === 'ok') { box.className = 'alert'; box.innerHTML = tag + '<h3>Aliran lancar</h3><p>Semua stesen dalam sasaran pada ' + fmt(T) + '.</p>'; return; }
+    const all = recommend().filter(c => !abai.has(c.key + '@' + Math.floor(T / 30)));
+    const top = all.filter(c => c.jimat >= 1)[0];
+    const direct = all.find(c => c.acts.some(a => a.stesen === sn.worst && a.delta > 0));
+    let why = '';
+    if (top && direct && direct.key !== top.key && top.jimat > direct.jimat + 2) {
+      why = '<p>Menambah ' + UNIT[sn.worst] + ' di ' + PENDEK[sn.worst].toLowerCase() + ' cuma menjimatkan ~' + Math.max(0, r0(direct.jimat)) + ' min, kerana punca kelewatan berada di bahagian lain aliran pesakit.</p>';
+    }
+    if (top) {
+      const pos = top.acts.find(a => a.stesen && a.delta > 0);
+      if (pos && pos.stesen !== sn.worst) {
+        let pk = 0, ptm = T;
+        for (const p of series[pos.stesen]) if (p[0] > T && p[1] > pk) { pk = p[1]; ptm = p[0]; }
+        if (pk > sn.st[pos.stesen].queue) why += '<p>' + NAMA[pos.stesen] + ' dijangka mencapai ' + pk + ' pesakit menunggu sekitar ' + fmt(ptm) + '.</p>';
+      }
+    }
+    let html = tag + '<h3>' + (L === 'crit' ? 'Amaran kesesakan: ' : 'Perhatian: ') + NAMA[sn.worst] + '</h3>' +
+      '<p>Tunggu ' + r0(w.wait) + ' min berbanding sasaran ' + w.target + ' min · ' + w.queue + ' pesakit dalam giliran' + (sn.worst === 'doktor' && w.qRev ? ' (' + w.qRev + ' ulasan semula)' : '') + ' · ' + w.activeN + ' ' + UNIT[sn.worst] + ' aktif.</p>';
+    if (top) {
+      html += '<div class="rec"><div><b>' + esc(top.label) + '</b> <span class="sub">(' + esc(top.siapa) + ')</span></div>' +
+        '<div class="sub">Anggaran: purata masa dalam klinik turun <span class="save">' + r0(top.jimat) + ' min</span> bagi ' + top.n + ' pesakit yang masih ada atau belum tiba.</div>' + why +
+        '<div class="btns"><button class="btn" id="aDo">Laksana tindakan</button><button class="ghost" id="aNo">Abai</button><a class="ghost" href="#tindakan" style="text-decoration:none">Lihat pilihan lain</a></div></div>';
+    } else html += '<p>Tiada tindakan pantas yang memberi kesan besar. Cuba ubah tetapan di tab Simulator.</p>';
+    box.className = 'alert ' + L;
+    box.innerHTML = html;
+    if (top) {
+      $('#aDo').onclick = () => laksana(top);
+      $('#aNo').onclick = () => { abai.add(top.key + '@' + Math.floor(T / 30)); render(); };
+    }
+  }
+
+  function renderStages(sn) {
+    $('#stageList').innerHTML = visible().map(s => {
+      const x = sn.st[s];
+      const L = lvl(x.wait, x.target);
+      const pct = Math.min(100, x.wait / (x.target * 2) * 100);
+      const q = x.queue + ' dalam giliran' + (s === 'doktor' && x.qRev ? ' (' + x.qRev + ' ulasan)' : '');
+      return '<div class="stage" style="--c:var(--c-' + s + ')">' +
+        '<div class="stage-top"><div class="stage-name"><i></i>' + NAMA[s] + ' <span class="chip ' + L + '">' + (L === 'ok' ? 'Dalam sasaran' : L === 'warn' ? 'Hampir' : 'Lebih') + '</span></div>' +
+        '<div class="stage-val">' + r0(x.wait) + 'm <small>/ ' + x.target + 'm</small></div></div>' +
+        '<div class="bar ' + L + '"><span style="width:' + pct.toFixed(1) + '%"></span><em></em></div>' +
+        '<div class="stage-meta"><span>' + q + '</span><span>' + x.activeN + ' ' + UNIT[s] + ' aktif</span><span>Purata sehari ' + r0(day.st[s].avg) + 'm</span></div></div>';
+    }).join('');
+  }
+
+  function renderChart() {
+    const box = $('#qChart');
+    const W = Math.max(300, box.clientWidth || 640), H = W < 480 ? 210 : 240;
+    const pl = 32, pr = 12, pt = 12, pb = 26;
+    const vis = visible();
+    let ymax = 5;
+    for (const s of vis) for (const p of series[s]) ymax = Math.max(ymax, p[1]);
+    const step = ymax <= 10 ? 2 : ymax <= 25 ? 5 : ymax <= 60 ? 10 : ymax <= 150 ? 25 : 50;
+    ymax = Math.ceil(ymax / step) * step;
+    const X = t => pl + (t - DAY_START) / (endT - DAY_START) * (W - pl - pr);
+    const Y = v => pt + (1 - v / ymax) * (H - pt - pb);
+    let g = '';
+    for (let v = 0; v <= ymax; v += step) g += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="var(--line)"/><text x="' + (pl - 6) + '" y="' + (Y(v) + 4) + '" text-anchor="end" font-size="11" fill="var(--muted)">' + v + '</text>';
+    const hrStep = W < 480 ? 120 : 60;
+    for (let t = 480; t <= endT; t += hrStep) g += '<text x="' + X(t) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + fmt(t) + '</text>';
+    if (P.rehat) g += '<rect x="' + X(780) + '" y="' + pt + '" width="' + (X(840) - X(780)) + '" height="' + (H - pt - pb) + '" fill="var(--panel-2)" opacity=".7"/><text x="' + ((X(780) + X(840)) / 2) + '" y="' + (pt + 12) + '" text-anchor="middle" font-size="10" fill="var(--muted)">Rehat</text>';
+    let lines = '', dots = '';
+    for (const s of vis) {
+      lines += '<path d="' + series[s].map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join(' ') + '" fill="none" stroke="var(--c-' + s + ')" stroke-width="' + (s === 'doktor' ? 2.6 : 1.8) + '" stroke-linejoin="round"/>';
+      dots += '<circle cx="' + X(T) + '" cy="' + Y(stationNow(res, P, s, T).queue) + '" r="4" fill="var(--c-' + s + ')" stroke="var(--panel)" stroke-width="2"/>';
+    }
+    const cur = '<line x1="' + X(T) + '" x2="' + X(T) + '" y1="' + pt + '" y2="' + (H - pb) + '" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="3 3"/>';
+    box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Bilangan pesakit dalam giliran setiap stesen sepanjang hari">' + g + lines + cur + dots + '</svg>';
+    box.onclick = ev => {
+      const rect = box.getBoundingClientRect();
+      const x = (ev.clientX - rect.left) / rect.width * W;
+      setT(Math.max(DAY_START, Math.min(endT, DAY_START + (x - pl) / (W - pl - pr) * (endT - DAY_START))));
+    };
+    $('#qLegend').innerHTML = vis.map(s => '<span><i style="--c:var(--c-' + s + ')"></i>' + PENDEK[s] + '</span>').join('');
+  }
+
+  function renderDr() {
+    const rows = P.mix.map(d => ({ d, pt: (day.cnt[d.key] || 0) / day.n * 100, mn: (day.drMin[d.key] || 0) / day.drTot * 100 }))
+      .filter(r => r.pt > 0).sort((a, b) => b.mn - a.mn).slice(0, 8);
+    const gap = rows.slice().sort((a, b) => (b.mn - b.pt) - (a.mn - a.pt))[0];
+    $('#drTitle').textContent = gap ? gap.d.nama + ': ' + r0(gap.pt) + '% pesakit, ' + r0(gap.mn) + '% masa doktor' : 'Ke mana masa doktor pergi';
+    const mx = Math.max(...rows.map(r => Math.max(r.pt, r.mn)), 1);
+    $('#drList').innerHTML = rows.map(r =>
+      '<div class="dr-row"><div class="dr-top"><span>' + esc(r.d.nama) + '</span><span>' + r0(r.pt) + '% pesakit · ' + r0(r.mn) + '% masa</span></div>' +
+      '<div class="dbar pt"><i style="width:' + (r.pt / mx * 100).toFixed(1) + '%"></i></div><div class="dbar mn"><i style="width:' + (r.mn / mx * 100).toFixed(1) + '%"></i></div></div>').join('') +
+      '<p class="mixnote">Purata masa doktor ' + (day.drTot / day.n).toFixed(1) + ' minit bagi setiap pesakit, termasuk ulasan semula dan masa menulis rujukan.</p>';
+  }
+
+  const ROWS = {
+    port: { W: 360, rows: [[['daftar', 1], ['triaj', 1]], [['doktor', 1]], [['makmal', 1], ['xray', 1]], [['rawatan', 1], ['tunggu', 1]], [['pendidik', 1], ['farmasi', 1]]], h: { doktor: 220, def: 150 } },
+    land: { W: 760, rows: [[['daftar', 1], ['triaj', 1], ['doktor', 2]], [['makmal', 1], ['xray', 1], ['rawatan', 1], ['tunggu', 1]], [['pendidik', 1], ['farmasi', 3]]], h: { doktor: 190, def: 160 } }
+  };
+
+  function zoneSVG(key, x, y, w, h, d) {
+    const isT = key === 'tunggu';
+    const target = isT ? 45 : d.target;
+    const lv = (T < OPEN && key !== 'daftar') ? 'ok' : lvl(d.wait, target);
+    const col = 'var(--' + lv + ')';
+    let o = '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="' + col + '" fill-opacity=".07" stroke="' + col + '" stroke-opacity=".65"/>';
+    o += '<text x="' + (x + 10) + '" y="' + (y + 19) + '" font-size="13" font-weight="600" fill="var(--ink)">' + (w < 200 ? PENDEK[key] : NAMA[key]) + '</text>';
+    o += '<text x="' + (x + w - 10) + '" y="' + (y + 19) + '" font-size="12" font-weight="600" text-anchor="end" fill="' + col + '">' + d.queue + (isT ? '' : ' tunggu') + '</text>';
+    o += '<text x="' + (x + 10) + '" y="' + (y + 35) + '" font-size="11" fill="var(--muted)">' + (isT ? 'Makmal atau X-ray' : '~' + r0(d.wait) + 'm · sasaran ' + d.target + 'm') + '</text>';
+    let sx = x + 10, sy = y + 44;
+    if (!isT) {
+      for (const v of d.sv) {
+        if (v.state === 'off') continue;
+        if (sx + 12 > x + w - 8) { sx = x + 10; sy += 16; }
+        let a = 'width="12" height="12" rx="3" x="' + sx + '" y="' + sy + '"';
+        if (v.state === 'busy') a += ' fill="var(--c-' + key + ')"';
+        else if (v.state === 'rehat') a += ' fill="var(--line)"';
+        else a += ' fill="none" stroke="var(--muted)" stroke-width="1.5"';
+        if (v.extra) a += ' stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="2 2"';
+        o += '<rect ' + a + '/>';
+        sx += 16;
+      }
+    } else sy = y + 30;
+    const y0 = sy + 24, bottom = y + h - 8, left = x + 12, step = 10;
+    const cols = Math.max(1, Math.floor((w - 20) / step)), rows = Math.max(0, Math.floor((bottom - y0) / step) + 1);
+    const cap = cols * rows;
+    const waits = d.waiting.slice().sort((a, b) => b - a);
+    const show = waits.length > cap ? Math.max(0, cap - 3) : waits.length;
+    for (let i = 0; i < show; i++) {
+      const dl = waits[i] >= target ? 'crit' : waits[i] >= target * 0.5 ? 'warn' : 'ok';
+      o += '<circle cx="' + (left + (i % cols) * step) + '" cy="' + (y0 + Math.floor(i / cols) * step) + '" r="3.4" fill="var(--' + dl + ')"/>';
+    }
+    if (waits.length > show) o += '<text x="' + (left + (show % cols) * step - 3) + '" y="' + (y0 + Math.floor(show / cols) * step + 4) + '" font-size="11" font-weight="600" fill="var(--ink)">+' + (waits.length - show) + '</text>';
+    return o;
+  }
+
+  function renderMap(sn) {
+    const box = $('#mapBox');
+    const L = ROWS[(box.clientWidth || 360) >= 620 ? 'land' : 'port'];
+    const vis = new Set(visible().concat(['tunggu']));
+    if (!P.makmal && !P.xray) vis.delete('tunggu');
+    let y = 8, o = '';
+    const gapX = 10, gapY = 12;
+    const zd = k => k === 'tunggu' ? { queue: sn.tunggu.length, wait: sn.tunggu.length ? sn.tunggu.reduce((a, b) => a + b, 0) / sn.tunggu.length : 0, waiting: sn.tunggu, target: 45, sv: [] } : sn.st[k];
+    for (const row of L.rows) {
+      const items = row.filter(([k]) => vis.has(k));
+      if (!items.length) continue;
+      const span = items.reduce((a, [, s]) => a + s, 0);
+      const unit = (L.W - 12 - gapX * (items.length - 1)) / span;
+      const ws = items.map(([, s]) => unit * s + gapX * (s - 1));
+      let h = 84;
+      items.forEach(([k], i) => {
+        const d = zd(k), w = ws[i];
+        const perRow = Math.max(1, Math.floor((w - 18) / 16));
+        const srv = k === 'tunggu' ? 0 : Math.ceil(d.sv.filter(v => v.state !== 'off').length / perRow);
+        const cols = Math.max(1, Math.floor((w - 20) / 10));
+        const need = (k === 'tunggu' ? 30 : 44 + srv * 16) + 24 + Math.max(1, Math.ceil(Math.max(d.waiting.length, 12) / cols)) * 10 + 4;
+        h = Math.max(h, Math.min(need, 260));
+      });
+      let x = 6;
+      items.forEach(([k], i) => { o += zoneSVG(k, x, y, ws[i], h, zd(k)); x += ws[i] + gapX; });
+      y += h + gapY;
+    }
+    box.innerHTML = '<svg viewBox="0 0 ' + L.W + ' ' + y + '" role="img" aria-label="Peta aliran pesakit pada ' + fmt(T) + '">' + o + '</svg>';
+    const belum = res.recs.filter(p => p.arrive > T).length;
+    $('#mapChips').innerHTML = '<div><b>' + sn.inC + '</b>dalam klinik</div><div><b>' + sn.done + '</b>sudah selesai</div><div><b>' + belum + '</b>belum tiba</div>';
+  }
+
+  function renderRecs() {
+    $('#recT').textContent = fmt(playing ? Math.floor(T / 15) * 15 : T);
+    const list = $('#recList');
+    if (T >= res.lastLeave) { list.innerHTML = '<p class="empty">Semua pesakit sudah selesai. Gerakkan masa simulasi ke waktu klinik dibuka.</p>'; return; }
+    const recs = recommend();
+    if (!recs.length) { list.innerHTML = '<p class="empty">Tiada pilihan untuk diuji pada masa ini.</p>'; return; }
+    list.innerHTML = recs.map((c, i) => {
+      const low = c.jimat < 1;
+      const m = low ? 'Kesan kecil pada masa ini.' : 'Purata masa dalam klinik ' + r0(c.sebelum) + ' → ' + r0(c.selepas) + ' min (<b>jimat ' + r0(c.jimat) + ' min</b>) · pesakit terakhir keluar ' + fmt(c.lastB) + ' → ' + fmt(c.lastA);
+      return '<div class="recrow' + (low ? ' low' : '') + '"><div><div class="t"><span class="rank">#' + (i + 1) + '</span>' + esc(c.label) + '</div><div class="w">' + esc(c.siapa) + '</div></div>' +
+        '<button class="btn" data-i="' + i + '"' + (low ? ' disabled' : '') + '>Laksana</button><div class="m">' + m + '</div></div>';
+    }).join('');
+    list.querySelectorAll('button[data-i]').forEach(b => b.onclick = () => laksana(recs[+b.dataset.i]));
+  }
+
+  function renderLog() {
+    const box = $('#logList');
+    if (!P.log.length) { box.innerHTML = '<p class="empty">Belum ada tindakan dilaksana.</p>'; $('#btnClearAct').disabled = true; return; }
+    $('#btnClearAct').disabled = false;
+    box.innerHTML = P.log.slice().sort((a, b) => a.masa - b.masa).map(l =>
+      '<div class="logrow"><div><span class="lt">' + fmt(l.masa) + '</span>' + esc(l.label) + '<div class="sub">' + esc(l.siapa) + (l.jimat >= 1 ? ' · anggaran jimat ' + r0(l.jimat) + ' min' : '') + '</div></div>' +
+      '<button class="ghost" data-g="' + l.grp + '">Batal</button></div>').join('');
+    box.querySelectorAll('button[data-g]').forEach(b => b.onclick = () => {
+      P.tindakan = P.tindakan.filter(a => a.grp !== b.dataset.g);
+      P.log = P.log.filter(a => a.grp !== b.dataset.g);
+      save(); rebuild(); render();
+    });
+  }
+
+  function renderCompare() {
+    const now = day;
+    const row = (label, a, b, unit, higherBetter, f) => {
+      f = f || (v => r0(v));
+      const diff = b - a;
+      const good = higherBetter ? diff > 0.5 : diff < -0.5, bad = higherBetter ? diff < -0.5 : diff > 0.5;
+      const ds = Math.abs(diff) < 0.5 ? '—' : (diff > 0 ? '+' : '−') + (unit === 'masa' ? r0(Math.abs(diff)) + ' min' : r0(Math.abs(diff)) + unit);
+      return '<tr><td>' + label + '</td><td>' + f(a) + '</td><td>' + f(b) + '</td><td class="' + (good ? 'good' : bad ? 'bad' : '') + '">' + ds + '</td></tr>';
+    };
+    let h = '<table><thead><tr><th>Ukuran</th><th>Asas</th><th>Senario</th><th>Beza</th></tr></thead><tbody>';
+    h += row('Purata masa dalam klinik (min)', asasStats.avgJ, now.avgJ, '', false);
+    h += row('Jumpa doktor ≤ ' + P.sasaran.jumpaDr + ' min (%)', asasStats.dr, now.dr, '%', true);
+    h += row('Pesakit terakhir keluar', asasStats.lastLeave, now.lastLeave, 'masa', false, fmt);
+    h += row('Purata masa doktor setiap pesakit (min)', asasStats.drTot / asasStats.n, now.drTot / now.n, '', false, v => v.toFixed(1));
+    for (const s of visible()) h += row('Purata tunggu ' + PENDEK[s].toLowerCase() + ' (min)', asasStats.st[s].avg, now.st[s].avg, '', false);
+    h += row('Lawatan ulangan untuk ujian', asasStats.ulangan, now.ulangan, '', false);
+    h += row('Rujukan ke hospital', asasStats.hosp, now.hosp, '', false);
+    $('#cmp').innerHTML = h + '</tbody></table>';
+  }
+
+  function renderMix() {
+    const tot = P.mix.reduce((a, d) => a + Math.max(0, +d.pct || 0), 0);
+    const testTxt = d => (d.tests || []).map(t => t.jenis === 'lab' ? 'Makmal ' + r0(t.p * 100) + '%' : t.jenis === 'xray' ? 'X-ray ' + r0(t.p * 100) + '%' : 'Rawatan ' + r0(t.p * 100) + '%').join(', ') || '—';
+    $('#mixTbl').innerHTML = '<thead><tr><th>Diagnosis</th><th>% pesakit</th><th>Masa doktor (min)</th><th>Ujian</th></tr></thead><tbody>' +
+      P.mix.map((d, i) => '<tr><td>' + esc(d.nama) + (d.acute ? '' : ' <span class="sub">(kronik)</span>') + '</td>' +
+        '<td><input type="number" min="0" max="60" step="0.5" data-i="' + i + '" data-f="pct" value="' + d.pct + '" aria-label="Peratus ' + esc(d.nama) + '"></td>' +
+        '<td><input type="number" min="1" max="60" step="0.5" data-i="' + i + '" data-f="dr" value="' + d.dr + '" aria-label="Masa doktor ' + esc(d.nama) + '"></td>' +
+        '<td>' + testTxt(d) + '</td></tr>').join('') + '</tbody>';
+    $('#mixNote').textContent = 'Jumlah peratus: ' + (Math.round(tot * 10) / 10) + '%' + (Math.abs(tot - 100) > 0.05 ? ' (dinormalkan kepada 100% dalam simulasi)' : '') + '. Purata masa doktor hari ini: ' + (day.drTot / day.n).toFixed(1) + ' minit.';
+    $('#mixTbl').querySelectorAll('input').forEach(inp => inp.onchange = e => {
+      const d = P.mix[+e.target.dataset.i];
+      const v = Math.max(0, +e.target.value || 0);
+      d[e.target.dataset.f] = e.target.dataset.f === 'dr' ? Math.max(1, v) : v;
+      P.musim = 'custom';
+      changed();
+    });
+  }
+
+  function syncForm() {
+    $('#inName').value = P.klinik;
+    $('#inPes').value = P.pesakit; $('#vPes').textContent = P.pesakit;
+    $('#inPel').value = P.pelaras; $('#vPel').textContent = '×' + (+P.pelaras).toFixed(2);
+    $('#inMak').checked = !!P.makmal; $('#inXr').checked = !!P.xray; $('#inRehat').checked = !!P.rehat;
+    $('#inFt').checked = !!P.levers.ftDemam; $('#inFt').disabled = !P.makmal;
+    $('#inDe').checked = !!P.levers.pendidik;
+    $('#inTJ').value = P.sasaran.jumlah; $('#inTD').value = P.sasaran.jumpaDr;
+    document.querySelectorAll('#segCorak button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === P.corak)));
+    document.querySelectorAll('#segMusim button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === P.musim)));
+    for (const s of STN) {
+      $('#st-' + s).textContent = P.staf[s];
+      if (SVC[s]) { $('#ms-' + s).value = P.masa[s]; $('#mv-' + s).textContent = P.masa[s] + ' min'; }
+      $('#tg-' + s).value = P.sasaran[s];
+    }
+    renderMix();
+  }
+
+  function buildForm() {
+    $('#stnForm').innerHTML = STN.map(s =>
+      '<div class="stn" style="--c:var(--c-' + s + ')">' +
+      '<div class="stn-h"><span>' + NAMA[s] + '</span><div class="stepper"><button data-s="' + s + '" data-d="-1" aria-label="Kurang ' + UNIT[s] + ' ' + NAMA[s] + '">−</button><b id="st-' + s + '"></b><button data-s="' + s + '" data-d="1" aria-label="Tambah ' + UNIT[s] + ' ' + NAMA[s] + '">+</button></div></div>' +
+      '<div class="sub" style="margin-top:-6px">Bilangan ' + UNIT[s] + (s === 'doktor' ? '. Masa konsultasi ikut diagnosis' : s === 'rawatan' ? '. Masa ikut diagnosis (nebulisasi, ECG, ORS)' : s === 'pendidik' ? '. Digunakan jika inisiatif pendidik diaktifkan' : '') + '</div>' +
+      (SVC[s] ? '<div class="fld"><span><label for="ms-' + s + '">' + SVC[s] + '</label><b id="mv-' + s + '"></b></span><input id="ms-' + s + '" type="range" min="0.5" max="20" step="0.5"></div>' : '') +
+      '<div class="fld"><label for="tg-' + s + '"><span class="sub">Sasaran masa menunggu</span></label><div class="inrow"><input id="tg-' + s + '" type="number" min="1" max="240"><small>min</small></div></div>' +
+      '</div>').join('');
+    document.querySelectorAll('.stepper button').forEach(b => b.onclick = () => {
+      const s = b.dataset.s, min = s === 'pendidik' ? 0 : 1;
+      P.staf[s] = Math.max(min, Math.min(40, P.staf[s] + (+b.dataset.d))); changed();
+    });
+    STN.forEach(s => {
+      if (SVC[s]) $('#ms-' + s).oninput = e => { P.masa[s] = +e.target.value; $('#mv-' + s).textContent = P.masa[s] + ' min'; changed(); };
+      $('#tg-' + s).onchange = e => { P.sasaran[s] = Math.max(1, +e.target.value || DEFAULT.sasaran[s]); changed(); };
+    });
+    $('#inName').oninput = e => { P.klinik = e.target.value; $('#hName').textContent = P.klinik || 'Klinik Kesihatan'; save(); };
+    $('#inPes').oninput = e => { P.pesakit = +e.target.value; changed(); };
+    $('#inPel').oninput = e => { P.pelaras = +e.target.value; changed(); };
+    $('#inMak').onchange = e => { P.makmal = e.target.checked; changed(); };
+    $('#inXr').onchange = e => { P.xray = e.target.checked; changed(); };
+    $('#inRehat').onchange = e => { P.rehat = e.target.checked; changed(); };
+    $('#inFt').onchange = e => { P.levers.ftDemam = e.target.checked; changed(); };
+    $('#inDe').onchange = e => { P.levers.pendidik = e.target.checked; changed(); };
+    $('#inTJ').onchange = e => { P.sasaran.jumlah = Math.max(10, +e.target.value || 90); changed(); };
+    $('#inTD').onchange = e => { P.sasaran.jumpaDr = Math.max(10, +e.target.value || 60); changed(); };
+    document.querySelectorAll('#segCorak button').forEach(b => b.onclick = () => { P.corak = b.dataset.v; changed(); });
+    document.querySelectorAll('#segMusim button').forEach(b => b.onclick = () => {
+      const pr = PRESET[b.dataset.v];
+      P.mix.forEach(d => { d.pct = pr[d.key] != null ? pr[d.key] : BASE_PCT[d.key]; });
+      P.musim = b.dataset.v; changed();
+    });
+    $('#btnAsas').onclick = () => { ASAS = clone(P); save(); rebuild(); render(); };
+    $('#btnReset').onclick = () => { P = clone(DEFAULT); ASAS = clone(DEFAULT); abai.clear(); save(); rebuild(); render(); };
+    $('#btnClearAct').onclick = () => { P.tindakan = []; P.log = []; save(); rebuild(); render(); };
+  }
+
+  function changed() { save(); rebuild(); render(); }
+
+  function currentTab() {
+    const h = (location.hash || '').slice(1);
+    return ['dashboard', 'simulator', 'peta', 'tindakan'].includes(h) ? h : 'dashboard';
+  }
+
+  function render() {
+    const tab = currentTab();
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + tab));
+    document.querySelectorAll('.tabs a').forEach(a => { if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    const sn = snapshotAll();
+    renderHeader(sn);
+    if (tab === 'dashboard') { renderKPIs(sn); renderAlert(sn); renderStages(sn); renderChart(); renderDr(); }
+    else if (tab === 'simulator') { syncForm(); renderCompare(); }
+    else if (tab === 'peta') renderMap(sn);
+    else if (tab === 'tindakan') { renderRecs(); renderLog(); }
+  }
+
+  function setT(t) { T = t; render(); }
+
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>';
+  const ICON_PAUSE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+  function setPlaying(on) {
+    playing = on;
+    const b = $('#btnPlay');
+    b.innerHTML = on ? ICON_PAUSE : ICON_PLAY;
+    b.setAttribute('aria-label', on ? 'Jeda simulasi' : 'Main simulasi');
+    clearInterval(timer);
+    if (on) {
+      if (T >= endT) T = DAY_START;
+      timer = setInterval(() => {
+        T = Math.min(endT, T + speed * 0.25);
+        if (T >= endT) setPlaying(false);
+        render();
+      }, 250);
+    } else recCache.k = '';
+  }
+  function setSpeed(v) {
+    speed = v;
+    document.querySelectorAll('#segSpeed button').forEach(b => b.setAttribute('aria-pressed', String(Math.abs(+b.dataset.v - v) < 1e-3)));
+  }
+
+  $('#btnPlay').onclick = () => { setPlaying(!playing); render(); };
+  $('#tRange').oninput = e => setT(+e.target.value);
+  document.querySelectorAll('#segSpeed button').forEach(b => b.onclick = () => setSpeed(+b.dataset.v));
+  $('#btnNow').onclick = () => {
+    const d = new Date();
+    const m = d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
+    T = Math.max(DAY_START, Math.min(endT, m));
+    setSpeed(1 / 60); setPlaying(true); render();
+  };
+  window.addEventListener('hashchange', render);
+  let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(render, 150); });
+  setInterval(() => { $('#hClock').textContent = new Date().toTimeString().slice(0, 8); }, 1000);
+  $('#hClock').textContent = new Date().toTimeString().slice(0, 8);
+
+  buildForm();
+  rebuild();
+  setSpeed(1);
+  setPlaying(false);
+  render();
+})();
+</script>
+</body>
+</html>
